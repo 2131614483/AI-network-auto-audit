@@ -1,0 +1,74 @@
+{
+  "inquiry-result": {
+    "checksum": {
+      "by_status": {
+        "approved": 0,
+        "delivered": 1,
+        "pending": 1,
+        "rejected": 0,
+        "requested": 0
+      },
+      "request_count": 2
+    },
+    "edges": [
+      {
+        "id": "inq-0001-e1",
+        "source": "inq-0001-req",
+        "target": "inq-0001-flow"
+      },
+      {
+        "id": "inq-0002-e1",
+        "source": "inq-0002-req",
+        "target": "inq-0002-flow"
+      }
+    ],
+    "input_schema": {
+      "type": "object"
+    },
+    "key": "cross-dept-inquiry",
+    "nodes": [
+      {
+        "id": "inq-0001-req",
+        "name": "协查请求",
+        "props": {
+          "data_type": "合同台账",
+          "dept": "采购部",
+          "purpose": "核验供应商",
+          "status": "delivered"
+        }
+      },
+      {
+        "id": "inq-0001-flow",
+        "name": "流转节点",
+        "props": {
+          "next": "delivered",
+          "requested_by": ""
+        }
+      },
+      {
+        "id": "inq-0002-req",
+        "name": "协查请求",
+        "props": {
+          "data_type": "订单明细",
+          "dept": "销售部",
+          "purpose": "抽样核对",
+          "status": "pending"
+        }
+      },
+      {
+        "id": "inq-0002-flow",
+        "name": "流转节点",
+        "props": {
+          "next": "pending",
+          "requested_by": ""
+        }
+      }
+    ],
+    "output_schema": {
+      "type": "object"
+    },
+    "tenant_id": "local-dev",
+    "version": "1.0.0",
+    "workflow_id": "inquiry-2026-01"
+  }
+}

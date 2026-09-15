@@ -1,0 +1,119 @@
+{
+  "run_id": "8cbb3b4f-718f-40f6-ab07-02701a49b8b3",
+  "label": "09-11-2003-确定性回退",
+  "node_attempts": [
+    {
+      "attempt_id": "946367ee-3277-49f9-b73b-6428e2bbd7af",
+      "tenant_id": "a5526a1e-02ed-4faa-a663-5413b7c3db88",
+      "run_id": "8cbb3b4f-718f-40f6-ab07-02701a49b8b3",
+      "plan_key": "demo-f1a9e446",
+      "execution_hash": "58073b1eca7edb4aa7d56fd404a0286dff7037db590ae8f46a886bf711e4dc82",
+      "node_instance_id": "ledger-a",
+      "capability": "audit.ledger.validate",
+      "plugin_id": "audit.ledger-quality",
+      "attempt_seq": 1,
+      "status": "succeeded",
+      "lease_token": "7915375d-20d1-44ae-b8f2-4eda0ac65021",
+      "lease_expires_at": "2026-09-11 20:08:28.729013+08:00",
+      "worker_id": "demo-business-worker",
+      "input_bindings": {
+        "ledger": {
+          "uri": "file:///D:/pythonpro/audit_network/.data/demo/staging/inputs/ledger-a.csv",
+          "sha256": "1f8e4bfd5e4627d48522e1955b070dabe484e085a0513f86097572f4d3c61be4",
+          "adapter": null,
+          "port_id": "ledger",
+          "source_port": "ledger",
+          "source_instance": "seed"
+        }
+      },
+      "output_refs": {
+        "candidates": {
+          "uri": "file:///D:/pythonpro/audit_network/.data/demo/staging/chains/demo-f1a9e446/ledger-a/output-candidates-efa1f357965be17d.json",
+          "sha256": "efa1f357965be17d691a190ee1674f4ea443e72414f52bab4e4957c963da1977",
+          "size_bytes": 3427
+        }
+      },
+      "error_kind": null,
+      "error_message": null,
+      "trace_id": "23b42c08-f8b7-4f8b-aae5-a9942f80c415",
+      "idempotency_key": null,
+      "created_at": "2026-09-11 20:03:28.723574+08:00",
+      "finished_at": "2026-09-11 20:03:28.913174+08:00"
+    },
+    {
+      "attempt_id": "fc1b14df-2d62-487a-bd54-b0f0ea2ec927",
+      "tenant_id": "a5526a1e-02ed-4faa-a663-5413b7c3db88",
+      "run_id": "8cbb3b4f-718f-40f6-ab07-02701a49b8b3",
+      "plan_key": "demo-f1a9e446",
+      "execution_hash": "58073b1eca7edb4aa7d56fd404a0286dff7037db590ae8f46a886bf711e4dc82",
+      "node_instance_id": "consumer-x",
+      "capability": "quant.experiment.evaluate",
+      "plugin_id": "quant.experiment-evaluator",
+      "attempt_seq": 1,
+      "status": "succeeded",
+      "lease_token": "35583050-d2bf-4ddc-8f32-32ade751e10e",
+      "lease_expires_at": "2026-09-11 20:08:28.972816+08:00",
+      "worker_id": "demo-business-worker",
+      "input_bindings": {
+        "experiment": {
+          "uri": "file:///D:/pythonpro/audit_network/.data/demo/staging/chains/demo-f1a9e446/ledger-a/output-candidates-efa1f357965be17d.json",
+          "sha256": "efa1f357965be17d691a190ee1674f4ea443e72414f52bab4e4957c963da1977",
+          "adapter": "candidates-to-backtest",
+          "port_id": "experiment",
+          "source_port": "candidates",
+          "source_instance": "ledger-a"
+        }
+      },
+      "output_refs": {
+        "evaluation": {
+          "uri": "file:///D:/pythonpro/audit_network/.data/demo/staging/chains/demo-f1a9e446/consumer-x/output-evaluation-a6c0b4ba0d09f6fc.json",
+          "sha256": "a6c0b4ba0d09f6fca1e8524acd96465ca915b839cf275c2b7e18fce025e34da7",
+          "size_bytes": 1215
+        }
+      },
+      "error_kind": null,
+      "error_message": null,
+      "trace_id": "23b42c08-f8b7-4f8b-aae5-a9942f80c415",
+      "idempotency_key": null,
+      "created_at": "2026-09-11 20:03:28.971847+08:00",
+      "finished_at": "2026-09-11 20:03:29.102048+08:00"
+    }
+  ],
+  "trace_ids": [
+    "23b42c08-f8b7-4f8b-aae5-a9942f80c415"
+  ],
+  "tool_calls": [],
+  "policy_decisions": [],
+  "outbox_events": [
+    {
+      "id": 2926,
+      "tenant_id": "a5526a1e-02ed-4faa-a663-5413b7c3db88",
+      "topic": "control.dag",
+      "event_type": "node.finished",
+      "aggregate_id": "946367ee-3277-49f9-b73b-6428e2bbd7af",
+      "payload": {
+        "status": "succeeded",
+        "attempt_id": "946367ee-3277-49f9-b73b-6428e2bbd7af",
+        "error_kind": null,
+        "finished_at": "2026-09-11T12:03:28.919816+00:00"
+      },
+      "occurred_at": "2026-09-11 20:03:28.913174+08:00",
+      "published_at": null
+    },
+    {
+      "id": 2927,
+      "tenant_id": "a5526a1e-02ed-4faa-a663-5413b7c3db88",
+      "topic": "control.dag",
+      "event_type": "node.finished",
+      "aggregate_id": "fc1b14df-2d62-487a-bd54-b0f0ea2ec927",
+      "payload": {
+        "status": "succeeded",
+        "attempt_id": "fc1b14df-2d62-487a-bd54-b0f0ea2ec927",
+        "error_kind": null,
+        "finished_at": "2026-09-11T12:03:29.104026+00:00"
+      },
+      "occurred_at": "2026-09-11 20:03:29.102048+08:00",
+      "published_at": null
+    }
+  ]
+}

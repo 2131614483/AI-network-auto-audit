@@ -1,0 +1,296 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>上市公司年度审计报告 · 组网自动化可行性评估</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<style>
+  :root{
+    --bg:#F7F6F3; --card:#FFFFFF; --line:rgba(0,0,0,.10); --line2:rgba(0,0,0,.18);
+    --t1:#2C2C2A; --t2:#5F5E5A; --t3:#8A8880;
+    --blue:#378ADD; --green:#639922; --red:#E24B4A; --amber:#BA7517; --gray:#888780; --purple:#7F77DD;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--t1);
+       font-family:system-ui,-apple-system,"Segoe UI","Microsoft YaHei",sans-serif;
+       font-size:13px;line-height:1.65;-webkit-font-smoothing:antialiased}
+  .wrap{max-width:1180px;margin:0 auto;padding:32px 24px 64px}
+  header{margin-bottom:28px}
+  h1{font-size:23px;font-weight:500;margin:0 0 6px}
+  .sub{color:var(--t2);font-size:13px}
+  h2{font-size:15px;font-weight:500;margin:34px 0 4px}
+  .h2sub{color:var(--t2);font-size:12px;margin:0 0 14px}
+  .card{background:var(--card);border:0.5px solid var(--line);border-radius:12px;padding:18px 20px}
+  .grid{display:grid;gap:12px}
+  .g4{grid-template-columns:repeat(auto-fit,minmax(200px,1fr))}
+  .g2{grid-template-columns:repeat(auto-fit,minmax(380px,1fr))}
+  .tile{background:var(--card);border:0.5px solid var(--line);border-radius:10px;padding:14px 16px}
+  .tile .k{color:var(--t2);font-size:12px;margin:0 0 6px}
+  .tile .v{font-size:25px;font-weight:500;line-height:1.15;margin:0}
+  .tile .n{color:var(--t3);font-size:12px;margin:6px 0 0}
+  .v.blue{color:var(--blue)} .v.green{color:var(--green)} .v.red{color:var(--red)}
+  .v.amber{color:var(--amber)} .v.gray{color:var(--gray)}
+  table{width:100%;border-collapse:collapse;font-size:12.5px}
+  th,td{text-align:left;padding:7px 10px;border-bottom:0.5px solid var(--line)}
+  th{color:var(--t2);font-weight:500;background:#FBFAF8}
+  td.num,th.num{text-align:right;font-variant-numeric:tabular-nums}
+  tr:last-child td{border-bottom:none}
+  .tag{display:inline-block;padding:1px 7px;border-radius:999px;font-size:11.5px;line-height:1.7}
+  .t-blue{background:#E6F1FB;color:#0C447C}
+  .t-green{background:#EAF3DE;color:#27500A}
+  .t-red{background:#FCEBEB;color:#791F1F}
+  .t-amber{background:#FAEEDA;color:#633806}
+  .t-gray{background:#F1EFE8;color:#444441}
+  .chartbox{position:relative;width:100%}
+  .legend{display:flex;flex-wrap:wrap;gap:14px;margin:0 0 10px;font-size:12px;color:var(--t2)}
+  .legend span{display:flex;align-items:center;gap:5px}
+  .dot{width:10px;height:10px;border-radius:2px;display:inline-block}
+  .note{color:var(--t2);font-size:12px;margin:10px 0 0}
+  .bar{height:8px;border-radius:4px;background:#EDEBE6;overflow:hidden;min-width:70px}
+  .bar>i{display:block;height:100%;border-radius:4px}
+  code{background:#F1EFE8;padding:1px 5px;border-radius:4px;font-size:12px;
+       font-family:ui-monospace,Consolas,monospace}
+  .kv{display:flex;justify-content:space-between;gap:12px;padding:5px 0;border-bottom:0.5px dashed var(--line)}
+  .kv:last-child{border-bottom:none}
+  .kv b{font-weight:500;font-variant-numeric:tabular-nums}
+  .warn{border-left:3px solid var(--red);background:#FEF7F7;padding:12px 16px;border-radius:0 8px 8px 0;margin:12px 0}
+  .ok{border-left:3px solid var(--green);background:#F8FBF4;padding:12px 16px;border-radius:0 8px 8px 0;margin:12px 0}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header>
+  <h1>上市公司年度审计报告 · 组网自动化可行性评估</h1>
+  <div class="sub">评估对象：天健审〔2026〕8-346 号《贵州茅台酒股份有限公司 2025 年度审计报告》· 实测 118 页 ·
+    评估日期 2026-09-14 · 方法：PDF 结构化实测 + 插件目录实测 + 模拟账套端到端复算</div>
+</header>
+
+<div class="grid g4">
+  <div class="tile"><p class="k">报告总页数</p><p class="v">118</p><p class="n">目录 1 + 正文 5 + 报表 8 + 附注 98 + 附件 6</p></div>
+  <div class="tile"><p class="k">机器可生成篇幅</p><p class="v green">89.8%</p><p class="n">106 / 118 页（数据派生 85 + 模板 21）</p></div>
+  <div class="tile"><p class="k">实测金额型数据点</p><p class="v blue">2,981</p><p class="n">附注 2,245（实测）+ 主表约 736（估算）</p></div>
+  <div class="tile"><p class="k">必须新增插件</p><p class="v red">11</p><p class="n">现有 123 个插件覆盖作业，不覆盖编制</p></div>
+</div>
+
+<h2>一、报告 118 页的自动化分型</h2>
+<p class="h2sub">按页数。A 类数字全部算得出来，B 类模板填空，C 类必须职业判断，D 类只需归档。</p>
+<div class="card">
+  <div class="legend">
+    <span><i class="dot" style="background:#378ADD"></i>A 数据派生 · 85 页</span>
+    <span><i class="dot" style="background:#639922"></i>B 模板变量 · 21 页</span>
+    <span><i class="dot" style="background:#E24B4A"></i>C 专业判断 · 6 页</span>
+    <span><i class="dot" style="background:#888780"></i>D 静态归档 · 6 页</span>
+  </div>
+  <div class="chartbox" style="height:120px"><canvas id="c1" role="img"
+    aria-label="报告 118 页按自动化类型的堆叠条形图">A 类 85 页，B 类 21 页，C 类 6 页，D 类 6 页。</canvas></div>
+  <p class="note">「五、合并财务报表项目注释」单章 46 页（39%）+「十一、关联方及关联交易」15 页（12.7%）=
+    全报告 52% 的篇幅，全部是「账上数据的维度展开」。</p>
+</div>
+
+<h2>二、逐模块可达成率</h2>
+<p class="h2sub">可达成率 = 补齐 11 个缺口插件后的自动化上限（不含人工复核与签发）。</p>
+<div class="card">
+  <div class="chartbox" style="height:520px"><canvas id="c2" role="img"
+    aria-label="各报告模块的可达成自自动化率横向柱状图">附注十六 100%，8 张主表 95%，公司基本情况 95%，
+    科目附注 90%，税项 90%，母公司附注 90%，关联方 85%，会计政策 85%，研发/投资/补助/估值/分部 80%，
+    金融工具风险 70%，审计报告正文 60%，承诺或有与日后事项 40%。</canvas></div>
+</div>
+
+<h2>三、附注数据点密度（实测）</h2>
+<p class="h2sub">逐页统计 <code>1,234,567.89</code> 形式的金额。审计报告正文 5 页里只有 2 个金额，附注里塞了 2,245 个。</p>
+<div class="card">
+  <div class="chartbox" style="height:420px"><canvas id="c3" role="img"
+    aria-label="各附注章节金额型数据点横向柱状图">合并财务报表项目注释 1427，关联方及关联交易 443，
+    母公司报表主要项目注释 141，研发支出 60，其他补充资料 52，在其他主体中的权益 37，承诺及或有事项 29，
+    公允价值的披露 22，政府补助 20，其他重要事项 6，金融工具风险 4，日后事项 2。</canvas></div>
+  <p class="note">合计 <b>2,245</b> 个附注金额单元格。加 8 张主表约 736 个，全报告约 <b>2,981</b> 个数字 —— 其中约 98.6% 可由账务数据确定性算出。</p>
+</div>
+
+<h2>四、模拟账套端到端实测</h2>
+<p class="h2sub">用 3 个会计主体 / 80 张凭证 / 160 条分录跑出 8 张报表 + 10 张附注，8 项勾稽全部通过。</p>
+<div class="grid g2">
+  <div class="card">
+    <p style="font-weight:500;margin:0 0 10px">合并口径结果（模拟 · 2025 年度）</p>
+    <div class="kv"><span>营业收入</span><b>4,199,400,000.00</b></div>
+    <div class="kv"><span>营业成本 / 毛利率</span><b>1,090,000,000.00 / 74.05%</b></div>
+    <div class="kv"><span>净利润</span><b>1,326,500,000.00</b></div>
+    <div class="kv"><span>归属于母公司股东的净利润</span><b>1,320,900,000.00</b></div>
+    <div class="kv"><span>少数股东损益</span><b>5,600,000.00</b></div>
+    <div class="kv"><span>资产总计 / 负债合计</span><b>14,704,500,000.00 / 5,447,800,000.00</b></div>
+    <div class="kv"><span>归母权益 / 少数股东权益</span><b>9,201,900,000.00 / 54,800,000.00</b></div>
+    <div class="kv"><span>经营活动现金流量净额</span><b>2,576,500,000.00</b></div>
+    <div class="kv"><span>基本每股收益</span><b>1.05 元/股</b></div>
+    <div class="kv"><span>加权平均净资产收益率</span><b>15.07%</b></div>
+  </div>
+  <div class="card">
+    <p style="font-weight:500;margin:0 0 10px">勾稽校验 · 8 / 8 通过</p>
+    <table>
+      <tr><th>校验项</th><th class="num">结果</th><th style="width:56px">结论</th></tr>
+      <tr><td>三个主体试算平衡</td><td class="num">0.00</td><td><span class="tag t-green">通过</span></td></tr>
+      <tr><td>资产总计 = 负债 + 所有者权益</td><td class="num">14,704,500,000.00</td><td><span class="tag t-green">通过</span></td></tr>
+      <tr><td>合并权益 = Σ主体权益 − 长期股权投资</td><td class="num">9,256,700,000.00</td><td><span class="tag t-green">通过</span></td></tr>
+      <tr><td>净利润 = 归母 + 少数股东损益</td><td class="num">1,326,500,000.00</td><td><span class="tag t-green">通过</span></td></tr>
+      <tr><td>现金流净增加额 = 货币资金期末 − 期初</td><td class="num">1,128,500,000.00</td><td><span class="tag t-green">通过</span></td></tr>
+      <tr><td>附注固定资产 = 主表固定资产</td><td class="num">2,126,000,000.00</td><td><span class="tag t-green">通过</span></td></tr>
+      <tr><td>附注存货 = 主表存货</td><td class="num">2,898,000,000.00</td><td><span class="tag t-green">通过</span></td></tr>
+      <tr><td>现金流量表：间接法 = 直接法</td><td class="num">2,576,500,000.00</td><td><span class="tag t-green">通过</span></td></tr>
+    </table>
+    <div class="ok" style="margin-top:14px">
+      <b>结论</b>：附注不是第二套数据源，而是主表数据按维度展开。只要分录上带
+      <code>产品/渠道/地区/客户/供应商/关联方/税种/资产类别/账龄/现金流项目</code> 十个维度标签，
+      10 张附注与主表就能 100% 自动勾稽。
+    </div>
+  </div>
+</div>
+
+<h2>五、组网插件盘点与缺口</h2>
+<p class="h2sub">现有 123 个插件（audit 107 / aiops 7 / quant 5 / knowledge 4），可召回 capability 107、端口 161、契约冲突 0。</p>
+<div class="grid g2">
+  <div class="card">
+    <p style="font-weight:500;margin:0 0 10px">现有插件覆盖（约 30 个直接相关）</p>
+    <table>
+      <tr><th>环节</th><th>代表插件</th><th style="width:62px">状态</th></tr>
+      <tr><td>取数清洗</td><td>multi-source-collect / finance-clean / biz-standardize</td><td><span class="tag t-green">已具备</span></td></tr>
+      <tr><td>指标计算</td><td>metric-compute / quality-check / rule-engine</td><td><span class="tag t-green">已具备</span></td></tr>
+      <tr><td>科目映射</td><td>master-mapping（口径偏泛化）</td><td><span class="tag t-amber">需扩口径</span></td></tr>
+      <tr><td>底稿勾稽</td><td>workpaper-reconcile / review3 / e-signature</td><td><span class="tag t-green">已具备</span></td></tr>
+      <tr><td>报告框架与草稿</td><td>report-frame-build / report-draft / report-data-check</td><td><span class="tag t-green">已具备</span></td></tr>
+      <tr><td>证据归档 OCR</td><td>ocr-extract / evidence-archive / evidence-verify</td><td><span class="tag t-green">已具备</span></td></tr>
+      <tr><td>风险与分析性程序</td><td>risk.* 11 个 / finance-anomaly-alert</td><td><span class="tag t-green">已具备</span></td></tr>
+    </table>
+    <p class="note">现有节点能覆盖报告的<b>框架、校验、复核、签章、归档</b>，但覆盖不了 85 页 A 类主体的<b>生成</b>。</p>
+  </div>
+  <div class="card">
+    <p style="font-weight:500;margin:0 0 10px">缺口：11 个必须新增的插件</p>
+    <table>
+      <tr><th>#</th><th>能力</th><th class="num">对应页</th></tr>
+      <tr><td>2</td><td><b>合并工作底稿</b> consolidation-workpaper</td><td class="num">8</td></tr>
+      <tr><td>5</td><td><b>附注明细表生成器</b> note-schedule-build</td><td class="num">52</td></tr>
+      <tr><td>7</td><td>关联方交易汇总 related-party-aggregate</td><td class="num">15</td></tr>
+      <tr><td>9</td><td>会计政策库匹配 policy-library-match</td><td class="num">16</td></tr>
+      <tr><td>8</td><td>非经常性损益/ROE/EPS regulatory-indicators</td><td class="num">5</td></tr>
+      <tr><td>6</td><td>账龄分析 aging-analysis</td><td class="num">6</td></tr>
+      <tr><td>1</td><td>科目→报表行映射 trial-balance-map</td><td class="num">8</td></tr>
+      <tr><td>3</td><td>现金流量表编制 cashflow-build</td><td class="num">2</td></tr>
+      <tr><td>4</td><td>所有者权益变动表 equity-statement-build</td><td class="num">2</td></tr>
+      <tr><td>10</td><td>披露完整性校验 disclosure-checklist</td><td class="num">—</td></tr>
+      <tr><td>11</td><td>报告排版与套红 layout-render</td><td class="num">—</td></tr>
+    </table>
+    <p class="note">实施顺序：<b>#2 → #5 → #7</b>（吃掉 67 页 = 57% 篇幅，且是其余插件的公共前置）。</p>
+  </div>
+</div>
+
+<h2>六、两个必须先修的工程阻断（已实测复现）</h2>
+
+<div class="warn">
+  <p style="margin:0 0 6px;font-weight:500">阻断 A · API 侧的能力召回看不到磁盘上的 123 个插件</p>
+  <p style="margin:0 0 8px">API 的 AI 组网入口（<code>/api/v1/topology/planning/ai</code>、<code>/canvas/chat</code>）
+  走 <code>capability_catalog_from_db()</code>，读的是 DB 蓝图库。本机 <code>local-dev</code> 租户实测
+  <b>377 行、全部 status='planned'</b>，其中 <b>374 行是契约测试残留</b>（键名形如
+  <code>it-xxxx-consumer/producer/bridge-dst</code>），真正的语义蓝图只有 3 个。</p>
+  <p style="margin:0">而磁盘上 <code>domain_catalog('audit')</code> 有 <b>107 capability / 161 端口 / 0 冲突</b>，
+  却只被桌面画布的改稿路径用上。→ 对 AI 说「生成一份审计报告编制流程」，模型只能看到 1 个真实能力。</p>
+</div>
+
+<div class="warn">
+  <p style="margin:0 0 6px;font-weight:500">阻断 B · 未传目录派生契约，退回 7 条遗留注册表</p>
+  <p style="margin:0 0 8px">API 调 <code>AiPlanner.plan()</code> 时没传 <code>port_contracts</code>，
+  于是闸门落到兜底的 <code>PORT_CONTRACTS</code> —— 只有 7 个端口。
+  用真实插件 <code>audit.report.report-frame-build</code> 的真端口 <code>project-snapshot</code> 实测：</p>
+  <table style="background:#fff;border-radius:8px">
+    <tr><th>契约注册表</th><th>端口数</th><th>闸门结果</th><th>拒绝码</th></tr>
+    <tr><td>API 默认（兜底）</td><td class="num">7</td><td><span class="tag t-red">拒绝</span></td><td><code>contract_mismatch</code></td></tr>
+    <tr><td>目录派生（workbench）</td><td class="num">161</td><td><span class="tag t-green">通过</span></td><td>—</td></tr>
+  </table>
+  <p style="margin:8px 0 0">即：<b>只要模型规划的流程用到任何一个真实审计端口，就一定会被闸门拒绝，连编译器都到不了。</b></p>
+</div>
+
+<h2>七、诚实声明：本评估没有验证的东西</h2>
+<div class="card">
+  <div class="kv"><span>端到端复算引擎与插件端口契约同构，但<strong>未经过 Policy Gateway</strong></span><b>数据与算法可行 ≠ 组网已能跑</b></div>
+  <div class="kv"><span>11 个新增插件只是端口契约草案</span><b>无 runtime / schema / 门禁测试</b></div>
+  <div class="kv"><span>8 张主表的金额单元格数（约 736）</span><b>表格结构估算（原 PDF 该部分是扫描图）</b></div>
+  <div class="kv"><span>内部存货未实现利润、纳税调整、分部报告等</span><b>已简化并在代码中标注</b></div>
+</div>
+
+<h2>八、下一步（三步）</h2>
+<div class="grid g4">
+  <div class="tile"><p class="k">第 1 步 · 修装配位</p><p class="v blue" style="font-size:15px">1–2 天</p>
+    <p class="n">API 改用目录派生召回 + 契约；清理 374 行测试蓝图为残留。验收：AI 能产出通过闸门的报告流程草稿。</p></div>
+  <div class="tile"><p class="k">第 2 步 · 建插件组</p><p class="v green" style="font-size:15px">按序交付</p>
+    <p class="n">先 #2 合并工作底稿、#5 附注生成器。每个插件 = 协议 + schema + runtime + 契约测试 + 合成夹具。</p></div>
+  <div class="tile"><p class="k">第 3 步 · 固化为基准用例</p><p class="v amber" style="font-size:15px">持续度量</p>
+    <p class="n">把 80 张凭证 → 3 张试算表 → 8 项勾稽 变成固定评测用例，让「能自动化多少」每次都跑得出来。</p></div>
+  <div class="tile"><p class="k">最终目标</p><p class="v" style="font-size:15px">输入账 → 输出 90% 报告</p>
+    <p class="n">数据侧已证明可行；剩下的是 11 个插件 + 2 处装配。</p></div>
+</div>
+
+</div>
+
+<script>
+const T2 = '#5F5E5A', GRID = 'rgba(0,0,0,.07)';
+Chart.defaults.font.family = 'system-ui,-apple-system,"Segoe UI","Microsoft YaHei",sans-serif';
+Chart.defaults.font.size = 12;
+Chart.defaults.color = T2;
+
+new Chart(document.getElementById('c1'), {
+  type: 'bar',
+  data: {
+    labels: ['118 页'],
+    datasets: [
+      {label:'A 数据派生', data:[85], backgroundColor:'#378ADD', borderRadius:4, barThickness:64},
+      {label:'B 模板变量', data:[21], backgroundColor:'#639922', borderRadius:4, barThickness:64},
+      {label:'C 专业判断', data:[6],  backgroundColor:'#E24B4A', borderRadius:4, barThickness:64},
+      {label:'D 静态归档', data:[6],  backgroundColor:'#888780', borderRadius:4, barThickness:64}
+    ]
+  },
+  options: {
+    indexAxis:'y', responsive:true, maintainAspectRatio:false,
+    plugins:{ legend:{display:false},
+      tooltip:{callbacks:{label:c=>`${c.dataset.label}：${c.parsed.x} 页（${(c.parsed.x/118*100).toFixed(1)}%）`}} },
+    scales:{ x:{stacked:true, max:118, grid:{color:GRID}, ticks:{callback:v=>v+' 页'}},
+             y:{stacked:true, grid:{display:false}} }
+  }
+});
+
+const modules = [
+  ['附注十六 扣非/ROE/EPS', 100, '#639922'],
+  ['8 张主表', 95, '#639922'],
+  ['附注二 + 公司基本情况', 95, '#639922'],
+  ['附注五/十五 科目注释', 90, '#639922'],
+  ['附注四 税项', 90, '#639922'],
+  ['附注十五 母公司注释', 90, '#639922'],
+  ['附注十一 关联方交易', 85, '#BA7517'],
+  ['附注三 会计政策', 85, '#BA7517'],
+  ['附注六/七/八/十/十四', 80, '#BA7517'],
+  ['附注九 金融工具风险', 70, '#BA7517'],
+  ['审计报告正文', 60, '#E24B4A'],
+  ['附注十二/十三 承诺或有·日后事项', 40, '#E24B4A']
+];
+new Chart(document.getElementById('c2'), {
+  type:'bar',
+  data:{ labels: modules.map(m=>m[0]),
+    datasets:[{data: modules.map(m=>m[1]), backgroundColor: modules.map(m=>m[2]), borderRadius:4, barThickness:24}] },
+  options:{ indexAxis:'y', responsive:true, maintainAspectRatio:false,
+    plugins:{ legend:{display:false}, tooltip:{callbacks:{label:c=>`可达成率 ${c.parsed.x}%`}} },
+    scales:{ x:{min:0,max:100, grid:{color:GRID}, ticks:{callback:v=>v+'%'}}, y:{grid:{display:false}} } }
+});
+
+const notes = [
+  ['合并财务报表项目注释', 1427], ['关联方及关联交易', 443], ['母公司报表主要项目注释', 141],
+  ['研发支出', 60], ['其他补充资料', 52], ['在其他主体中的权益', 37], ['承诺及或有事项', 29],
+  ['公允价值的披露', 22], ['政府补助', 20], ['其他重要事项', 6], ['金融工具相关的风险', 4], ['日后事项', 2]
+];
+new Chart(document.getElementById('c3'), {
+  type:'bar',
+  data:{ labels: notes.map(n=>n[0]),
+    datasets:[{data: notes.map(n=>n[1]), backgroundColor:'#378ADD', borderRadius:4, barThickness:18}] },
+  options:{ indexAxis:'y', responsive:true, maintainAspectRatio:false,
+    plugins:{ legend:{display:false}, tooltip:{callbacks:{label:c=>`${c.parsed.x.toLocaleString()} 个金额单元格`}} },
+    scales:{ x:{grid:{color:GRID}, ticks:{callback:v=>v.toLocaleString()}}, y:{grid:{display:false}} } }
+});
+</script>
+</body>
+</html>

@@ -1,0 +1,21 @@
+{
+  "viz-output": {
+    "artifact": {
+      "chart": {
+        "chart_type": "line",
+        "points": [
+          {
+            "at": "2026",
+            "value": 1.0
+          }
+        ],
+        "series": "s1"
+      },
+      "sha256": "892898d7f2c4758d8b022804ae6a5a590e6989e97920382a2d054224bca1937c",
+      "size_bytes": 61,
+      "uri": "file:///D:/pythonpro/audit_network/docs/%E5%85%A8%E6%B5%81%E7%A8%8B%E8%BF%90%E8%A1%8C%E6%97%A5%E5%BF%97-20260912/12-%E6%9C%AC%E6%AC%A1%E8%BF%90%E8%A1%8C%E4%BA%A7%E7%89%A9/inputs/viz-in.json"
+    },
+    "contract_id": "artifact-ref",
+    "contract_version": "1.0.0"
+  }
+}

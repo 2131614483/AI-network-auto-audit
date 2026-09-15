@@ -1,0 +1,1 @@
+{"contract_id": "document-content", "contract_version": "1.0.0", "artifact": {"period": "2026", "fraud_scenarios": [{"scenario_id": "F1", "name": "虚构供应商", "pressure": true, "opportunity": true, "rationalization": true}, {"scenario_id": "F2", "name": "审批流于形式", "opportunity": true, "rationalization": false, "pressure": false}]}}

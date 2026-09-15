@@ -1,0 +1,1 @@
+{"log_id": "L-2026-01", "tenant_id": "local-dev", "events": [{"op": "read", "node": "ledger", "ts": "2026-01-15T10:00:00Z", "actor": "s1"}, {"op": "export", "node": "workpaper", "ts": "2026-01-15T11:00:00Z", "actor": "s2"}, {"op": "approve", "node": "review", "ts": "2026-01-15T09:30:00Z", "actor": "m1"}]}

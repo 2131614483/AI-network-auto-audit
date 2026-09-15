@@ -1,0 +1,21 @@
+{
+  "fraud-risk-set": {
+    "candidates": [
+      {
+        "note": "舞弊场景「虚构供应商」命中三角信号：pressure、opportunity、rationalization",
+        "row_ref": "fraud:F1",
+        "rule_id": "FRD-0001",
+        "rule_key": "fraud_triangle",
+        "score": 1.05,
+        "severity": "high",
+        "source_ref": "fraud-risk-match"
+      }
+    ],
+    "contract_id": "anomaly-candidates",
+    "contract_version": "1.0.0",
+    "period": "2026",
+    "summary": {
+      "candidates": 1
+    }
+  }
+}

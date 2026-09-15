@@ -1,0 +1,1 @@
+{"period": "2026-01", "confirmations": [{"counterparty": "供应商A", "amount": 120000, "reply_status": "replied", "replied_at": "2026-02-01"}, {"counterparty": "供应商B", "amount": 80000, "reply_status": "pending"}]}

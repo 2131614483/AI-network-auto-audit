@@ -1,0 +1,119 @@
+{
+  "run_id": "3b6667c3-b644-43c0-8b4a-b64f8236efac",
+  "label": "AI真实组网成功(plan-ledger-quality-audit-and-evaluate)",
+  "node_attempts": [
+    {
+      "attempt_id": "41c9e668-da64-4ab7-ba08-fc1ced8ca4cc",
+      "tenant_id": "a5526a1e-02ed-4faa-a663-5413b7c3db88",
+      "run_id": "3b6667c3-b644-43c0-8b4a-b64f8236efac",
+      "plan_key": "plan-ledger-quality-audit-and-evaluate",
+      "execution_hash": "ae09234a222d686d38dfd20d3cc55c70010138ea9190799d18a6dbb8336dc687",
+      "node_instance_id": "ledger-validate-001",
+      "capability": "audit.ledger.validate",
+      "plugin_id": "audit.ledger-quality",
+      "attempt_seq": 1,
+      "status": "succeeded",
+      "lease_token": "32bea914-b60e-4a96-a398-101ebeec19b9",
+      "lease_expires_at": "2026-09-11 20:02:27.229371+08:00",
+      "worker_id": "demo-business-worker",
+      "input_bindings": {
+        "ledger": {
+          "uri": "file:///D:/pythonpro/audit_network/.data/demo/staging/inputs/ledger-a.csv",
+          "sha256": "1f8e4bfd5e4627d48522e1955b070dabe484e085a0513f86097572f4d3c61be4",
+          "adapter": null,
+          "port_id": "ledger",
+          "source_port": "ledger",
+          "source_instance": "seed"
+        }
+      },
+      "output_refs": {
+        "audit-quality-candidates": {
+          "uri": "file:///D:/pythonpro/audit_network/.data/demo/staging/chains/plan-ledger-quality-audit-and-evaluate/ledger-validate-001/output-audit-quality-candidates-efa1f357965be17d.json",
+          "sha256": "efa1f357965be17d691a190ee1674f4ea443e72414f52bab4e4957c963da1977",
+          "size_bytes": 3427
+        }
+      },
+      "error_kind": null,
+      "error_message": null,
+      "trace_id": "ae020ea2-a9df-4b06-a2b0-eb9901e5b673",
+      "idempotency_key": null,
+      "created_at": "2026-09-11 19:57:27.228233+08:00",
+      "finished_at": "2026-09-11 19:57:27.369048+08:00"
+    },
+    {
+      "attempt_id": "9954bda0-219b-4153-bbeb-c7a973f97229",
+      "tenant_id": "a5526a1e-02ed-4faa-a663-5413b7c3db88",
+      "run_id": "3b6667c3-b644-43c0-8b4a-b64f8236efac",
+      "plan_key": "plan-ledger-quality-audit-and-evaluate",
+      "execution_hash": "ae09234a222d686d38dfd20d3cc55c70010138ea9190799d18a6dbb8336dc687",
+      "node_instance_id": "finding-draft-001",
+      "capability": "audit.finding.draft",
+      "plugin_id": "audit.finding-draft",
+      "attempt_seq": 1,
+      "status": "succeeded",
+      "lease_token": "aaa515e7-febb-4a76-864c-f4c9503f5aed",
+      "lease_expires_at": "2026-09-11 20:02:27.419570+08:00",
+      "worker_id": "demo-business-worker",
+      "input_bindings": {
+        "candidates": {
+          "uri": "file:///D:/pythonpro/audit_network/.data/demo/staging/chains/plan-ledger-quality-audit-and-evaluate/ledger-validate-001/output-audit-quality-candidates-efa1f357965be17d.json",
+          "sha256": "efa1f357965be17d691a190ee1674f4ea443e72414f52bab4e4957c963da1977",
+          "adapter": null,
+          "port_id": "candidates",
+          "source_port": "audit-quality-candidates",
+          "source_instance": "ledger-validate-001"
+        }
+      },
+      "output_refs": {
+        "finding-draft": {
+          "uri": "file:///D:/pythonpro/audit_network/.data/demo/staging/chains/plan-ledger-quality-audit-and-evaluate/finding-draft-001/output-finding-draft-a7c391751c979656.json",
+          "sha256": "a7c391751c979656f679cf8d9864d1d0ca6097c48d2a0df59888094317e2b510",
+          "size_bytes": 1850
+        }
+      },
+      "error_kind": null,
+      "error_message": null,
+      "trace_id": "ae020ea2-a9df-4b06-a2b0-eb9901e5b673",
+      "idempotency_key": null,
+      "created_at": "2026-09-11 19:57:27.419172+08:00",
+      "finished_at": "2026-09-11 19:57:27.551565+08:00"
+    }
+  ],
+  "trace_ids": [
+    "ae020ea2-a9df-4b06-a2b0-eb9901e5b673"
+  ],
+  "tool_calls": [],
+  "policy_decisions": [],
+  "outbox_events": [
+    {
+      "id": 2924,
+      "tenant_id": "a5526a1e-02ed-4faa-a663-5413b7c3db88",
+      "topic": "control.dag",
+      "event_type": "node.finished",
+      "aggregate_id": "41c9e668-da64-4ab7-ba08-fc1ced8ca4cc",
+      "payload": {
+        "status": "succeeded",
+        "attempt_id": "41c9e668-da64-4ab7-ba08-fc1ced8ca4cc",
+        "error_kind": null,
+        "finished_at": "2026-09-11T11:57:27.370036+00:00"
+      },
+      "occurred_at": "2026-09-11 19:57:27.369048+08:00",
+      "published_at": null
+    },
+    {
+      "id": 2925,
+      "tenant_id": "a5526a1e-02ed-4faa-a663-5413b7c3db88",
+      "topic": "control.dag",
+      "event_type": "node.finished",
+      "aggregate_id": "9954bda0-219b-4153-bbeb-c7a973f97229",
+      "payload": {
+        "status": "succeeded",
+        "attempt_id": "9954bda0-219b-4153-bbeb-c7a973f97229",
+        "error_kind": null,
+        "finished_at": "2026-09-11T11:57:27.553190+00:00"
+      },
+      "occurred_at": "2026-09-11 19:57:27.551565+08:00",
+      "published_at": null
+    }
+  ]
+}

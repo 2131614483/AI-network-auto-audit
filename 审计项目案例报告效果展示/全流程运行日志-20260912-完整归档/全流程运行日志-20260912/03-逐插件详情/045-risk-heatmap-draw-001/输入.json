@@ -1,0 +1,14 @@
+{
+  "node_instance_id": "risk-heatmap-draw-001",
+  "capability": "audit.risk.risk-heatmap-draw",
+  "input_bindings": {
+    "risk-level": {
+      "uri": "file:///D:/pythonpro/audit_network/docs/%E5%85%A8%E6%B5%81%E7%A8%8B%E8%BF%90%E8%A1%8C%E6%97%A5%E5%BF%97-20260912/12-%E6%9C%AC%E6%AC%A1%E8%BF%90%E8%A1%8C%E4%BA%A7%E7%89%A9/chains/plan-ai-fund-fraud-100/risk-level-assign-001/output-risk-level-8fe43612aa1044c2.json",
+      "sha256": "8fe43612aa1044c2cf639053cdd5c4a2452504f04963cef5028233f7d3673b44",
+      "adapter": null,
+      "port_id": "risk-level",
+      "source_port": "risk-level",
+      "source_instance": "risk-level-assign-001"
+    }
+  }
+}

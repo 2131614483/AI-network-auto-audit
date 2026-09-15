@@ -1,0 +1,22 @@
+{
+  "node_instance_id": "suspicion-merge-001",
+  "capability": "audit.finding.suspicion-merge",
+  "input_bindings": {
+    "suspicion-set": {
+      "uri": "file:///D:/pythonpro/audit_network/docs/%E5%85%A8%E6%B5%81%E7%A8%8B%E8%BF%90%E8%A1%8C%E6%97%A5%E5%BF%97-20260912/12-%E6%9C%AC%E6%AC%A1%E8%BF%90%E8%A1%8C%E4%BA%A7%E7%89%A9/chains/plan-ai-fund-fraud-100/finance-anomaly-alert-001/output-finance-anomaly-set-84f13a7697c37159.json",
+      "sha256": "84f13a7697c37159505746dcc1892a8f09f37d5cb93e7e00632b3e11164c297d",
+      "adapter": null,
+      "port_id": "suspicion-set",
+      "source_port": "finance-anomaly-set",
+      "source_instance": "finance-anomaly-alert-001"
+    },
+    "photo-evidence": {
+      "uri": "file:///D:/pythonpro/audit_network/docs/%E5%85%A8%E6%B5%81%E7%A8%8B%E8%BF%90%E8%A1%8C%E6%97%A5%E5%BF%97-20260912/12-%E6%9C%AC%E6%AC%A1%E8%BF%90%E8%A1%8C%E4%BA%A7%E7%89%A9/chains/plan-ai-fund-fraud-100/evidence-photo-001/output-photo-evidence-61d7f105cbd77a80.json",
+      "sha256": "61d7f105cbd77a8050933ea56e60720c690c6324e821c60e223bd41d3f11a73f",
+      "adapter": null,
+      "port_id": "photo-evidence",
+      "source_port": "photo-evidence",
+      "source_instance": "evidence-photo-001"
+    }
+  }
+}

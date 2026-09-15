@@ -1,0 +1,14 @@
+{
+  "node_instance_id": "effort-budget-001",
+  "capability": "audit.plan.effort-budget",
+  "input_bindings": {
+    "schedule-plan": {
+      "uri": "file:///D:/pythonpro/audit_network/docs/%E5%85%A8%E6%B5%81%E7%A8%8B%E8%BF%90%E8%A1%8C%E6%97%A5%E5%BF%97-20260912/12-%E6%9C%AC%E6%AC%A1%E8%BF%90%E8%A1%8C%E4%BA%A7%E7%89%A9/chains/plan-ai-fund-fraud-100/staff-schedule-001/output-schedule-plan-94d3d490ca5b966e.json",
+      "sha256": "94d3d490ca5b966e0efe0100f82db64f10cff82fc17b2b2c41cb6119d587d415",
+      "adapter": null,
+      "port_id": "schedule-plan",
+      "source_port": "schedule-plan",
+      "source_instance": "staff-schedule-001"
+    }
+  }
+}

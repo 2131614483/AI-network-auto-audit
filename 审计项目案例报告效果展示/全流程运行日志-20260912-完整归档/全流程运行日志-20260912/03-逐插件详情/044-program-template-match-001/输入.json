@@ -1,0 +1,14 @@
+{
+  "node_instance_id": "program-template-match-001",
+  "capability": "audit.plan.program-template-match",
+  "input_bindings": {
+    "scheme-request": {
+      "uri": "file:///D:/pythonpro/audit_network/docs/%E5%85%A8%E6%B5%81%E7%A8%8B%E8%BF%90%E8%A1%8C%E6%97%A5%E5%BF%97-20260912/12-%E6%9C%AC%E6%AC%A1%E8%BF%90%E8%A1%8C%E4%BA%A7%E7%89%A9/chains/plan-ai-fund-fraud-100/project-scheme-build-001/output-project-scheme-f2ae1463aaaeb0e0.json",
+      "sha256": "f2ae1463aaaeb0e0c68a641388960c4676b7b70d36d9e183c6b2d91cec32e60b",
+      "adapter": null,
+      "port_id": "scheme-request",
+      "source_port": "project-scheme",
+      "source_instance": "project-scheme-build-001"
+    }
+  }
+}

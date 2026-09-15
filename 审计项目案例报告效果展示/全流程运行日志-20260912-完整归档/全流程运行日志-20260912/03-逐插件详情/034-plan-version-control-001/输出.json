@@ -1,0 +1,47 @@
+{
+  "plan-version": {
+    "checksum": {
+      "current": "v2",
+      "version_count": 2
+    },
+    "edges": [
+      {
+        "id": "e2",
+        "source": "v1",
+        "target": "v2"
+      }
+    ],
+    "input_schema": {
+      "type": "object"
+    },
+    "key": "plan-version-control",
+    "nodes": [
+      {
+        "id": "v1",
+        "name": "版本 v1",
+        "props": {
+          "author": "张审计",
+          "change": "调整抽样比例",
+          "plan_key": "annual-2026",
+          "status": "superseded"
+        }
+      },
+      {
+        "id": "v2",
+        "name": "版本 v2",
+        "props": {
+          "author": "李审计",
+          "change": "新增资金领域程序",
+          "plan_key": "annual-2026",
+          "status": "current"
+        }
+      }
+    ],
+    "output_schema": {
+      "type": "object"
+    },
+    "tenant_id": "local-dev",
+    "version": "1.0.0",
+    "workflow_id": "plan-version-annual-2026"
+  }
+}

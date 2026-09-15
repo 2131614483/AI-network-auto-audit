@@ -1,0 +1,38 @@
+{
+  "evidence-verdict": {
+    "checks": [
+      {
+        "check_id": "evidence_hash",
+        "message": "27 个证据节点摘要有效",
+        "status": "pass"
+      },
+      {
+        "check_id": "uniqueness",
+        "message": "27 个节点 id 唯一",
+        "status": "pass"
+      },
+      {
+        "check_id": "referential_closure",
+        "message": "26 条边引用闭合",
+        "status": "pass"
+      },
+      {
+        "check_id": "duplicate_digest",
+        "message": "证据摘要全部唯一",
+        "status": "pass"
+      }
+    ],
+    "contract_id": "evidence-verdict",
+    "contract_version": "1.0.0",
+    "lineage_id": "lineage-EV-0001",
+    "summary": {
+      "checked_edges": 26,
+      "checked_evidence": 27,
+      "closed_edges": 26,
+      "duplicate_digests": 0,
+      "missing_hashes": 0,
+      "valid": true
+    },
+    "violations": []
+  }
+}

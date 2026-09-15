@@ -1,0 +1,31 @@
+{
+  "standard-biz-set": {
+    "checks": [
+      {
+        "check_id": "columns",
+        "message": "标准化 2 行",
+        "status": "pass"
+      }
+    ],
+    "contract_id": "dataset-validation",
+    "contract_version": "1.0.0",
+    "snapshot_sha256": "0000000000000000000000000000000000000000000000000000000000000000",
+    "standard_rows": [
+      {
+        "amt": 100,
+        "name": "甲公司"
+      },
+      {
+        "amt": 200,
+        "name": "乙公司"
+      }
+    ],
+    "summary": {
+      "checked_columns": 2,
+      "checked_rows": 2,
+      "missing_values": 0,
+      "valid": true
+    },
+    "violations": []
+  }
+}

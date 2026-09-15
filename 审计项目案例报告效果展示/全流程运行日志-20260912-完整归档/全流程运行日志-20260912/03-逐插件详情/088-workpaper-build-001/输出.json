@@ -1,0 +1,317 @@
+{
+  "workpaper-draft": {
+    "constraints": {
+      "immutable_source": true,
+      "no_overwrite": true,
+      "requires_human_approval": true
+    },
+    "contract_id": "workpaper-export",
+    "contract_version": "1.0.0",
+    "engagement_id": "ENG-2026-001",
+    "engagement_name": "专项审计",
+    "export_id": "workpaper-ENG-2026-001-draft",
+    "export_kind": "workpaper_draft",
+    "provenance": {
+      "export_time": "2026-09-12T11:33:53+0800",
+      "plugin": "audit.workpaper-export@0.1.0",
+      "source_sha256": "897a7b5697044b63dff422f5b996d8547e4b0f925b9d77cf6883cab25e0fefcb"
+    },
+    "sections": [
+      {
+        "claim": "对全部大额资金收付逐笔核验流向",
+        "claim_id": "b1ec5184-12f7-5153-b67a-3eb0e4329bca",
+        "confirmed_at": "",
+        "evidence_refs": [],
+        "finding_id": "626ca0b6-f107-5cf7-b284-583d09d1c135",
+        "reviewer_label": "待复核",
+        "section_id": "37041f383e6d693c",
+        "severity": "low",
+        "title": "1. 资金收付核验"
+      },
+      {
+        "claim": "核对银行余额调节表",
+        "claim_id": "e594cdd6-60b3-57c0-81a4-3d1a2c44a875",
+        "confirmed_at": "",
+        "evidence_refs": [],
+        "finding_id": "bec71f32-0f0a-5f05-b5b5-3ec82a2dcbac",
+        "reviewer_label": "待复核",
+        "section_id": "143574a19d71d54e",
+        "severity": "low",
+        "title": "2. 银行对账"
+      },
+      {
+        "claim": "抽查采购订单与比价记录",
+        "claim_id": "c83e581c-4d91-5ebe-b43e-f7421fdd4a7f",
+        "confirmed_at": "",
+        "evidence_refs": [],
+        "finding_id": "1f01b674-5317-5111-8da2-361f5828f679",
+        "reviewer_label": "待复核",
+        "section_id": "b2286f1478b95fa1",
+        "severity": "low",
+        "title": "3. 采购比价核验"
+      },
+      {
+        "claim": "核对供应商准入审批链",
+        "claim_id": "b993e4e3-7983-5e1c-9b44-2dc0f32636d4",
+        "confirmed_at": "",
+        "evidence_refs": [],
+        "finding_id": "d9e2da00-d26b-594c-8563-2bab4050515c",
+        "reviewer_label": "待复核",
+        "section_id": "896e0408962e9458",
+        "severity": "low",
+        "title": "4. 供应商准入"
+      },
+      {
+        "claim": "对全部大额资金收付逐笔核验流向",
+        "claim_id": "3827c816-027f-5714-876f-e6d0a1d663b0",
+        "confirmed_at": "",
+        "evidence_refs": [],
+        "finding_id": "55fc982f-2bbd-576c-a3b7-b85a328df1a2",
+        "reviewer_label": "待复核",
+        "section_id": "0d4251841989951f",
+        "severity": "low",
+        "title": "5. 资金收付核验"
+      },
+      {
+        "claim": "核对银行余额调节表",
+        "claim_id": "9d652fd0-8058-556b-b3b1-c6dff4ecc476",
+        "confirmed_at": "",
+        "evidence_refs": [],
+        "finding_id": "cbd7b192-4204-5e1b-918d-3dc14cb5ed8d",
+        "reviewer_label": "待复核",
+        "section_id": "2cb56204af9568c3",
+        "severity": "low",
+        "title": "6. 银行对账"
+      },
+      {
+        "claim": "对全部大额资金收付逐笔核验流向",
+        "claim_id": "bbd02549-2efc-52d1-b7ec-7a14f4780559",
+        "confirmed_at": "",
+        "evidence_refs": [],
+        "finding_id": "298e68f9-16b1-5eb8-b9b5-e2848529ea32",
+        "reviewer_label": "待复核",
+        "section_id": "43b96ac05968d954",
+        "severity": "low",
+        "title": "7. 资金收付核验"
+      },
+      {
+        "claim": "核对银行余额调节表",
+        "claim_id": "81ae8b38-1994-5790-ab09-fb973ea31a4e",
+        "confirmed_at": "",
+        "evidence_refs": [],
+        "finding_id": "f0876435-e17f-5b37-b82e-531fd938436a",
+        "reviewer_label": "待复核",
+        "section_id": "f8b919ace4e475c4",
+        "severity": "low",
+        "title": "8. 银行对账"
+      },
+      {
+        "claim": "对全部大额资金收付逐笔核验流向",
+        "claim_id": "0e8b7118-203a-5cff-8cad-dcc7c734a439",
+        "confirmed_at": "",
+        "evidence_refs": [],
+        "finding_id": "7af9561e-0045-5c43-b42f-339d2164f606",
+        "reviewer_label": "待复核",
+        "section_id": "02a4d3866455a235",
+        "severity": "low",
+        "title": "9. 资金收付核验"
+      },
+      {
+        "claim": "核对银行余额调节表",
+        "claim_id": "89802647-cd40-5959-8ac4-616fe3a1ad6e",
+        "confirmed_at": "",
+        "evidence_refs": [],
+        "finding_id": "f3b29d4f-1e1c-5062-8966-b594ca762606",
+        "reviewer_label": "待复核",
+        "section_id": "76c2c466e72fbea5",
+        "severity": "low",
+        "title": "10. 银行对账"
+      },
+      {
+        "claim": "对全部大额资金收付逐笔核验流向",
+        "claim_id": "80a05094-57cb-5a48-bced-92169ce92245",
+        "confirmed_at": "",
+        "evidence_refs": [],
+        "finding_id": "35235c13-845b-5a28-ac9a-8713735fbf1a",
+        "reviewer_label": "待复核",
+        "section_id": "f4bf17099e7454d9",
+        "severity": "low",
+        "title": "11. 资金收付核验"
+      },
+      {
+        "claim": "核对银行余额调节表",
+        "claim_id": "f9d1a174-25e9-548c-89b7-17520457f3de",
+        "confirmed_at": "",
+        "evidence_refs": [],
+        "finding_id": "60199dbd-a4a8-53bc-bce2-e617c1bfeec0",
+        "reviewer_label": "待复核",
+        "section_id": "db26d6e5dfc3e3f6",
+        "severity": "low",
+        "title": "12. 银行对账"
+      },
+      {
+        "claim": "对全部大额资金收付逐笔核验流向",
+        "claim_id": "ce17346d-d8bf-55cd-9b31-afd0f942099e",
+        "confirmed_at": "",
+        "evidence_refs": [],
+        "finding_id": "83d4bd1a-0be2-5feb-9ac9-263d36d56799",
+        "reviewer_label": "待复核",
+        "section_id": "6315a59d312aa91a",
+        "severity": "low",
+        "title": "13. 资金收付核验"
+      },
+      {
+        "claim": "核对银行余额调节表",
+        "claim_id": "9058931f-b6c4-5a54-8691-4603af15a58e",
+        "confirmed_at": "",
+        "evidence_refs": [],
+        "finding_id": "1dce7ddf-5c14-5318-95dd-af34ab5e2436",
+        "reviewer_label": "待复核",
+        "section_id": "9912e0c17c3402ef",
+        "severity": "low",
+        "title": "14. 银行对账"
+      },
+      {
+        "claim": "对全部大额资金收付逐笔核验流向",
+        "claim_id": "95d6f5b0-3bc9-53f6-a87f-f4dc359f80be",
+        "confirmed_at": "",
+        "evidence_refs": [],
+        "finding_id": "b555d486-1a8d-5795-b494-f34b8505026c",
+        "reviewer_label": "待复核",
+        "section_id": "bb3533eb0922840b",
+        "severity": "low",
+        "title": "15. 资金收付核验"
+      },
+      {
+        "claim": "核对银行余额调节表",
+        "claim_id": "0212f62c-5218-5230-8a20-93c1e3094bcf",
+        "confirmed_at": "",
+        "evidence_refs": [],
+        "finding_id": "4a0d1f1f-44b7-50a7-a395-6b9a136aa1d5",
+        "reviewer_label": "待复核",
+        "section_id": "c25fa93398b35b66",
+        "severity": "low",
+        "title": "16. 银行对账"
+      },
+      {
+        "claim": "对全部大额资金收付逐笔核验流向",
+        "claim_id": "3c837ce5-b649-51da-84f5-3240fceb83c7",
+        "confirmed_at": "",
+        "evidence_refs": [],
+        "finding_id": "33df62a2-f157-5380-b9cd-62722c293e04",
+        "reviewer_label": "待复核",
+        "section_id": "f77df3b5fd4835aa",
+        "severity": "low",
+        "title": "17. 资金收付核验"
+      },
+      {
+        "claim": "核对银行余额调节表",
+        "claim_id": "8d8d6e57-a33b-54e1-9ecc-5e86f6842e6f",
+        "confirmed_at": "",
+        "evidence_refs": [],
+        "finding_id": "c8ca4dc6-cc2b-55ed-89c8-0c7ea04430b2",
+        "reviewer_label": "待复核",
+        "section_id": "31f2504c2a118956",
+        "severity": "low",
+        "title": "18. 银行对账"
+      },
+      {
+        "claim": "对全部大额资金收付逐笔核验流向",
+        "claim_id": "3d202b65-41b8-59b3-bfa7-d323a638c992",
+        "confirmed_at": "",
+        "evidence_refs": [],
+        "finding_id": "5141e74d-3822-5820-bb25-02bd1e36bf6e",
+        "reviewer_label": "待复核",
+        "section_id": "2246b5c87711a322",
+        "severity": "low",
+        "title": "19. 资金收付核验"
+      },
+      {
+        "claim": "核对银行余额调节表",
+        "claim_id": "b5662005-182c-5fdf-a2cf-c99786b0f401",
+        "confirmed_at": "",
+        "evidence_refs": [],
+        "finding_id": "3a9ed320-88a6-53c3-8980-07dded7cc1f1",
+        "reviewer_label": "待复核",
+        "section_id": "bac7181fb7ce7510",
+        "severity": "low",
+        "title": "20. 银行对账"
+      },
+      {
+        "claim": "对全部大额资金收付逐笔核验流向",
+        "claim_id": "7870934e-682b-5956-94f6-64ef19c1d6af",
+        "confirmed_at": "",
+        "evidence_refs": [],
+        "finding_id": "a3b024ca-cfc8-5d8b-add1-e11b52ae5763",
+        "reviewer_label": "待复核",
+        "section_id": "c695e170a6b3aa8b",
+        "severity": "low",
+        "title": "21. 资金收付核验"
+      },
+      {
+        "claim": "核对银行余额调节表",
+        "claim_id": "b2dc477a-47f3-57f4-b18b-84d663e4b735",
+        "confirmed_at": "",
+        "evidence_refs": [],
+        "finding_id": "c596d8ac-56ac-5c76-987e-1ca64a8cd95f",
+        "reviewer_label": "待复核",
+        "section_id": "678330c1f5781a34",
+        "severity": "low",
+        "title": "22. 银行对账"
+      },
+      {
+        "claim": "抽查采购订单与比价记录",
+        "claim_id": "9312d1ad-e01d-5ba6-bb87-38130cac0134",
+        "confirmed_at": "",
+        "evidence_refs": [],
+        "finding_id": "06815daf-f76e-5ba4-9f2d-0acc27c575cb",
+        "reviewer_label": "待复核",
+        "section_id": "cded8f2377e60a4a",
+        "severity": "low",
+        "title": "23. 采购比价核验"
+      },
+      {
+        "claim": "核对供应商准入审批链",
+        "claim_id": "9c881cfa-5b4f-54e8-afc8-38349dfc4514",
+        "confirmed_at": "",
+        "evidence_refs": [],
+        "finding_id": "b6a534c3-0280-5896-92d0-e9dc34233d70",
+        "reviewer_label": "待复核",
+        "section_id": "8411821dc1b45ae0",
+        "severity": "low",
+        "title": "24. 供应商准入"
+      },
+      {
+        "claim": "对全部大额资金收付逐笔核验流向",
+        "claim_id": "d052f27b-d96a-50b9-a326-c6c7cb02cad4",
+        "confirmed_at": "",
+        "evidence_refs": [],
+        "finding_id": "9e0a26a1-261f-5573-84fd-31f0d4cefd8b",
+        "reviewer_label": "待复核",
+        "section_id": "9b940131ba87f0de",
+        "severity": "low",
+        "title": "25. 资金收付核验"
+      },
+      {
+        "claim": "核对银行余额调节表",
+        "claim_id": "c12de0ae-3b0c-5336-b265-b2984bca1666",
+        "confirmed_at": "",
+        "evidence_refs": [],
+        "finding_id": "d55b6fe8-ee41-51a6-88bb-a735c3a31b2a",
+        "reviewer_label": "待复核",
+        "section_id": "5a3f2b5837fd2631",
+        "severity": "low",
+        "title": "26. 银行对账"
+      }
+    ],
+    "status": "draft",
+    "summary": {
+      "evidence_refs": 0,
+      "findings": 26,
+      "high": 0,
+      "low": 26,
+      "medium": 0,
+      "truncated": false
+    }
+  }
+}

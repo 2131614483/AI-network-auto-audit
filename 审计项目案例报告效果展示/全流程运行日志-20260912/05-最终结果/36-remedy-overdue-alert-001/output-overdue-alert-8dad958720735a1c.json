@@ -1,0 +1,19 @@
+{
+  "alerts": [],
+  "contract_id": "metric-series",
+  "contract_version": "1.0.0",
+  "metric": "整改逾期预警",
+  "points": [
+    {
+      "at": "2026-09-10T00:00:00+00:00",
+      "value": 0
+    }
+  ],
+  "series_id": "remedy-overdue-alert",
+  "summary": {
+    "completion_rate": 0.0,
+    "overdue_count": 0
+  },
+  "unit": "count",
+  "window_minutes": 10080
+}

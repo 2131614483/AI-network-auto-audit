@@ -1,0 +1,45 @@
+{
+  "demand-set": {
+    "artifact": {
+      "demands": [
+        {
+          "demand_id": "DM-0001",
+          "dept": "财务部",
+          "detail": "核查大额资金流向与异常支付",
+          "priority": "high",
+          "source_ref": "demand-collect",
+          "title": "资金流向核查"
+        },
+        {
+          "demand_id": "DM-0002",
+          "dept": "采购部",
+          "detail": "抽查采购合同与比价记录",
+          "priority": "medium",
+          "source_ref": "demand-collect",
+          "title": "采购合规检查"
+        },
+        {
+          "demand_id": "DM-0003",
+          "dept": "运营部",
+          "detail": "一般性复核",
+          "priority": "low",
+          "source_ref": "demand-collect",
+          "title": "日常费用报销"
+        }
+      ],
+      "period": "2026",
+      "summary": {
+        "by_dept": {
+          "财务部": 1,
+          "运营部": 1,
+          "采购部": 1
+        },
+        "demand_count": 3
+      },
+      "title": "审计需求征集汇总"
+    },
+    "contract_id": "document-content",
+    "contract_version": "1.0.0",
+    "language": "zh-CN"
+  }
+}

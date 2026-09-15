@@ -1,0 +1,14 @@
+{
+  "node_instance_id": "finance-anomaly-alert-001",
+  "capability": "audit.risk.finance-anomaly-alert",
+  "input_bindings": {
+    "clean-finance-set": {
+      "uri": "file:///D:/pythonpro/audit_network/docs/%E5%85%A8%E6%B5%81%E7%A8%8B%E8%BF%90%E8%A1%8C%E6%97%A5%E5%BF%97-20260912/12-%E6%9C%AC%E6%AC%A1%E8%BF%90%E8%A1%8C%E4%BA%A7%E7%89%A9/chains/plan-ai-fund-fraud-100/finance-clean-001/output-clean-finance-set-e5b3c6fb99105af8.json",
+      "sha256": "e5b3c6fb99105af8c306ce9231530948faf0864c266e5470b514e042f10e0108",
+      "adapter": null,
+      "port_id": "clean-finance-set",
+      "source_port": "clean-finance-set",
+      "source_instance": "finance-clean-001"
+    }
+  }
+}

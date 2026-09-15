@@ -1,0 +1,14 @@
+节点        material-precheck-001
+能力        audit.mandate.material-precheck
+插件        audit.mandate.material-precheck
+attempt_seq 1
+worker       ai-composer-100
+创建(pending) 2026-09-12 11:33:43.229771+08:00
+终结(finished) 2026-09-12 11:33:43.346278+08:00
+最终状态      succeeded
+error_kind    None
+error_message None
+idempotency  None
+
+说明：pending→running→succeeded 的中间态由 AttemptStore 的租约短事务维护；
+此处记录的是该 attempt 落库后的最终事实。

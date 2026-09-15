@@ -1,0 +1,22 @@
+{
+  "node_instance_id": "issue-grade-001",
+  "capability": "audit.finding.issue-grade",
+  "input_bindings": {
+    "issue-amount": {
+      "uri": "file:///D:/pythonpro/audit_network/docs/%E5%85%A8%E6%B5%81%E7%A8%8B%E8%BF%90%E8%A1%8C%E6%97%A5%E5%BF%97-20260912/12-%E6%9C%AC%E6%AC%A1%E8%BF%90%E8%A1%8C%E4%BA%A7%E7%89%A9/chains/plan-ai-fund-fraud-100/issue-amount-compute-001/output-issue-amount-28d30253ca3801e5.json",
+      "sha256": "28d30253ca3801e5a4ecc4366d49dae9d78ae0e6f8cf2f1145813d91c21a82ac",
+      "adapter": null,
+      "port_id": "issue-amount",
+      "source_port": "issue-amount",
+      "source_instance": "issue-amount-compute-001"
+    },
+    "responsible-party": {
+      "uri": "file:///D:/pythonpro/audit_network/docs/%E5%85%A8%E6%B5%81%E7%A8%8B%E8%BF%90%E8%A1%8C%E6%97%A5%E5%BF%97-20260912/12-%E6%9C%AC%E6%AC%A1%E8%BF%90%E8%A1%8C%E4%BA%A7%E7%89%A9/chains/plan-ai-fund-fraud-100/responsible-party-find-001/output-responsible-party-30f93d499da201cf.json",
+      "sha256": "30f93d499da201cffe71e6451e430b0acfd709e2be934c31af0f37f05ff10688",
+      "adapter": null,
+      "port_id": "responsible-party",
+      "source_port": "responsible-party",
+      "source_instance": "responsible-party-find-001"
+    }
+  }
+}

@@ -1,0 +1,14 @@
+{
+  "node_instance_id": "fulltext-search-001",
+  "capability": "audit.foundation.fulltext-search",
+  "input_bindings": {
+    "search-query": {
+      "uri": "file:///D:/pythonpro/audit_network/docs/%E5%85%A8%E6%B5%81%E7%A8%8B%E8%BF%90%E8%A1%8C%E6%97%A5%E5%BF%97-20260912/12-%E6%9C%AC%E6%AC%A1%E8%BF%90%E8%A1%8C%E4%BA%A7%E7%89%A9/inputs/search-q.json",
+      "sha256": "a0a9dd14665f72d818a35ae73eb7d286b8625038cac6969520ab61b7850a2bc2",
+      "adapter": null,
+      "port_id": "search-query",
+      "source_port": "search-query",
+      "source_instance": "seed"
+    }
+  }
+}

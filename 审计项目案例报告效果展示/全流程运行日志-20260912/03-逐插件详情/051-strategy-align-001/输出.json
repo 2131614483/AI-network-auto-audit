@@ -1,0 +1,55 @@
+{
+  "aligned-demand": {
+    "artifact": {
+      "demands": [
+        {
+          "aligned_markers": [
+            "资金"
+          ],
+          "alignment": "high",
+          "alignment_basis": "strategy_keyword_match",
+          "demand_id": "DM-0001",
+          "dept": "财务部",
+          "detail": "核查大额资金流向与异常支付",
+          "priority": "high",
+          "source_ref": "demand-collect",
+          "title": "资金流向核查"
+        },
+        {
+          "aligned_markers": [
+            "合规",
+            "采购"
+          ],
+          "alignment": "high",
+          "alignment_basis": "strategy_keyword_match",
+          "demand_id": "DM-0002",
+          "dept": "采购部",
+          "detail": "抽查采购合同与比价记录",
+          "priority": "medium",
+          "source_ref": "demand-collect",
+          "title": "采购合规检查"
+        },
+        {
+          "aligned_markers": [],
+          "alignment": "待人工确认",
+          "alignment_basis": "human_review",
+          "demand_id": "DM-0003",
+          "dept": "运营部",
+          "detail": "一般性复核",
+          "priority": "low",
+          "source_ref": "demand-collect",
+          "title": "日常费用报销"
+        }
+      ],
+      "summary": {
+        "aligned_high": 2,
+        "demand_count": 3,
+        "pending_human": 1
+      },
+      "title": "战略对齐后的审计需求"
+    },
+    "contract_id": "document-content",
+    "contract_version": "1.0.0",
+    "language": "zh-CN"
+  }
+}

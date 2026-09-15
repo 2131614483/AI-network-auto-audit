@@ -1,0 +1,1 @@
+{"contract_id": "document-content", "contract_version": "1.0.0", "artifact": {"period": "2026", "requests": [{"request_id": "B1", "workpaper_id": "WP-0001", "purpose": "复核底稿"}, {"request_id": "B2", "workpaper_id": "WP-0002", "purpose": ""}]}}

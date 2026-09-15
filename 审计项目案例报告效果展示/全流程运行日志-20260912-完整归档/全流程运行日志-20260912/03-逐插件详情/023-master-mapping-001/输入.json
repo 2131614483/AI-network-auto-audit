@@ -1,0 +1,14 @@
+{
+  "node_instance_id": "master-mapping-001",
+  "capability": "audit.foundation.master-mapping",
+  "input_bindings": {
+    "master-source": {
+      "uri": "file:///D:/pythonpro/audit_network/docs/%E5%85%A8%E6%B5%81%E7%A8%8B%E8%BF%90%E8%A1%8C%E6%97%A5%E5%BF%97-20260912/12-%E6%9C%AC%E6%AC%A1%E8%BF%90%E8%A1%8C%E4%BA%A7%E7%89%A9/inputs/master-src.json",
+      "sha256": "02c22c2c5b61024c1e83df49d08c6b212c94272ec2970f09014cd3575fcf6f3f",
+      "adapter": null,
+      "port_id": "master-source",
+      "source_port": "master-source",
+      "source_instance": "seed"
+    }
+  }
+}

@@ -1,0 +1,32 @@
+{
+  "contract_id": "metric-series",
+  "contract_version": "1.0.0",
+  "metric": "问题趋势",
+  "points": [
+    {
+      "at": "2026-09-10T00:00:00+00:00",
+      "value": 4
+    }
+  ],
+  "series_id": "issue-trend",
+  "summary": {
+    "high": 2,
+    "top_categories": [
+      {
+        "category": "资金管理",
+        "count": 2
+      },
+      {
+        "category": "采购管理",
+        "count": 1
+      },
+      {
+        "category": "内控缺陷",
+        "count": 1
+      }
+    ],
+    "total": 4
+  },
+  "unit": "count",
+  "window_minutes": 10080
+}

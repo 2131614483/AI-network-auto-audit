@@ -1,0 +1,1 @@
+{"contract_id": "document-content", "contract_version": "1.0.0", "artifact": {"checks": [{"check_id": "columns", "status": "pass", "message": "立项完整"}, {"check_id": "freshness", "status": "pass", "message": "现场及时"}, {"check_id": "missing_rate", "status": "pass", "message": "底稿完整"}, {"check_id": "point_in_time", "status": "warn", "message": "个别样本偏差"}]}}

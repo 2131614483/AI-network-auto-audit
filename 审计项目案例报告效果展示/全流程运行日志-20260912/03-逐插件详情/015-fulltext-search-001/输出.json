@@ -1,0 +1,16 @@
+{
+  "search-hits": {
+    "artifact": {
+      "hits": [
+        {
+          "doc_id": "D1",
+          "score": 1.0
+        }
+      ],
+      "summary": "命中 1 篇",
+      "title": "全文检索: 资金"
+    },
+    "contract_id": "document-content",
+    "contract_version": "1.0.0"
+  }
+}

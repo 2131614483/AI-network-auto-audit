@@ -1,0 +1,1 @@
+{"contract_id": "metric-series", "contract_version": "1.0.0", "metric": "priority_order", "points": [{"at": "2026-01-01T00:00:00+08:00", "value": 85.0}, {"at": "2026-01-02T00:00:00+08:00", "value": 70.0}], "series_id": "priority-order-2026", "unit": "rank", "window_minutes": 1440}

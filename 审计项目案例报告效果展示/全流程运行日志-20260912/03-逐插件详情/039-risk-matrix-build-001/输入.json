@@ -1,0 +1,54 @@
+{
+  "node_instance_id": "risk-matrix-build-001",
+  "capability": "audit.risk.risk-matrix-build",
+  "input_bindings": {
+    "ic-risk-set": {
+      "uri": "file:///D:/pythonpro/audit_network/docs/%E5%85%A8%E6%B5%81%E7%A8%8B%E8%BF%90%E8%A1%8C%E6%97%A5%E5%BF%97-20260912/12-%E6%9C%AC%E6%AC%A1%E8%BF%90%E8%A1%8C%E4%BA%A7%E7%89%A9/chains/plan-ai-fund-fraud-100/internal-control-risk-map-001/output-ic-risk-set-a0c6a8727d6cfd3f.json",
+      "sha256": "a0c6a8727d6cfd3f484950ff6e9fbbac806ca9ef4c011f6c4d158620742308f1",
+      "adapter": null,
+      "port_id": "ic-risk-set",
+      "source_port": "ic-risk-set",
+      "source_instance": "internal-control-risk-map-001"
+    },
+    "fraud-risk-set": {
+      "uri": "file:///D:/pythonpro/audit_network/docs/%E5%85%A8%E6%B5%81%E7%A8%8B%E8%BF%90%E8%A1%8C%E6%97%A5%E5%BF%97-20260912/12-%E6%9C%AC%E6%AC%A1%E8%BF%90%E8%A1%8C%E4%BA%A7%E7%89%A9/chains/plan-ai-fund-fraud-100/fraud-risk-match-001/output-fraud-risk-set-6b8f099b114bde5f.json",
+      "sha256": "6b8f099b114bde5f9645a106b193238951e6cf7845a3705d6d9e44f1f9a09d6b",
+      "adapter": null,
+      "port_id": "fraud-risk-set",
+      "source_port": "fraud-risk-set",
+      "source_instance": "fraud-risk-match-001"
+    },
+    "policy-risk-set": {
+      "uri": "file:///D:/pythonpro/audit_network/docs/%E5%85%A8%E6%B5%81%E7%A8%8B%E8%BF%90%E8%A1%8C%E6%97%A5%E5%BF%97-20260912/12-%E6%9C%AC%E6%AC%A1%E8%BF%90%E8%A1%8C%E4%BA%A7%E7%89%A9/chains/plan-ai-fund-fraud-100/macro-policy-risk-scan-001/output-policy-risk-set-4ce68612d0b0f716.json",
+      "sha256": "4ce68612d0b0f716a084d20260bc06e4fbac7acf367a44dcfdc2d93295b94925",
+      "adapter": null,
+      "port_id": "policy-risk-set",
+      "source_port": "policy-risk-set",
+      "source_instance": "macro-policy-risk-scan-001"
+    },
+    "process-gap-set": {
+      "uri": "file:///D:/pythonpro/audit_network/docs/%E5%85%A8%E6%B5%81%E7%A8%8B%E8%BF%90%E8%A1%8C%E6%97%A5%E5%BF%97-20260912/12-%E6%9C%AC%E6%AC%A1%E8%BF%90%E8%A1%8C%E4%BA%A7%E7%89%A9/chains/plan-ai-fund-fraud-100/process-gap-detect-001/output-process-gap-set-c642a31c39500951.json",
+      "sha256": "c642a31c39500951ffd3d25bc400b4f924d52a1e3660f77d35e18021f644b392",
+      "adapter": null,
+      "port_id": "process-gap-set",
+      "source_port": "process-gap-set",
+      "source_instance": "process-gap-detect-001"
+    },
+    "industry-risk-set": {
+      "uri": "file:///D:/pythonpro/audit_network/docs/%E5%85%A8%E6%B5%81%E7%A8%8B%E8%BF%90%E8%A1%8C%E6%97%A5%E5%BF%97-20260912/12-%E6%9C%AC%E6%AC%A1%E8%BF%90%E8%A1%8C%E4%BA%A7%E7%89%A9/chains/plan-ai-fund-fraud-100/industry-risk-benchmark-001/output-industry-risk-set-07359379172e2546.json",
+      "sha256": "07359379172e2546b880488c3197571b359e1c65fc7d3a930924bbb80b32fc32",
+      "adapter": null,
+      "port_id": "industry-risk-set",
+      "source_port": "industry-risk-set",
+      "source_instance": "industry-risk-benchmark-001"
+    },
+    "finance-anomaly-set": {
+      "uri": "file:///D:/pythonpro/audit_network/docs/%E5%85%A8%E6%B5%81%E7%A8%8B%E8%BF%90%E8%A1%8C%E6%97%A5%E5%BF%97-20260912/12-%E6%9C%AC%E6%AC%A1%E8%BF%90%E8%A1%8C%E4%BA%A7%E7%89%A9/chains/plan-ai-fund-fraud-100/finance-anomaly-alert-001/output-finance-anomaly-set-84f13a7697c37159.json",
+      "sha256": "84f13a7697c37159505746dcc1892a8f09f37d5cb93e7e00632b3e11164c297d",
+      "adapter": null,
+      "port_id": "finance-anomaly-set",
+      "source_port": "finance-anomaly-set",
+      "source_instance": "finance-anomaly-alert-001"
+    }
+  }
+}

@@ -1,0 +1,16 @@
+{
+  "published-remedy": {
+    "artifact": {
+      "mask_fields": [
+        "person_name",
+        "evidence_uri"
+      ],
+      "notice": "本轮整改任务已全部销号，整改进度与成效已公示。",
+      "published": true,
+      "summary": "已完成整改销号任务已公示，接受全员监督",
+      "title": "整改结果公示"
+    },
+    "contract_id": "document-content",
+    "contract_version": "1.0.0"
+  }
+}

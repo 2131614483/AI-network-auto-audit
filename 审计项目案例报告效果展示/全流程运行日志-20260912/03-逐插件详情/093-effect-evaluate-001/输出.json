@@ -1,0 +1,21 @@
+{
+  "effect-report": {
+    "contract_id": "metric-series",
+    "contract_version": "1.0.0",
+    "metric": "审计成效",
+    "points": [
+      {
+        "at": "2026-09-10T00:00:00+00:00",
+        "value": 1.0
+      }
+    ],
+    "series_id": "audit-effect-value",
+    "summary": {
+      "closed": 1,
+      "effect_ratio": 1.0,
+      "total": 1
+    },
+    "unit": "ratio",
+    "window_minutes": 10080
+  }
+}

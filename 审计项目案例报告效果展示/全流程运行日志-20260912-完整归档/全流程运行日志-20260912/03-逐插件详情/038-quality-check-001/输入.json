@@ -1,0 +1,14 @@
+{
+  "node_instance_id": "quality-check-001",
+  "capability": "audit.foundation.quality-check",
+  "input_bindings": {
+    "quality-input": {
+      "uri": "file:///D:/pythonpro/audit_network/docs/%E5%85%A8%E6%B5%81%E7%A8%8B%E8%BF%90%E8%A1%8C%E6%97%A5%E5%BF%97-20260912/12-%E6%9C%AC%E6%AC%A1%E8%BF%90%E8%A1%8C%E4%BA%A7%E7%89%A9/inputs/quality-ledger.csv",
+      "sha256": "79a9c4f07b4e5ec3dbf88c17cc3d5ca338244d025ac9411be6e1a2f5cb46f3bf",
+      "adapter": null,
+      "port_id": "quality-input",
+      "source_port": "quality-input",
+      "source_instance": "seed"
+    }
+  }
+}

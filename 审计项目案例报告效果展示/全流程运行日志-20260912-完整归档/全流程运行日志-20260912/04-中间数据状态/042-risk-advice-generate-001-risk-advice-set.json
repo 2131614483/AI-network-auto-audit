@@ -1,0 +1,23 @@
+{
+  "artifact": {
+    "advices": [
+      {
+        "advice": "重点核查大额资金流向与异常支付，执行凭证穿透与函证核验",
+        "area": "资金收付",
+        "source": "risk-advice-generate"
+      },
+      {
+        "advice": "对采购合同执行全量比价核验与供应商准入核查",
+        "area": "采购合同",
+        "source": "risk-advice-generate"
+      }
+    ],
+    "summary": {
+      "advice_count": 2
+    },
+    "title": "风险应对建议"
+  },
+  "contract_id": "document-content",
+  "contract_version": "1.0.0",
+  "language": "zh-CN"
+}

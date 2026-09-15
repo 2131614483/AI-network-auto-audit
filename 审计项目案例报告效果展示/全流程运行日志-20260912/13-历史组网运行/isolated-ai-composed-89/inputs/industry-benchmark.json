@@ -1,0 +1,1 @@
+{"contract_id": "document-content", "contract_version": "1.0.0", "artifact": {"period": "2026", "industry_risks": [{"risk_id": "I1", "name": "供应商舞弊高发", "severity": "high", "score": 0.8}, {"risk_id": "I2", "name": "应收账期恶化", "severity": "medium", "score": 0.5}]}}

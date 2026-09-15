@@ -1,0 +1,14 @@
+{
+  "node_instance_id": "progress-report-001",
+  "capability": "audit.field.progress-report",
+  "input_bindings": {
+    "daily-progress": {
+      "uri": "file:///D:/pythonpro/audit_network/docs/%E5%85%A8%E6%B5%81%E7%A8%8B%E8%BF%90%E8%A1%8C%E6%97%A5%E5%BF%97-20260912/12-%E6%9C%AC%E6%AC%A1%E8%BF%90%E8%A1%8C%E4%BA%A7%E7%89%A9/inputs/budget.json",
+      "sha256": "138e9579a8f066eee94397ab7867cc0ce293e7d3c9c3d0520050c10b1a128fef",
+      "adapter": null,
+      "port_id": "daily-progress",
+      "source_port": "daily-progress",
+      "source_instance": "seed"
+    }
+  }
+}

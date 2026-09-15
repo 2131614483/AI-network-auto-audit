@@ -1,0 +1,16 @@
+{
+  "sample-size": {
+    "contract_id": "metric-series",
+    "contract_version": "1.0.0",
+    "metric": "sample_size",
+    "points": [
+      {
+        "at": "2026-01-01T00:00:00+08:00",
+        "value": 4.0
+      }
+    ],
+    "series_id": "sample-size-2026",
+    "unit": "count",
+    "window_minutes": 1440
+  }
+}

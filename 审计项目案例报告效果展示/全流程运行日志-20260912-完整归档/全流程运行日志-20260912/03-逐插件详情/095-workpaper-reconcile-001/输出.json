@@ -1,0 +1,12 @@
+{
+  "reconcile-report": {
+    "checked": 26,
+    "contract_id": "dataset-validation",
+    "contract_version": "1.0.0",
+    "dataset": "workpaper-reconcile",
+    "failed": 0,
+    "issues": [],
+    "passed": 26,
+    "summary": "勾稽校验 26 条：通过 26，问题 0"
+  }
+}

@@ -1,0 +1,14 @@
+{
+  "node_instance_id": "project-library-001",
+  "capability": "audit.mandate.project-library",
+  "input_bindings": {
+    "scored-proposal": {
+      "uri": "file:///D:/pythonpro/audit_network/docs/%E5%85%A8%E6%B5%81%E7%A8%8B%E8%BF%90%E8%A1%8C%E6%97%A5%E5%BF%97-20260912/12-%E6%9C%AC%E6%AC%A1%E8%BF%90%E8%A1%8C%E4%BA%A7%E7%89%A9/chains/plan-ai-fund-fraud-100/proposal-score-001/output-scored-proposal-b8e66b9a2197141e.json",
+      "sha256": "b8e66b9a2197141e97fd0e28e0b83673baf8d1210d4aa4364c194c2fba02c623",
+      "adapter": null,
+      "port_id": "scored-proposal",
+      "source_port": "scored-proposal",
+      "source_instance": "proposal-score-001"
+    }
+  }
+}

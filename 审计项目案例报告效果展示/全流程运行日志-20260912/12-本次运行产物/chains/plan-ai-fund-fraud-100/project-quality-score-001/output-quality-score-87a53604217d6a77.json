@@ -1,0 +1,1 @@
+{"contract_id": "metric-series", "contract_version": "1.0.0", "metric": "项目质量分", "points": [{"at": "2026-09-10T00:00:00+00:00", "value": 0.75}], "series_id": "audit-project-quality", "summary": {"passed": 3, "score": 0.75, "total": 4}, "unit": "score", "window_minutes": 10080}

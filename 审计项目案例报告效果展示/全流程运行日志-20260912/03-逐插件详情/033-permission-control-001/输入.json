@@ -1,0 +1,14 @@
+{
+  "node_instance_id": "permission-control-001",
+  "capability": "audit.foundation.permission-control",
+  "input_bindings": {
+    "access-request": {
+      "uri": "file:///D:/pythonpro/audit_network/docs/%E5%85%A8%E6%B5%81%E7%A8%8B%E8%BF%90%E8%A1%8C%E6%97%A5%E5%BF%97-20260912/12-%E6%9C%AC%E6%AC%A1%E8%BF%90%E8%A1%8C%E4%BA%A7%E7%89%A9/inputs/perm-req.json",
+      "sha256": "c3ba0630ef63fab294e9beea3754319a1b7648ef230cd0d49e9a553fe2835113",
+      "adapter": null,
+      "port_id": "access-request",
+      "source_port": "access-request",
+      "source_instance": "seed"
+    }
+  }
+}

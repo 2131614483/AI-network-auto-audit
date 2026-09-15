@@ -1,0 +1,1 @@
+{"project": "PR-0002", "tenant_id": "local-dev", "units": [{"unit_name": "财务部", "materials": ["通知书回执", "营业执照", "财务报表", "资金流水", "内控文档"], "submitted_at": "2026-01-10"}, {"unit_name": "采购部", "materials": ["通知书回执", "营业执照"], "submitted_at": "2026-01-11"}]}
