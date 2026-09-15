@@ -1,0 +1,89 @@
+{
+ "protocol_version": "1.0.0",
+ "id": "audit.risk.internal-control-risk-map",
+ "version": "0.1.0",
+ "name": "内控流程风险测绘",
+ "description": "遍历被审单位内控流程，识别控制缺陷与断点；上游对接前置资料，输出至风险矩阵插件。",
+ "kind": "analysis",
+ "domains": [
+  "audit",
+  "compliance"
+ ],
+ "lifecycle": "verified",
+ "compatibility": {
+  "host_protocol": ">=1.0.0 <2.0.0",
+  "adapters": [
+   "python"
+  ],
+  "fallback_behavior": "human_review"
+ },
+ "capabilities": [
+  {
+   "id": "audit.risk.internal-control-risk-map",
+   "summary": "遍历被审单位内控流程，识别控制缺陷与断点；上游对接前置资料，输出至风险矩阵插件。",
+   "side_effects": "read_only",
+   "idempotency": "input_sha256 + capability_version",
+   "inputs": [
+    {
+     "contract_id": "ic-flow",
+     "version": "1.0.0",
+     "format": "artifact_ref",
+     "delivery": "reference",
+     "classification": "audit_confidential",
+     "schema_ref": "document-content.schema.json",
+     "max_bytes": 268435456
+    }
+   ],
+   "outputs": [
+    {
+     "contract_id": "ic-risk-set",
+     "version": "1.0.0",
+     "format": "artifact_ref",
+     "delivery": "reference",
+     "classification": "audit_confidential",
+     "schema_ref": "anomaly-candidates.schema.json",
+     "max_bytes": 268435456
+    }
+   ]
+  }
+ ],
+ "governance": {
+  "default_data_classification": "audit_confidential",
+  "permissions": {
+   "data_read": [],
+   "data_write": [],
+   "network": "none",
+   "secret_refs": []
+  },
+  "policy": {
+   "gateway_required": true,
+   "approval_required": false,
+   "evidence_required": true
+  }
+ },
+ "resources": {
+  "cpu": 1,
+  "memory_mb": 256,
+  "gpu": "none",
+  "timeout_seconds": 300
+ },
+ "observability": {
+  "trace_required": true,
+  "emits": [
+   "structured_log",
+   "artifact_ref",
+   "audit_event"
+  ],
+  "health": "declared_only"
+ },
+ "provenance": {
+  "source_refs": [
+   "docs/audit-plugin-network-100.md",
+   "docs/插件开发与接入标准-UPP-v1.0.md",
+   "plugins/builtin/audit_risk_internal_control_risk_map/runtime.py"
+  ]
+ },
+ "ui": {
+  "mode": "none"
+ }
+}

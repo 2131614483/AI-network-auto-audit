@@ -1,0 +1,18 @@
+{
+  "schema_version": "1.0.0",
+  "plugin": {
+    "id": "audit.mandate.proposal-score",
+    "version": "0.1.0",
+    "sha256": "8295afb437220937616ff21df57554fb3be220e371d7c0ffc3d0fad597a57193"
+  },
+  "protocol": {
+    "id": "audit.mandate.proposal-score",
+    "version": "0.1.0",
+    "sha256": "37b6379c365c36accaa95d49b3f3820b60b6dcb0e4d93074cfaffd7162e2f625"
+  },
+  "execution_mode": "isolated_subprocess",
+  "capabilities": [
+    "audit.mandate.proposal-score"
+  ],
+  "status": "verified"
+}

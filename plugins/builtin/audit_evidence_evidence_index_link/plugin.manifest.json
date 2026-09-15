@@ -1,0 +1,45 @@
+{
+ "id": "audit.evidence.evidence-index-link",
+ "version": "0.1.0",
+ "name": "审计证据与底稿（契约声明）",
+ "runtime": "python",
+ "entrypoint": "plugins.builtin.audit_evidence_evidence_index_link.runtime:handle",
+ "capabilities": [
+  "audit.evidence.evidence-index-link"
+ ],
+ "inputs": {
+  "capability": "audit.evidence.evidence-index-link",
+  "schema": "workpaper-export.schema.json",
+  "content_type": "application/json"
+ },
+ "outputs": {
+  "capability": "audit.evidence.evidence-index-link",
+  "schema": "evidence-lineage.schema.json",
+  "content_type": "application/json"
+ },
+ "side_effects": "read_only",
+ "idempotency": "input_sha256 + capability_version",
+ "permissions": {
+  "data_read": [
+   "audit.evidence.evidence-index-link.read"
+  ],
+  "data_write": [],
+  "network": "none",
+  "secrets": []
+ },
+ "resources": {
+  "cpu": 1,
+  "memory_mb": 256,
+  "gpu": false,
+  "timeout_seconds": 300
+ },
+ "data_classification": "audit_confidential",
+ "evidence": {
+  "preserve_inputs": true,
+  "code_hash_required": true
+ },
+ "tests": {
+  "contract": "tests/contract/test_audit_evidence_evidence_index_link_contract.py",
+  "golden": "tests/unit/test_audit_evidence_evidence_index_link_runtime.py"
+ }
+}

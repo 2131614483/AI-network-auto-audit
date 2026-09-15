@@ -1,0 +1,13 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://audit.local/contracts/knowledge-search.schema.json",
+  "title": "KnowledgeSearch",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["query", "mode", "limit"],
+  "properties": {
+    "query": { "type": "string", "minLength": 1, "maxLength": 2000 },
+    "mode": { "enum": ["keyword", "vector", "hybrid"] },
+    "limit": { "type": "integer", "minimum": 1, "maximum": 50 }
+  }
+}

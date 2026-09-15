@@ -1,0 +1,8 @@
+{
+  "schema_version": "1.0.0",
+  "plugin": {"id": "knowledge.graph-proposal-builder", "version": "0.1.0", "sha256": "99a1f1e879b5a0af997992bfd43660aef09c23acc87a1a7f13067bff8f6b5033"},
+  "protocol": {"id": "knowledge.graph-proposal-builder", "version": "0.1.0", "sha256": "277ba6684252ec01af3d8c2ac65ee10c4c86332e1779307377bdc56892036fc6"},
+  "execution_mode": "isolated_subprocess",
+  "capabilities": ["graph.proposal.build"],
+  "status": "verified"
+}

@@ -1,0 +1,18 @@
+{
+  "schema_version": "1.0.0",
+  "plugin": {
+    "id": "audit.foundation.workflow-engine",
+    "version": "0.1.0",
+    "sha256": "e9a4bfc47e4f951580c3012ba3f0f50b04bb30a87b7452c90a980e8181e21106"
+  },
+  "protocol": {
+    "id": "audit.foundation.workflow-engine",
+    "version": "0.1.0",
+    "sha256": "f6145cb6ff63c5709a2464b2e3240a82f81082a485d016f21f675902f6e237dc"
+  },
+  "execution_mode": "isolated_subprocess",
+  "capabilities": [
+    "audit.foundation.workflow-engine"
+  ],
+  "status": "verified"
+}

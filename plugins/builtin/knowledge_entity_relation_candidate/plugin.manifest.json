@@ -1,0 +1,33 @@
+{
+  "id": "knowledge.entity-relation-candidate",
+  "version": "0.1.0",
+  "name": "知识实体关系候选抽取（本地只读）",
+  "runtime": "python",
+  "entrypoint": "plugins.builtin.knowledge_entity_relation_candidate.runtime:handle",
+  "capabilities": ["knowledge.extract.relations"],
+  "inputs": {
+    "capability": "knowledge.extract.relations",
+    "schema": "document-content.schema.json",
+    "content_type": "application/json"
+  },
+  "outputs": {
+    "capability": "knowledge.extract.relations",
+    "schema": "graph-candidate-set@1.0.0",
+    "content_type": "application/json"
+  },
+  "side_effects": "read_only",
+  "idempotency": "document_sha256 + max_entities + max_relations",
+  "permissions": {
+    "data_read": ["knowledge.documents"],
+    "data_write": [],
+    "network": "none",
+    "secrets": []
+  },
+  "resources": {"cpu": 1, "memory_mb": 256, "gpu": false, "timeout_seconds": 300},
+  "data_classification": "internal",
+  "evidence": {"preserve_inputs": true, "code_hash_required": true},
+  "tests": {
+    "contract": "tests/contract/test_knowledge_entity_relation_contract.py",
+    "golden": "tests/unit/test_knowledge_entity_relation_runtime.py"
+  }
+}

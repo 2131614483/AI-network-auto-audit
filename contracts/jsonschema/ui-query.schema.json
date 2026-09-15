@@ -1,0 +1,18 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://audit.local/contracts/ui-query.schema.json",
+  "title": "UIQuery",
+  "description": "插件声明的数据查询契约；查询名称不是数据库表名。",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["query_id", "capability", "response_schema"],
+  "properties": {
+    "query_id": {"type": "string", "pattern": "^[a-z][a-z0-9._-]*$"},
+    "capability": {"type": "string", "pattern": "^[a-z][a-z0-9]*(?:[._-][a-z0-9]+)+$"},
+    "input_schema": {"type": "object", "required": ["type"], "properties": {"type": {"type": "string"}}, "additionalProperties": true},
+    "response_schema": {"type": "object", "required": ["type"], "properties": {"type": {"type": "string"}}, "additionalProperties": true},
+    "cache_ttl_seconds": {"type": "integer", "minimum": 0, "maximum": 86400},
+    "pagination": {"type": "boolean"},
+    "required_permissions": {"type": "array", "uniqueItems": true, "items": {"type": "string"}}
+  }
+}

@@ -1,0 +1,18 @@
+{
+  "schema_version": "1.0.0",
+  "plugin": {
+    "id": "audit.field.workpaper-build",
+    "version": "0.1.0",
+    "sha256": "3064d9e7e6ed47f490757f915a916446f8d4e141c09d0f03ee955f3c02f74a1c"
+  },
+  "protocol": {
+    "id": "audit.field.workpaper-build",
+    "version": "0.1.0",
+    "sha256": "2380d983f5e5877bd3273026e6664920f74ab69711070293e962e671a8f4d2d1"
+  },
+  "execution_mode": "isolated_subprocess",
+  "capabilities": [
+    "audit.field.workpaper-build"
+  ],
+  "status": "verified"
+}

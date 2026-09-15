@@ -1,0 +1,24 @@
+{
+  "contract_id": "dataset-validation",
+  "contract_version": "1.0.0",
+  "snapshot_sha256": "a1b2c3d4e5f67890a1b2c3d4e5f67890a1b2c3d4e5f67890a1b2c3d4e5f67890",
+  "summary": {
+    "valid": true,
+    "checked_columns": 73,
+    "checked_rows": 6481,
+    "missing_values": 0,
+    "duplicate_timestamps": 0,
+    "first_timestamp": "2025-05-19T15:28:50.338146",
+    "last_timestamp": "2025-06-01T12:08:50.338146",
+    "freshness_hours": 3.5
+  },
+  "checks": [
+    {"check_id": "csv_parse", "status": "pass", "message": "parsed 6481 rows across 75 columns"},
+    {"check_id": "columns", "status": "pass", "message": "all 2 expected columns present"},
+    {"check_id": "freshness", "status": "pass", "message": "snapshot is 3.50h old"},
+    {"check_id": "point_in_time", "status": "pass", "message": "no future timestamps"},
+    {"check_id": "duplicate_timestamps", "status": "pass", "message": "no duplicate timestamps"},
+    {"check_id": "missing_rate", "status": "pass", "message": "missing rate 0.00% within budget"}
+  ],
+  "violations": []
+}

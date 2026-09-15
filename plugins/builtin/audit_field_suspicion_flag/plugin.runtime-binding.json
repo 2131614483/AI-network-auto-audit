@@ -1,0 +1,18 @@
+{
+  "schema_version": "1.0.0",
+  "plugin": {
+    "id": "audit.field.suspicion-flag",
+    "version": "0.1.0",
+    "sha256": "b2a97dad89e315e3ae3fd7455082e739fa12c15ef3d416ad6f6a0d915739790d"
+  },
+  "protocol": {
+    "id": "audit.field.suspicion-flag",
+    "version": "0.1.0",
+    "sha256": "874fb27e7208932f4f4f7d32d14f1a03aebf0a3ef048e4766d643baac670a9d0"
+  },
+  "execution_mode": "isolated_subprocess",
+  "capabilities": [
+    "audit.field.suspicion-flag"
+  ],
+  "status": "verified"
+}

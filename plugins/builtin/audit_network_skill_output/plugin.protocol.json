@@ -1,0 +1,102 @@
+{
+  "protocol_version": "1.0.0",
+  "id": "audit.network.skill-output",
+  "version": "0.1.0",
+  "name": "组网结果 Skill 输出",
+  "description": "接收组网流水线（L0–L5）已确认的上游结果工件（见 network-result-set），将结果数据与调用上下文组装为输出素材；调用哪个 Skill 由调度 AI 从 skills 目录【自主选用】（插件只读扫描各 SKILL.md 的 name/description 生成技能目录清单，未显式指定时输出待选用工件）。生成结构化、可追溯的输出工件（skill-output）。所有输出仅为只读产物，签发由人完成，永不覆盖历史输出。",
+  "kind": "analysis",
+  "domains": [
+    "audit",
+    "compliance"
+  ],
+  "lifecycle": "contract_only",
+  "compatibility": {
+    "host_protocol": ">=1.0.0 <2.0.0",
+    "adapters": [
+      "python",
+      "node",
+      "http",
+      "mcp",
+      "container"
+    ],
+    "optional_features": [
+      "evidence-chain-v1"
+    ],
+    "fallback_behavior": "human_review"
+  },
+  "capabilities": [
+    {
+      "id": "audit.network.skill-output",
+      "summary": "对不可变组网结果集生成确定性、可追溯的输出工件：只读扫描 skills 目录的 SKILL.md 生成技能目录清单，Skill 由调度 AI 自主选用（request 未指定 skill_id 时返回 pending_ai_selection + 目录快照），仅在显式指定时核验并使用该 Skill。不访问网络，不写入数据，签发由人完成，永不覆盖历史输出。",
+      "side_effects": "read_only",
+      "idempotency": "result_set_sha256_and_skill_or_catalog_and_template",
+      "inputs": [
+        {
+          "contract_id": "network-result-set",
+          "version": "1.0.0",
+          "format": "json",
+          "delivery": "artifact_ref",
+          "classification": "audit_confidential",
+          "schema_ref": "network-result-set.schema.json"
+        }
+      ],
+      "outputs": [
+        {
+          "contract_id": "skill-output",
+          "version": "1.0.0",
+          "format": "json",
+          "delivery": "artifact_ref",
+          "classification": "audit_confidential",
+          "schema_ref": "skill-output@1.0.0"
+        }
+      ],
+      "policy": {
+        "approval_required": true,
+        "evidence_required": true
+      }
+    }
+  ],
+  "governance": {
+    "default_data_classification": "audit_confidential",
+    "permissions": {
+      "data_read": [
+        "audit.network.result-set",
+        "audit.findings",
+        "audit.evidence"
+      ],
+      "data_write": [],
+      "network": "none",
+      "secret_refs": []
+    },
+    "policy": {
+      "gateway_required": true,
+      "approval_required": true,
+      "evidence_required": true
+    }
+  },
+  "resources": {
+    "cpu": 1,
+    "memory_mb": 256,
+    "gpu": "none",
+    "timeout_seconds": 180
+  },
+  "observability": {
+    "trace_required": true,
+    "emits": [
+      "structured_log",
+      "metric",
+      "audit_event"
+    ],
+    "health": "declared_only"
+  },
+  "provenance": {
+    "source_refs": [
+      ".trae/skills/audit-report-builder/SKILL.md",
+      "docs/审计组网插件规划-v1.md#audit.network.skill-output"
+    ]
+  },
+  "ui": {
+    "mode": "declarative",
+    "contribution_schema": "ui-contribution.schema.json"
+  }
+}

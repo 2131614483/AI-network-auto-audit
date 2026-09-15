@@ -1,0 +1,18 @@
+{
+  "schema_version": "1.0.0",
+  "plugin": {
+    "id": "audit.field.confirm-letter",
+    "version": "0.1.0",
+    "sha256": "86b2248e190804dcd53ccb5bfc4b43f3e5aa6922c7319cdf1c46c36de7fda788"
+  },
+  "protocol": {
+    "id": "audit.field.confirm-letter",
+    "version": "0.1.0",
+    "sha256": "43542c1eb3af9619a14a7e1f6cc924e2cebc88dd22bd36c42c9f6cb6e2d2f023"
+  },
+  "execution_mode": "isolated_subprocess",
+  "capabilities": [
+    "audit.field.confirm-letter"
+  ],
+  "status": "verified"
+}

@@ -1,0 +1,48 @@
+{
+  "protocol_version": "1.0.0",
+  "id": "aiops.rca-ranker",
+  "version": "0.1.0",
+  "name": "AIOps 根因候选排序",
+  "description": "基于不可变事故/告警事件集与因果拓扑图工件引用，运行确定性图传播排序，产出根因候选集合；候选不等同于已确认根因，不触发修复。",
+  "kind": "analysis",
+  "domains": ["aiops"],
+  "lifecycle": "contract_only",
+  "compatibility": {"host_protocol": ">=1.0.0 <2.0.0", "adapters": ["python"], "fallback_behavior": "human_review"},
+  "capabilities": [
+    {
+      "id": "aiops.rca.rank",
+      "summary": "把事故事件按因果拓扑图进行有界传播，排序根因候选并带分数、置信度与支撑事故，输出 rca-candidates@1。",
+      "side_effects": "read_only",
+      "idempotency": "incident_set_sha256 + topology_sha256 + window_minutes + max_hops",
+      "inputs": [
+        {
+          "contract_id": "rca-input",
+          "version": "1.0.0",
+          "format": "artifact_ref",
+          "delivery": "reference",
+          "classification": "internal",
+          "schema_ref": "rca-input.schema.json"
+        }
+      ],
+      "outputs": [
+        {
+          "contract_id": "rca-candidates",
+          "version": "1.0.0",
+          "format": "json",
+          "delivery": "request_response",
+          "classification": "internal",
+          "schema_ref": "rca-candidates.schema.json"
+        }
+      ]
+    }
+  ],
+  "governance": {
+    "default_data_classification": "internal",
+    "permissions": {"data_read": ["aiops.alerts", "aiops.topology"], "data_write": [], "network": "none", "secret_refs": []},
+    "policy": {"gateway_required": true, "approval_required": false, "evidence_required": true}
+  },
+  "resources": {"cpu": 1, "memory_mb": 256, "gpu": "none", "timeout_seconds": 300},
+  "observability": {"trace_required": true, "emits": ["structured_log", "artifact_ref", "audit_event"], "health": "declared_only"},
+  "provenance": {"source_refs": ["docs/审计组网插件规划-v1.md#3.3", "docs/审计组网插件规划-v1.md#7", "docs/插件开发与接入标准-UPP-v1.0.md"]},
+  "ui": {"mode": "none"}
+}

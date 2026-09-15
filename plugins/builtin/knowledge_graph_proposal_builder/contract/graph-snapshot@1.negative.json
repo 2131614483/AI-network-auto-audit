@@ -1,0 +1,10 @@
+{
+  "contract_id": "graph-snapshot",
+  "contract_version": "1.0.0",
+  "space_level": "L9",
+  "nodes_by_type": {
+    "organization": [{"text": "审计局"}],
+    "document": [{"text": "《审计指引》"}],
+    "person": [{"text": "张三"}]
+  }
+}

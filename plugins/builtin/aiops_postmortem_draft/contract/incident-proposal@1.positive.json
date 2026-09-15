@@ -1,0 +1,20 @@
+{
+  "contract_id": "incident-proposal",
+  "contract_version": "1.0.0",
+  "proposal_id": "9a1b2c3d4e5f6789",
+  "alert_fingerprint": "a1b2c3d4e5f67890a1b2c3d4e5f67890a1b2c3d4e5f67890a1b2c3d4e5f67890",
+  "status": "proposed",
+  "triage": {
+    "grouping_key": "affected_system=BCSA_big_01",
+    "severity": "critical",
+    "affected_system": "BCSA_big_01/equipment-12",
+    "summary": "温度传感器越限且连续三分钟无心跳，建议人工确认是否过温停机",
+    "evidence_refs": ["file:///G:/数据/04-审计数据集与基准/PCCA-Benchmark/benchmark_cases/bigcase/BCSA/BCSA_big_01/fault_tickets.json"],
+    "review_reason": "单源告警，需结合故障工单与日志人工复核"
+  },
+  "constraints": {
+    "no_execution": true,
+    "no_playbook": true,
+    "requires_human_approval": true
+  }
+}

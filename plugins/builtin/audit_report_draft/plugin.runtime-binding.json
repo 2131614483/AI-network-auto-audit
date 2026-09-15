@@ -1,0 +1,18 @@
+{
+  "schema_version": "1.0.0",
+  "plugin": {
+    "id": "audit.report-draft",
+    "version": "0.1.0",
+    "sha256": "077ad207344bde4dde904c9c153223a0a1f28015f92a0177a2e12b4bbe0e8c87"
+  },
+  "protocol": {
+    "id": "audit.report-draft",
+    "version": "0.1.0",
+    "sha256": "316bdbfb1fbe8155ca5199aaf3627a3465bd8722a8c146553266eb36c227c3a0"
+  },
+  "execution_mode": "isolated_subprocess",
+  "capabilities": [
+    "audit.report.draft"
+  ],
+  "status": "verified"
+}

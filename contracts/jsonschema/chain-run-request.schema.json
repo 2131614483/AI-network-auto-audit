@@ -1,0 +1,16 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://audit.local/contracts/chain-run-request.schema.json",
+  "title": "ChainRunRequest",
+  "description": "链级执行运行请求（M6）：对一条已发布锁定且意图门控放行的调用链发起一次受限只读隔离执行运行（mode 恒 isolated，模拟路径仍走 chain-execution-request）；必须携带幂等键；reason 必填说明演练用途；任意其他模式拒绝。",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["chain_key", "mode", "reason", "idempotency_key"],
+  "properties": {
+    "chain_key": {"type": "string", "pattern": "^chain-[a-z0-9]{16}$"},
+    "mode": {"const": "isolated"},
+    "reason": {"type": "string", "minLength": 1, "maxLength": 500},
+    "idempotency_key": {"type": "string", "minLength": 1, "maxLength": 255},
+    "trace_id": {"type": "string", "format": "uuid"}
+  }
+}

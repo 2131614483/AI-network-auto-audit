@@ -1,0 +1,14 @@
+{
+  "node_instance_id": "issue-trend-analysis-001",
+  "capability": "audit.govern.issue-trend-analysis",
+  "input_bindings": {
+    "history-issue-set": {
+      "uri": "file:///D:/pythonpro/audit_network/docs/%E5%85%A8%E6%B5%81%E7%A8%8B%E8%BF%90%E8%A1%8C%E6%97%A5%E5%BF%97-20260912/12-%E6%9C%AC%E6%AC%A1%E8%BF%90%E8%A1%8C%E4%BA%A7%E7%89%A9/inputs/history-issues.json",
+      "sha256": "e86d65284cd61ad17b112b6e5a0395865039f80a1867ccbc713d8ac38c2db88d",
+      "adapter": null,
+      "port_id": "history-issue-set",
+      "source_port": "history-issue-set",
+      "source_instance": "seed"
+    }
+  }
+}

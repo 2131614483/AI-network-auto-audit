@@ -1,0 +1,14 @@
+{
+  "node_instance_id": "rule-iteration-001",
+  "capability": "audit.govern.rule-iteration",
+  "input_bindings": {
+    "trend-report": {
+      "uri": "file:///D:/pythonpro/audit_network/docs/%E5%85%A8%E6%B5%81%E7%A8%8B%E8%BF%90%E8%A1%8C%E6%97%A5%E5%BF%97-20260912/12-%E6%9C%AC%E6%AC%A1%E8%BF%90%E8%A1%8C%E4%BA%A7%E7%89%A9/chains/plan-ai-fund-fraud-100/issue-trend-analysis-001/output-trend-report-a4b9b1d8ef3881bd.json",
+      "sha256": "a4b9b1d8ef3881bdb60da390ed024a205dbb962c9886b2db5603bf9349fee556",
+      "adapter": null,
+      "port_id": "trend-report",
+      "source_port": "trend-report",
+      "source_instance": "issue-trend-analysis-001"
+    }
+  }
+}

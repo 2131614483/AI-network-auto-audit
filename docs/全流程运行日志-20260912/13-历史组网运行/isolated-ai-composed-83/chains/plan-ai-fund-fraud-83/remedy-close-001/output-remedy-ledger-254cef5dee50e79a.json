@@ -1,0 +1,1 @@
+{"contract_id": "workflow", "contract_version": "1.0.0", "kind": "remedy-close", "nodes": [{"status": "open", "task_id": "RT-0001"}], "summary": {"closed": false, "note": "整改验证未通过，暂缓销号", "violation_count": 1}, "workflow_id": "remedy-close-2026"}

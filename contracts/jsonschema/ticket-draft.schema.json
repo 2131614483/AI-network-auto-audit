@@ -1,0 +1,64 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://audit.local/contracts/ticket-draft.schema.json",
+  "title": "TicketDraft",
+  "description": "外部工单草稿（aiops.ticket-draft 输出）：基于已确认 incident-proposal@1 生成确定性、可追溯的工单草稿与预览。草稿永不自动发送：实际发送必须满足目标系统白名单与人工审批；插件本身无网络、不写基础设施。",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["contract_id", "contract_version", "ticket_id", "status", "target_system", "title", "description", "priority", "incident_refs", "summary", "signature", "constraints", "provenance"],
+  "properties": {
+    "contract_id": {"const": "ticket-draft"},
+    "contract_version": {"const": "1.0.0"},
+    "ticket_id": {"type": "string", "pattern": "^[A-Fa-f0-9]{16}$"},
+    "status": {"const": "draft"},
+    "target_system": {"type": "string", "pattern": "^[a-z][a-z0-9]*(?:[._-][a-z0-9]+)*$"},
+    "title": {"type": "string", "minLength": 1, "maxLength": 512},
+    "description": {"type": "string", "minLength": 1},
+    "priority": {"type": "string", "enum": ["P1", "P2", "P3", "P4"]},
+    "incident_refs": {"type": "array", "minItems": 1, "maxItems": 64, "items": {"type": "string", "minLength": 1, "maxLength": 255}},
+    "evidence_refs": {"type": "array", "maxItems": 64, "items": {"type": "string", "minLength": 1, "maxLength": 2048}},
+    "summary": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["incidents", "priority", "evidence_refs", "truncated"],
+      "properties": {
+        "incidents": {"type": "integer", "minimum": 1},
+        "priority": {"type": "string", "enum": ["P1", "P2", "P3", "P4"]},
+        "evidence_refs": {"type": "integer", "minimum": 0},
+        "truncated": {"type": "boolean"}
+      }
+    },
+    "signature": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["drafted_by", "sent", "sender"],
+      "properties": {
+        "drafted_by": {"const": "aiops.ticket-draft@0.1.0"},
+        "sent": {"const": false},
+        "sender": {"type": "null"}
+      }
+    },
+    "constraints": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["no_auto_send", "requires_target_whitelist", "requires_human_approval", "immutable_source"],
+      "properties": {
+        "no_auto_send": {"const": true},
+        "requires_target_whitelist": {"const": true},
+        "requires_human_approval": {"const": true},
+        "immutable_source": {"const": true}
+      }
+    },
+    "provenance": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["source_sha256", "target_system", "plugin", "draft_time"],
+      "properties": {
+        "source_sha256": {"type": "string", "pattern": "^[A-Fa-f0-9]{64}$"},
+        "target_system": {"type": "string"},
+        "plugin": {"const": "aiops.ticket-draft@0.1.0"},
+        "draft_time": {"type": "string"}
+      }
+    }
+  }
+}

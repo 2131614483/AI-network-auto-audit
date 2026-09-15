@@ -1,0 +1,1 @@
+{"contract_id": "document-content", "contract_version": "1.0.0", "artifact": {"period": "2026", "process_steps": [{"step_id": "P1", "name": "合同签订", "owner": "采购部", "approval": true}, {"step_id": "P2", "name": "收货入库", "owner": "", "approval": true}]}}

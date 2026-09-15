@@ -1,0 +1,18 @@
+{
+  "schema_version": "1.0.0",
+  "plugin": {
+    "id": "audit.field.audit-log",
+    "version": "0.1.0",
+    "sha256": "0d669ab8173f49ae030ad6c1f908feeff317324fbbf678467c1f4ff0e7ba640e"
+  },
+  "protocol": {
+    "id": "audit.field.audit-log",
+    "version": "0.1.0",
+    "sha256": "3a6fbf105bfcb12bcb3bba42e4906e9ef6c5674c506050e8cec0afe3cea3ddaf"
+  },
+  "execution_mode": "isolated_subprocess",
+  "capabilities": [
+    "audit.field.audit-log"
+  ],
+  "status": "verified"
+}

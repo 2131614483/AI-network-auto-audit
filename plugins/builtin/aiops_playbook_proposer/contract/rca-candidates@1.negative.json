@@ -1,0 +1,20 @@
+{
+  "contract_id": "rca-candidates",
+  "contract_version": "1.0.0",
+  "incident_set_sha256": "a1b2c3d4e5f67890a1b2c3d4e5f67890a1b2c3d4e5f67890a1b2c3d4e5f67890",
+  "topology_sha256": "b1c2d3e4f5a6b7c8d9e0f1a2b3c4d5e6f7a8b9c0d1e2f3a4b5c6d7e8f9a0b1c2",
+  "summary": {"incidents_processed": 36, "nodes_considered": 72, "candidate_count": 1, "truncated": false},
+  "candidates": [
+    {
+      "rank": 1,
+      "candidate_id": "RC-0001",
+      "root_cause": "墨水粘度异常",
+      "node_ref": "n028",
+      "score": 0.85,
+      "confidence": 1.5,
+      "support_count": 0,
+      "supporting_incidents": [],
+      "evidence": {"matched_fields": ["root_cause"], "source_sha256": "a1b2c3d4e5f67890a1b2c3d4e5f67890a1b2c3d4e5f67890a1b2c3d4e5f67890"}
+    }
+  ]
+}

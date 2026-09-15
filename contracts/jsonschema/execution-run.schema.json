@@ -1,0 +1,24 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://audit.local/contracts/execution-run.schema.json",
+  "title": "ExecutionRun",
+  "description": "链级执行运行只读投影（M6）：一次受限只读隔离执行运行的摘要（run_id、状态机 running/success/failed、逐节点成功/失败计数、演练原因、trace 与时间）；只允许状态与计数，不携带节点账本正文/payload。",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["run_id", "chain_key", "mode", "status", "node_total", "node_succeeded", "node_failed", "reason", "trace_id", "started_at"],
+  "properties": {
+    "run_id": {"type": "string", "format": "uuid"},
+    "chain_key": {"type": "string", "pattern": "^chain-[a-z0-9]{16}$"},
+    "mode": {"const": "isolated"},
+    "status": {"enum": ["running", "success", "failed"]},
+    "node_total": {"type": "integer", "minimum": 0},
+    "node_succeeded": {"type": "integer", "minimum": 0},
+    "node_failed": {"type": "integer", "minimum": 0},
+    "reason": {"type": "string", "maxLength": 500},
+    "trace_id": {"type": "string", "format": "uuid"},
+    "started_at": {"type": "string", "format": "date-time"},
+    "finished_at": {"anyOf": [{"type": "string", "format": "date-time"}, {"type": "null"}]},
+    "chain_checksum": {"type": "string", "pattern": "^[a-f0-9]{64}$"},
+    "planner_version": {"type": "string", "maxLength": 64}
+  }
+}

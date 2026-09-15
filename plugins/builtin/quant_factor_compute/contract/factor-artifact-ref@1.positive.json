@@ -1,0 +1,34 @@
+{
+  "contract_id": "factor-artifact-ref",
+  "contract_version": "1.0.0",
+  "snapshot_sha256": "a1b2c3d4e5f67890a1b2c3d4e5f67890a1b2c3d4e5f67890a1b2c3d4e5f67890",
+  "reference_time": "2026-08-19T15:00:00",
+  "factor_pack_sha256": "3333333333333333333333333333333333333333333333333333333333333333",
+  "summary": {"factors_computed": 2, "series_points": 6481, "truncated": false},
+  "factors": [
+    {
+      "factor_id": "returns",
+      "name": "最新单期收益",
+      "value": 0.0012,
+      "n": 20,
+      "mean": 0.0001,
+      "stdev": 0.002,
+      "min": -0.003,
+      "max": 0.004,
+      "series_ref": "factor:a1b2c3d4:price_column:sensor_n001_温度漂移",
+      "source_refs": ["snapshot:a1b2c3d4e5f67890a1b2c3d4e5f67890a1b2c3d4e5f67890a1b2c3d4e5f67890"]
+    },
+    {
+      "factor_id": "momentum",
+      "name": "20 期动量",
+      "value": 0.024,
+      "n": 20,
+      "mean": 0.012,
+      "stdev": 0.011,
+      "min": 0.001,
+      "max": 0.03,
+      "series_ref": "factor:a1b2c3d4:price_column:sensor_n001_温度漂移",
+      "source_refs": ["snapshot:a1b2c3d4e5f67890a1b2c3d4e5f67890a1b2c3d4e5f67890a1b2c3d4e5f67890"]
+    }
+  ]
+}

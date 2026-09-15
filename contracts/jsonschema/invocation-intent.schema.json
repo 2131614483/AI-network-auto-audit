@@ -1,0 +1,22 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://audit.local/contracts/invocation-intent.schema.json",
+  "title": "InvocationIntent",
+  "description": "调用链中单个节点的调用意向：仅状态投影，绝不触达运行时。携带期望输入/输出契约 Ref、隔离边界与 Policy 裁决；禁止 command/entrypoint 等任何可执行字段。",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["slot_key", "role", "capability", "expected_inputs", "expected_outputs", "isolation", "side_effects", "policy_decision", "status", "trace_id"],
+  "properties": {
+    "slot_key": {"type": "string", "pattern": "^[a-z][a-z0-9_]*(?:[._-][a-z0-9]+)*$"},
+    "role": {"type": "string", "enum": ["primary", "fallback"]},
+    "capability": {"type": "string", "pattern": "^[a-z][a-z0-9]*(?:[._-][a-z0-9]+)+$"},
+    "expected_inputs": {"type": "array", "maxItems": 64, "uniqueItems": true, "items": {"type": "string", "minLength": 1, "maxLength": 180}},
+    "expected_outputs": {"type": "array", "maxItems": 64, "uniqueItems": true, "items": {"type": "string", "minLength": 1, "maxLength": 180}},
+    "isolation": {"const": "isolated_subprocess"},
+    "side_effects": {"const": "read_only"},
+    "policy_decision": {"type": "string", "enum": ["allowed", "requires_approval", "denied"]},
+    "approval_ref": {"type": "string", "maxLength": 180},
+    "status": {"type": "string", "enum": ["materialized", "policy_allowed", "approved_projection", "denied"]},
+    "trace_id": {"type": "string", "format": "uuid"}
+  }
+}

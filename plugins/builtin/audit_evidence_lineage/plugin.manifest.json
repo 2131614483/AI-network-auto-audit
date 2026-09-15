@@ -1,0 +1,33 @@
+{
+  "id": "audit.evidence-lineage",
+  "version": "0.1.0",
+  "name": "审计证据血缘（只读查询契约）",
+  "runtime": "python",
+  "entrypoint": "plugins.builtin.audit_evidence_lineage.runtime:handle",
+  "capabilities": ["audit.evidence.lineage"],
+  "inputs": {
+    "capability": "audit.evidence.lineage",
+    "schema": "released-graph-ref.schema.json",
+    "content_type": "application/json"
+  },
+  "outputs": {
+    "capability": "audit.evidence.lineage",
+    "schema": "evidence-lineage@1.0.0",
+    "content_type": "application/json"
+  },
+  "side_effects": "read_only",
+  "idempotency": "graph_release_and_query_hash",
+  "permissions": {
+    "data_read": ["audit.evidence", "graph.released"],
+    "data_write": [],
+    "network": "none",
+    "secrets": []
+  },
+  "resources": {"cpu": 1, "memory_mb": 256, "gpu": false, "timeout_seconds": 120},
+  "data_classification": "audit_confidential",
+  "evidence": {"preserve_inputs": true, "code_hash_required": true},
+  "tests": {
+    "contract": "tests/contract/test_audit_evidence_lineage_contract.py",
+    "golden": "tests/contract/test_audit_evidence_lineage_contract.py"
+  }
+}

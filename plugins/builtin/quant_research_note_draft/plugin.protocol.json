@@ -1,0 +1,100 @@
+{
+  "protocol_version": "1.0.0",
+  "id": "quant.research-note-draft",
+  "version": "0.1.0",
+  "name": "量化研究结论草稿",
+  "description": "基于已确认 experiment-evaluation 实验评估草稿生成确定性、可追溯量化研究结论草稿的受审批输出契约；草稿永不自动发布，发布必须人工审批，不含订单生成，不更新生产模型。",
+  "kind": "analysis",
+  "domains": [
+    "quant",
+    "compliance"
+  ],
+  "lifecycle": "contract_only",
+  "compatibility": {
+    "host_protocol": ">=1.0.0 <2.0.0",
+    "adapters": [
+      "python",
+      "node",
+      "http",
+      "mcp",
+      "container"
+    ],
+    "optional_features": [
+      "evidence-chain-v1"
+    ],
+    "fallback_behavior": "human_review"
+  },
+  "capabilities": [
+    {
+      "id": "quant.research-note.draft",
+      "summary": "对不可变已确认 experiment-evaluation 草稿生成确定性、可追溯的研究结论草稿；草稿永不自动发布，不含订单生成，发布需要人工审批。",
+      "side_effects": "read_only",
+      "idempotency": "evaluation_sha256_and_strategy_key",
+      "inputs": [
+        {
+          "contract_id": "experiment-evaluation",
+          "version": "1.0.0",
+          "format": "json",
+          "delivery": "artifact_ref",
+          "classification": "restricted",
+          "schema_ref": "experiment-evaluation.schema.json"
+        }
+      ],
+      "outputs": [
+        {
+          "contract_id": "research-note-draft",
+          "version": "1.0.0",
+          "format": "json",
+          "delivery": "artifact_ref",
+          "classification": "restricted",
+          "schema_ref": "research-note-draft.schema.json"
+        }
+      ],
+      "policy": {
+        "approval_required": true,
+        "evidence_required": true
+      }
+    }
+  ],
+  "governance": {
+    "default_data_classification": "restricted",
+    "permissions": {
+      "data_read": [
+        "quant.experiment_evaluations"
+      ],
+      "data_write": [],
+      "network": "none",
+      "secret_refs": []
+    },
+    "policy": {
+      "gateway_required": true,
+      "approval_required": true,
+      "evidence_required": true
+    }
+  },
+  "resources": {
+    "cpu": 1,
+    "memory_mb": 256,
+    "gpu": "none",
+    "timeout_seconds": 120
+  },
+  "observability": {
+    "trace_required": true,
+    "emits": [
+      "structured_log",
+      "metric",
+      "audit_event"
+    ],
+    "health": "declared_only"
+  },
+  "provenance": {
+    "source_refs": [
+      "docs/plugin-protocol.md",
+      "docs/审计组网插件规划-v1.md#r3"
+    ]
+  },
+  "ui": {
+    "mode": "declarative",
+    "contribution_schema": "ui-contribution.schema.json"
+  }
+}

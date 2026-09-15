@@ -1,0 +1,18 @@
+{
+  "schema_version": "1.0.0",
+  "plugin": {
+    "id": "audit.foundation.ocr-extract",
+    "version": "0.1.0",
+    "sha256": "859d632958b39f899344bc73cc1a4d981b0fa1a55b220128f1b73ef6f8e0e446"
+  },
+  "protocol": {
+    "id": "audit.foundation.ocr-extract",
+    "version": "0.1.0",
+    "sha256": "105c2770bb067bb7909755f39cd0ab0b1d757727461e86b5907cdc1cad1906b5"
+  },
+  "execution_mode": "isolated_subprocess",
+  "capabilities": [
+    "audit.foundation.ocr-extract"
+  ],
+  "status": "verified"
+}

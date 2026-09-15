@@ -1,0 +1,39 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://audit.local/contracts/tag-tree.schema.json",
+  "title": "TagTree",
+  "description": "审计标签体系输出：按对象类型、维度组织的标签定义树与统计计数；只读，不触发任何写入副作用。",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["contract_id", "contract_version", "object_type", "total_rows", "dimensions"],
+  "properties": {
+    "contract_id": {"const": "tag-tree"},
+    "contract_version": {"const": "1.0.0"},
+    "object_type": {"type": "string", "minLength": 1, "maxLength": 64},
+    "total_rows": {"type": "integer", "minimum": 0},
+    "dimensions": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["dimension", "tags"],
+        "properties": {
+          "dimension": {"type": "string", "minLength": 1, "maxLength": 64},
+          "tags": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": ["tag", "count"],
+              "properties": {
+                "tag": {"type": "string", "minLength": 1, "maxLength": 64},
+                "count": {"type": "integer", "minimum": 0}
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

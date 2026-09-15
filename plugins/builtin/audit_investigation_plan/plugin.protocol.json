@@ -1,0 +1,56 @@
+{
+  "protocol_version": "1.0.0",
+  "id": "audit.investigation-plan",
+  "version": "0.1.0",
+  "name": "审计调查计划",
+  "description": "把已检测的日记账异常候选集合（可结合已收集证据索引）转换为确定性审计调查计划草稿：按规则分组的调查步骤、待补证据清单与必须证伪的反证清单。草稿不确认任何 Finding、不修改证据；由审计域服务在策略裁决后作为审计计划草稿落库。",
+  "kind": "analysis",
+  "domains": ["audit", "compliance"],
+  "lifecycle": "contract_only",
+  "compatibility": {"host_protocol": ">=1.0.0 <2.0.0", "adapters": ["python"], "fallback_behavior": "human_review"},
+  "capabilities": [
+    {
+      "id": "audit.investigation.plan",
+      "summary": "将 anomaly-candidates@1（可加 audit-evidence-index@1）转换为 investigation-plan-draft@1：按规则分组生成确定性调查步骤、待补证据与反证清单，输出草稿不发布 Finding。",
+      "side_effects": "read_only",
+      "idempotency": "anomaly_set_sha256 + max_steps",
+      "inputs": [
+        {
+          "contract_id": "anomaly-candidates",
+          "version": "1.0.0",
+          "format": "artifact_ref",
+          "delivery": "reference",
+          "classification": "audit_confidential",
+          "schema_ref": "anomaly-candidates.schema.json"
+        },
+        {
+          "contract_id": "audit-evidence-index",
+          "version": "1.0.0",
+          "format": "artifact_ref",
+          "delivery": "reference",
+          "classification": "audit_confidential",
+          "schema_ref": "audit-evidence-index.schema.json"
+        }
+      ],
+      "outputs": [
+        {
+          "contract_id": "investigation-plan-draft",
+          "version": "1.0.0",
+          "format": "json",
+          "delivery": "request_response",
+          "classification": "audit_confidential",
+          "schema_ref": "investigation-plan-draft.schema.json"
+        }
+      ]
+    }
+  ],
+  "governance": {
+    "default_data_classification": "audit_confidential",
+    "permissions": {"data_read": ["audit.anomaly_candidates", "audit.evidence_index"], "data_write": [], "network": "none", "secret_refs": []},
+    "policy": {"gateway_required": true, "approval_required": false, "evidence_required": true}
+  },
+  "resources": {"cpu": 1, "memory_mb": 256, "gpu": "none", "timeout_seconds": 300},
+  "observability": {"trace_required": true, "emits": ["structured_log", "artifact_ref", "audit_event"], "health": "declared_only"},
+  "provenance": {"source_refs": ["docs/审计组网插件规划-v1.md#3.4", "docs/审计组网插件规划-v1.md#4.2", "docs/插件开发与接入标准-UPP-v1.0.md"]},
+  "ui": {"mode": "none"}
+}

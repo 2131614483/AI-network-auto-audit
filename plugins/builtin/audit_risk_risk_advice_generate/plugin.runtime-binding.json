@@ -1,0 +1,18 @@
+{
+  "schema_version": "1.0.0",
+  "plugin": {
+    "id": "audit.risk.risk-advice-generate",
+    "version": "0.1.0",
+    "sha256": "4ea85da08a6455beca4596cea39c5a8383bb2401c2b6d9d6efd9dfe0143b6703"
+  },
+  "protocol": {
+    "id": "audit.risk.risk-advice-generate",
+    "version": "0.1.0",
+    "sha256": "5645d53e9d74784013b71fb657d2c890c515d99ccde47e19f6e0de19f607140e"
+  },
+  "execution_mode": "isolated_subprocess",
+  "capabilities": [
+    "audit.risk.risk-advice-generate"
+  ],
+  "status": "verified"
+}

@@ -1,0 +1,17 @@
+{
+  "contract_id": "market-snapshot-ref",
+  "contract_version": "9.9.9",
+  "artifact": {
+    "artifact_id": "d1e2f3a4-5b6c-4d7e-8f90-123456789abc",
+    "tenant_id": "9f8e7d6c-5b4a-4a32-8c1d-0e1f2a3b4c5d",
+    "uri": "ftp://remote/sensor_data.csv",
+    "media_type": "text/csv",
+    "sha256": "a1b2c3d4e5f67890a1b2c3d4e5f67890a1b2c3d4e5f67890a1b2c3d4e5f67890",
+    "size_bytes": 9300830,
+    "classification": "restricted"
+  },
+  "reference_time": "not-a-date",
+  "max_freshness_hours": 0,
+  "point_in_time": true,
+  "data_frequency": "yearly"
+}

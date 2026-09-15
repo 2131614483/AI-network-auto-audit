@@ -1,0 +1,20 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://audit.local/contracts/artifact-ref.schema.json",
+  "title": "ArtifactRef",
+  "description": "不可变输入、输出或审计证据工件的引用；内容不嵌入业务消息。",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["artifact_id", "tenant_id", "media_type", "sha256", "size_bytes"],
+  "properties": {
+    "artifact_id": {"type": "string", "format": "uuid"},
+    "tenant_id": {"type": "string", "format": "uuid"},
+    "media_type": {"type": "string", "minLength": 1, "maxLength": 255},
+    "sha256": {"type": "string", "pattern": "^[A-Fa-f0-9]{64}$"},
+    "size_bytes": {"type": "integer", "minimum": 0},
+    "uri": {"type": "string", "minLength": 1, "maxLength": 2048},
+    "classification": {"type": "string", "enum": ["public", "internal", "audit_confidential", "restricted"]},
+    "created_at": {"type": "string", "format": "date-time"},
+    "metadata": {"type": "object", "additionalProperties": true}
+  }
+}

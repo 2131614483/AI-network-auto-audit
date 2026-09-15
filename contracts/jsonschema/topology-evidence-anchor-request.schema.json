@@ -1,0 +1,16 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://audit.local/contracts/topology-evidence-anchor-request.schema.json",
+  "title": "TopologyEvidenceAnchorRequest",
+  "description": "Plugin Topology M9：发起一次证据锚定——把 M1–M8 证据账本（release/plan/bridge/chain/intent/approval/run/ledger/verification/proposal/decision/run-link）逐行追加进每租户一条不可变哈希链。租户由请求头 X-Tenant-Id 提供，不在请求体内。",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["scope", "idempotency_key"],
+  "properties": {
+    "scope": {
+      "enum": ["full", "topology", "chain", "execution", "verification", "remediation"],
+      "description": "full 锚定全部 M1–M8 证据表；子域 scope 仅锚定对应域的表清单。"
+    },
+    "idempotency_key": {"type": "string", "minLength": 1, "maxLength": 128}
+  }
+}

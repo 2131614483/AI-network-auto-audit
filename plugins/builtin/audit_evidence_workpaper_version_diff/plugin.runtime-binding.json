@@ -1,0 +1,18 @@
+{
+  "schema_version": "1.0.0",
+  "plugin": {
+    "id": "audit.evidence.workpaper-version-diff",
+    "version": "0.1.0",
+    "sha256": "a2c46ad3a4bf8fdebc38dcf8a5963f3b4be1499bb3afa407597fc8a33b106d9a"
+  },
+  "protocol": {
+    "id": "audit.evidence.workpaper-version-diff",
+    "version": "0.1.0",
+    "sha256": "36084da98bd2406a146d7f5a3da3cef2a96cfad1877eaa404ff2fa6a0badb267"
+  },
+  "execution_mode": "isolated_subprocess",
+  "capabilities": [
+    "audit.evidence.workpaper-version-diff"
+  ],
+  "status": "verified"
+}

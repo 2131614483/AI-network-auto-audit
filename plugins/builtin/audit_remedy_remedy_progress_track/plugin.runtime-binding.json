@@ -1,0 +1,18 @@
+{
+  "schema_version": "1.0.0",
+  "plugin": {
+    "id": "audit.remedy.remedy-progress-track",
+    "version": "0.1.0",
+    "sha256": "01575e4c291f91938f88065ea9133f2b6c63cf2a34c300f30bbdc9e63ff50d56"
+  },
+  "protocol": {
+    "id": "audit.remedy.remedy-progress-track",
+    "version": "0.1.0",
+    "sha256": "105d63f4ed20f8ce6fa1f4dbf0e6d46c3d328c3c156d9b2deca71df3563dc4c4"
+  },
+  "execution_mode": "isolated_subprocess",
+  "capabilities": [
+    "audit.remedy.remedy-progress-track"
+  ],
+  "status": "verified"
+}

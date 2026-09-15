@@ -1,0 +1,84 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://audit-network.local/contracts/rich-media-parse-result.schema.json",
+  "title": "RichMediaParseResult",
+  "description": "Structured output of a policy-gated local rich-media (MinerU) extraction run: full Markdown plus page-cited content chunks. The adapter never exposes arbitrary commands, network addresses or secrets.",
+  "type": "object",
+  "required": [
+    "adapter_key",
+    "adapter_version",
+    "input_sha256",
+    "method",
+    "markdown",
+    "chunks",
+    "images",
+    "duration_ms"
+  ],
+  "additionalProperties": false,
+  "properties": {
+    "adapter_key": {
+      "type": "string",
+      "const": "local.mineru"
+    },
+    "adapter_version": {
+      "type": "string",
+      "minLength": 1,
+      "description": "MinerU tool version reported by the local runtime."
+    },
+    "input_sha256": {
+      "type": "string",
+      "pattern": "^[0-9a-fA-F]{64}$",
+      "description": "SHA256 of the source artifact, bound before invocation."
+    },
+    "method": {
+      "type": "string",
+      "enum": ["auto", "txt", "ocr"],
+      "description": "Parsing method actually used by MinerU."
+    },
+    "markdown": {
+      "type": "string",
+      "description": "Full parsed Markdown body, including image references."
+    },
+    "chunks": {
+      "type": "array",
+      "description": "Page-cited content blocks for storage and retrieval.",
+      "items": {
+        "type": "object",
+        "required": ["type", "text", "page_idx"],
+        "additionalProperties": false,
+        "properties": {
+          "type": {
+            "type": "string",
+            "minLength": 1
+          },
+          "text": {
+            "type": "string"
+          },
+          "page_idx": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "bbox": {
+            "type": "array",
+            "minItems": 4,
+            "maxItems": 4,
+            "items": { "type": "number" }
+          },
+          "text_level": {
+            "type": "integer",
+            "minimum": 0
+          }
+        }
+      }
+    },
+    "images": {
+      "type": "array",
+      "items": { "type": "string" },
+      "description": "Relative names of extracted image files."
+    },
+    "duration_ms": {
+      "type": "integer",
+      "minimum": 0
+    }
+  }
+}

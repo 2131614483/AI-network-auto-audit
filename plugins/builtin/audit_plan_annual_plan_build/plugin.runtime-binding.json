@@ -1,0 +1,18 @@
+{
+  "schema_version": "1.0.0",
+  "plugin": {
+    "id": "audit.plan.annual-plan-build",
+    "version": "0.1.0",
+    "sha256": "98bacddf8015b18e47b64c2b05cb7c8bc685e583e40a0927bf861f6af9d9a8e9"
+  },
+  "protocol": {
+    "id": "audit.plan.annual-plan-build",
+    "version": "0.1.0",
+    "sha256": "0955d40187a19ecae3ae7b22089e583ebf9f3ac5e9a41b8747c7f18ede9caf07"
+  },
+  "execution_mode": "isolated_subprocess",
+  "capabilities": [
+    "audit.plan.annual-plan-build"
+  ],
+  "status": "verified"
+}

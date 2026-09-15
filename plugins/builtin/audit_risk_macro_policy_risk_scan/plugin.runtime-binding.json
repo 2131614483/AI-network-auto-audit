@@ -1,0 +1,18 @@
+{
+  "schema_version": "1.0.0",
+  "plugin": {
+    "id": "audit.risk.macro-policy-risk-scan",
+    "version": "0.1.0",
+    "sha256": "25c70358346d8da3b4c156bebceff73df9b0cf768ae8faa6145fa8d2c53fd6c8"
+  },
+  "protocol": {
+    "id": "audit.risk.macro-policy-risk-scan",
+    "version": "0.1.0",
+    "sha256": "efbedb505017efda5d2cec21cf1842e7f708a994f4a0706a2b4215ae406fcbcd"
+  },
+  "execution_mode": "isolated_subprocess",
+  "capabilities": [
+    "audit.risk.macro-policy-risk-scan"
+  ],
+  "status": "verified"
+}

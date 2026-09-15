@@ -1,0 +1,18 @@
+{
+  "schema_version": "1.0.0",
+  "plugin": {
+    "id": "audit.field.asset-check",
+    "version": "0.1.0",
+    "sha256": "c93dcf884f56e994429fdbf95974881f160af829e7e592c63ffcea6de808258b"
+  },
+  "protocol": {
+    "id": "audit.field.asset-check",
+    "version": "0.1.0",
+    "sha256": "29cd6a04c50e044aa1df210be82127e96372783e6cef847974aa6ee64c84adff"
+  },
+  "execution_mode": "isolated_subprocess",
+  "capabilities": [
+    "audit.field.asset-check"
+  ],
+  "status": "verified"
+}

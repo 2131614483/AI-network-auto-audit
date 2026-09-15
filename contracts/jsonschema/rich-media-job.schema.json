@@ -1,0 +1,16 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://audit-network.local/contracts/rich-media-job.schema.json",
+  "title": "RichMediaJob",
+  "description": "Durable, policy-authorized local MinerU job. The job contains no command, URL, credential or arbitrary runtime configuration.",
+  "type": "object",
+  "required": ["job_id", "ingest_file_id", "status", "attempt_count", "method"],
+  "additionalProperties": false,
+  "properties": {
+    "job_id": { "type": "string", "format": "uuid" },
+    "ingest_file_id": { "type": "string", "format": "uuid" },
+    "status": { "type": "string", "enum": ["queued", "processing", "completed", "failed"] },
+    "attempt_count": { "type": "integer", "minimum": 0 },
+    "method": { "type": "string", "enum": ["auto", "txt", "ocr"] }
+  }
+}

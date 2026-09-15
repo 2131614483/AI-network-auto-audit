@@ -1,0 +1,18 @@
+{
+  "schema_version": "1.0.0",
+  "plugin": {
+    "id": "audit.evidence-lineage",
+    "version": "0.1.0",
+    "sha256": "dea4e0ecc41340d5c3f67fd6cf07ba2bbdb4b3519ae07b9adb089211c7900a64"
+  },
+  "protocol": {
+    "id": "audit.evidence-lineage",
+    "version": "0.1.0",
+    "sha256": "3b72a3609d07a11f10dc72aa315873908b1e6a409d5a40d11f36fb0a4a5068ff"
+  },
+  "execution_mode": "isolated_subprocess",
+  "capabilities": [
+    "audit.evidence.lineage"
+  ],
+  "status": "verified"
+}

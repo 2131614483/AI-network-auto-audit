@@ -1,0 +1,38 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://audit.local/contracts/policy-rule.schema.json",
+  "title": "PolicyRule",
+  "description": "白名单、黑名单和审批规则的声明；规则命中后统一生成 PolicyDecision。",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["rule_id", "tenant_id", "name", "effect", "priority", "match"],
+  "properties": {
+    "rule_id": {"type": "string", "format": "uuid"},
+    "tenant_id": {"type": "string", "format": "uuid"},
+    "name": {"type": "string", "minLength": 1, "maxLength": 200},
+    "description": {"type": "string", "maxLength": 4000},
+    "effect": {"type": "string", "enum": ["allow", "deny", "require_approval", "freeze"]},
+    "priority": {"type": "integer", "minimum": 0, "maximum": 100000},
+    "enabled": {"type": "boolean"},
+    "match": {"$ref": "#/$defs/match"},
+    "constraints": {"type": "object", "additionalProperties": true},
+    "approval": {"type": "object", "additionalProperties": false, "properties": {"role": {"type": "string"}, "min_approvers": {"type": "integer", "minimum": 1}, "ttl_seconds": {"type": "integer", "minimum": 1}}},
+    "valid_from": {"type": "string", "format": "date-time"},
+    "valid_until": {"type": "string", "format": "date-time"},
+    "created_by": {"type": "string", "format": "uuid"}
+  },
+  "$defs": {
+    "match": {
+      "type": "object", "additionalProperties": false,
+      "properties": {
+        "capabilities": {"type": "array", "uniqueItems": true, "items": {"type": "string"}},
+        "plugin_ids": {"type": "array", "uniqueItems": true, "items": {"type": "string"}},
+        "domains": {"type": "array", "uniqueItems": true, "items": {"type": "string", "enum": ["audit", "quant", "aiops", "knowledge", "platform"]}},
+        "side_effects": {"type": "array", "uniqueItems": true, "items": {"type": "string", "enum": ["none", "read_only", "write_data", "external_mutation", "financial_execution"]}},
+        "risk_classes": {"type": "array", "uniqueItems": true, "items": {"type": "string"}},
+        "argument_equals": {"type": "object", "additionalProperties": true},
+        "network_domains": {"type": "array", "uniqueItems": true, "items": {"type": "string"}}
+      }
+    }
+  }
+}

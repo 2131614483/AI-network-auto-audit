@@ -1,0 +1,21 @@
+{
+  "contract_id": "released-graph-ref",
+  "contract_version": "1.0.0",
+  "artifact": {
+    "artifact_id": "7f3d2c1a-9b8e-4f6a-8c5d-0e1f2a3b4c5d",
+    "tenant_id": "9f8e7d6c-5b4a-4a32-8c1d-0e1f2a3b4c5d",
+    "uri": "file:///G:/数据/05-图谱数据/released/L2-evidence.graph.json",
+    "media_type": "application/json",
+    "sha256": "not-a-hash",
+    "size_bytes": 158432,
+    "classification": "audit_confidential"
+  },
+  "space_level": "L9",
+  "release_sha256": "ab12cd34ef567890ab12cd34ef567890ab12cd34ef567890ab12cd34ef567890",
+  "budget": {
+    "max_nodes": 100000,
+    "max_edges": 0,
+    "max_hops": 99,
+    "timeout_seconds": 0
+  }
+}

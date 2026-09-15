@@ -1,0 +1,33 @@
+{
+  "id": "aiops.alert-triage",
+  "version": "0.1.0",
+  "name": "AIOps 告警归因（人工复核提案，只读）",
+  "runtime": "python",
+  "entrypoint": "plugins.builtin.aiops_alert_triage.runtime:handle",
+  "capabilities": ["aiops.alert.triage"],
+  "inputs": {
+    "capability": "aiops.alert.triage",
+    "schema": "alert-event.schema.json",
+    "content_type": "application/json"
+  },
+  "outputs": {
+    "capability": "aiops.alert.triage",
+    "schema": "incident-proposal@1.0.0",
+    "content_type": "application/json"
+  },
+  "side_effects": "read_only",
+  "idempotency": "alert_fingerprint_and_window",
+  "permissions": {
+    "data_read": ["aiops.alerts", "platform.health"],
+    "data_write": [],
+    "network": "none",
+    "secrets": []
+  },
+  "resources": {"cpu": 1, "memory_mb": 256, "gpu": false, "timeout_seconds": 120},
+  "data_classification": "internal",
+  "evidence": {"preserve_inputs": true, "code_hash_required": true},
+  "tests": {
+    "contract": "tests/contract/test_aiops_alert_triage_contract.py",
+    "golden": "tests/unit/test_aiops_alert_triage_runtime.py"
+  }
+}

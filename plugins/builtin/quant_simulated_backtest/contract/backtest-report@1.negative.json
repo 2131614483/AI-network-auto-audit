@@ -1,0 +1,22 @@
+{
+  "contract_id": "backtest-report",
+  "contract_version": "1.0.0",
+  "backtest_id": "bt-bcsa-20260905-02",
+  "strategy_key": "momentum-reversion",
+  "strategy_version": "0.3.1",
+  "code_sha256": "ab12cd34ef567890ab12cd34ef567890ab12cd34ef567890ab12cd34ef567890",
+  "snapshot_sha256": "ab12cd34ef567890ab12cd34ef567890ab12cd34ef567890ab12cd34ef567890",
+  "reference_time": "2026-09-05T16:00:00+08:00",
+  "point_in_time_gate": "2026-09-05T15:59:00+08:00",
+  "metrics": {
+    "simulated_only": false,
+    "total_return": 0.184,
+    "max_drawdown": 0.081,
+    "win_rate": 1.6,
+    "n_periods": 0
+  },
+  "summary": {
+    "simulated": false,
+    "source_refs": []
+  }
+}

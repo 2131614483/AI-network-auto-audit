@@ -1,0 +1,45 @@
+{
+ "id": "audit.mandate.priority-rank",
+ "version": "0.1.0",
+ "name": "项目优先级排序（契约声明）",
+ "runtime": "python",
+ "entrypoint": "plugins.builtin.audit_mandate_priority_rank.runtime:handle",
+ "capabilities": [
+  "audit.mandate.priority-rank"
+ ],
+ "inputs": {
+  "capability": "audit.mandate.priority-rank",
+  "schema": "dataset-validation.schema.json",
+  "content_type": "application/json"
+ },
+ "outputs": {
+  "capability": "audit.mandate.priority-rank",
+  "schema": "metric-series.schema.json",
+  "content_type": "application/json"
+ },
+ "side_effects": "read_only",
+ "idempotency": "input_sha256 + capability_version",
+ "permissions": {
+  "data_read": [
+   "audit.mandate.priority-rank.read"
+  ],
+  "data_write": [],
+  "network": "none",
+  "secrets": []
+ },
+ "resources": {
+  "cpu": 1,
+  "memory_mb": 256,
+  "gpu": false,
+  "timeout_seconds": 300
+ },
+ "data_classification": "audit_confidential",
+ "evidence": {
+  "preserve_inputs": true,
+  "code_hash_required": true
+ },
+ "tests": {
+  "contract": "tests/contract/test_audit_mandate_priority_rank_contract.py",
+  "golden": "tests/unit/test_audit_mandate_priority_rank_runtime.py"
+ }
+}

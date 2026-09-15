@@ -1,0 +1,8 @@
+{
+  "schema_version": "1.0.0",
+  "plugin": {"id": "audit.investigation-plan", "version": "0.1.0", "sha256": "db1ef3798234883e21aaf195483442fc1d7cd79af49aa1b65f4460ba0453bc11"},
+  "protocol": {"id": "audit.investigation-plan", "version": "0.1.0", "sha256": "68b5ce3131d8d853ee07ee6f9063a231f1c130bea76bf174a83f873efd53eb86"},
+  "execution_mode": "isolated_subprocess",
+  "capabilities": ["audit.investigation.plan"],
+  "status": "verified"
+}

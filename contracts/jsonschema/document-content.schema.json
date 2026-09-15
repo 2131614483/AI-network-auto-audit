@@ -1,0 +1,17 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://audit.local/contracts/document-content.schema.json",
+  "title": "DocumentContent",
+  "description": "待抽取文档的不可变引用：文件工件引用、编码、语言与候选预算；文档内容不嵌入控制面消息。",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["contract_id", "contract_version", "artifact"],
+  "properties": {
+    "contract_id": {"const": "document-content"},
+    "contract_version": {"const": "1.0.0"},
+    "artifact": {"$ref": "artifact-ref.schema.json"},
+    "language": {"type": "string", "enum": ["zh", "en", "auto"]},
+    "max_entities": {"type": "integer", "minimum": 1, "maximum": 1000},
+    "max_relations": {"type": "integer", "minimum": 1, "maximum": 1000}
+  }
+}

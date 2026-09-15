@@ -1,0 +1,41 @@
+{
+  "artifact": {
+    "chapters": [
+      {
+        "body": {
+          "answered_points": [
+            {
+              "answer": "需要两级审批",
+              "question": "供应商审批流程？"
+            }
+          ],
+          "date": "2026-01-14",
+          "unanswered_count": 1
+        },
+        "heading": "王采购（经办）"
+      },
+      {
+        "body": {
+          "answered_points": [
+            {
+              "answer": "月度",
+              "question": "对账周期？"
+            }
+          ],
+          "date": "2026-01-14",
+          "unanswered_count": 0
+        },
+        "heading": "刘会计（制单）"
+      }
+    ],
+    "summary": {
+      "answered": 2,
+      "interviewees": 2,
+      "total_questions": 3
+    },
+    "title": "访谈记录（2026-01）"
+  },
+  "contract_id": "document-content",
+  "contract_version": "1.0.0",
+  "language": "zh-CN"
+}

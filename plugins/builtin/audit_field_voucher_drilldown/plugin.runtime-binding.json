@@ -1,0 +1,18 @@
+{
+  "schema_version": "1.0.0",
+  "plugin": {
+    "id": "audit.field.voucher-drilldown",
+    "version": "0.1.0",
+    "sha256": "28b93323c51a281b660e59ebb14c4784b091ffaaba5c7cc3adf93e11876aac9b"
+  },
+  "protocol": {
+    "id": "audit.field.voucher-drilldown",
+    "version": "0.1.0",
+    "sha256": "88ac79a85943544a104a9ded724ab080f6e68a8d60c23d29fe8777a4bd7a2f78"
+  },
+  "execution_mode": "isolated_subprocess",
+  "capabilities": [
+    "audit.field.voucher-drilldown"
+  ],
+  "status": "verified"
+}

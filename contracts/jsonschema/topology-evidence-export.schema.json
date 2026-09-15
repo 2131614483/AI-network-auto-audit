@@ -1,0 +1,46 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://audit.local/contracts/topology-evidence-export.schema.json",
+  "title": "TopologyEvidenceExport",
+  "description": "Plugin Topology M9：只读审计导出——按租户/范围导出证据锚点摘要 JSON + 整体 SHA256 + 锚定证明摘要；entries 仅含 id/时间戳/哈希级字段，不携带任何源表账本正文/payload。导出为 API 响应体，不落盘为真实文件。",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "chain_key", "scope", "entries", "sha256",
+    "proof_ref", "exported_at", "trace_id"
+  ],
+  "properties": {
+    "chain_key": {"type": "string", "pattern": "^evidence://[0-9a-f-]{36}/full$"},
+    "scope": {
+      "enum": ["full", "topology", "chain", "execution", "verification", "remediation"]
+    },
+    "entries": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["anchor_id", "seq", "source_table", "source_pk", "row_hash", "created_at"],
+        "properties": {
+          "anchor_id": {"type": "string", "format": "uuid"},
+          "seq": {"type": "integer", "minimum": 1},
+          "source_table": {"type": "string", "minLength": 1, "maxLength": 64},
+          "source_pk": {"type": "string", "minLength": 1, "maxLength": 64},
+          "row_hash": {"type": "string", "pattern": "^[a-f0-9]{64}$"},
+          "created_at": {"type": "string", "format": "date-time"}
+        }
+      }
+    },
+    "sha256": {"type": "string", "pattern": "^[a-f0-9]{64}$"},
+    "proof_ref": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["tail_hash", "total_anchors"],
+      "properties": {
+        "tail_hash": {"type": "string", "pattern": "^[a-f0-9]{64}$"},
+        "total_anchors": {"type": "integer", "minimum": 0}
+      }
+    },
+    "exported_at": {"type": "string", "format": "date-time"},
+    "trace_id": {"type": "string", "format": "uuid"}
+  }
+}

@@ -1,0 +1,74 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://audit.local/contracts/graph-merge-arbitration.schema.json",
+  "title": "GraphMergeSplitArbitrationRequest",
+  "description": "Phase 6 图谱合并/拆分与冲突仲裁请求契约。合并/拆分必须同空间、带乐观锁 expected_revision；仲裁只允许在 open 冲突案件上显式裁决一次。跨空间、自合并、缺节点、空拆分、非法/冲突子键由契约拒绝。",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["space_key", "action", "reason"],
+  "properties": {
+    "space_key": {"type": "string", "pattern": "^[a-z][a-z0-9._-]*$"},
+    "reason": {"type": "string", "minLength": 1, "maxLength": 1000},
+    "action": {
+      "type": "object",
+      "oneOf": [
+        {"$ref": "#/$defs/merge"},
+        {"$ref": "#/$defs/split"},
+        {"$ref": "#/$defs/arbitrate"}
+      ]
+    }
+  },
+  "$defs": {
+    "node_key": {
+      "type": "string",
+      "pattern": "^[a-z][a-z0-9._-]*:[^\\s:]+$",
+      "description": "命名空间化节点键（domain:key），避免跨空间冲突"
+    },
+    "merge": {
+      "title": "NodeMerge",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["operator", "target_key", "source_keys", "expected_revision"],
+      "properties": {
+        "operator": {"const": "merge"},
+        "target_key": {"$ref": "#/$defs/node_key"},
+        "source_keys": {"type": "array", "minItems": 1, "items": {"$ref": "#/$defs/node_key"}},
+        "expected_revision": {"type": "integer", "minimum": 1}
+      }
+    },
+    "split_part": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["node_key", "node_type", "label", "redirect_relations"],
+      "properties": {
+        "node_key": {"$ref": "#/$defs/node_key"},
+        "node_type": {"type": "string", "minLength": 1},
+        "label": {"type": "string", "minLength": 1},
+        "redirect_relations": {"type": "array", "items": {"type": "string", "minLength": 1}}
+      }
+    },
+    "split": {
+      "title": "NodeSplit",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["operator", "source_key", "parts", "expected_revision"],
+      "properties": {
+        "operator": {"const": "split"},
+        "source_key": {"$ref": "#/$defs/node_key"},
+        "parts": {"type": "array", "minItems": 1, "items": {"$ref": "#/$defs/split_part"}},
+        "expected_revision": {"type": "integer", "minimum": 1}
+      }
+    },
+    "arbitrate": {
+      "title": "ConflictArbitration",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["operator", "case_id", "decision"],
+      "properties": {
+        "operator": {"const": "arbitrate"},
+        "case_id": {"type": "string", "format": "uuid"},
+        "decision": {"enum": ["merge", "keep_source", "reject_claim", "resolve"]}
+      }
+    }
+  }
+}

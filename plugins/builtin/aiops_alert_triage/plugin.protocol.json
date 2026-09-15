@@ -1,0 +1,98 @@
+{
+  "protocol_version": "1.0.0",
+  "id": "aiops.alert-triage",
+  "version": "0.1.0",
+  "name": "AIOps 告警归因",
+  "description": "声明告警事件到人工复核提案的只读分析契约，不包含自动修复。",
+  "kind": "aiops",
+  "domains": [
+    "aiops",
+    "platform",
+    "audit"
+  ],
+  "lifecycle": "contract_only",
+  "compatibility": {
+    "host_protocol": ">=1.0.0 <2.0.0",
+    "adapters": [
+      "python",
+      "node",
+      "http",
+      "mcp",
+      "container"
+    ],
+    "optional_features": [
+      "event-envelope-v1"
+    ],
+    "fallback_behavior": "human_review"
+  },
+  "capabilities": [
+    {
+      "id": "aiops.alert.triage",
+      "summary": "对不可变告警事件进行聚合、归因并生成仅供人工复核的事件提案。",
+      "side_effects": "read_only",
+      "idempotency": "alert_fingerprint_and_window",
+      "inputs": [
+        {
+          "contract_id": "alert-event",
+          "version": "1.0.0",
+          "format": "event",
+          "delivery": "event",
+          "classification": "internal",
+          "schema_ref": "alert-event.schema.json"
+        }
+      ],
+      "outputs": [
+        {
+          "contract_id": "incident-proposal",
+          "version": "1.0.0",
+          "format": "json",
+          "delivery": "artifact_ref",
+          "classification": "internal",
+          "schema_ref": "incident-proposal.schema.json"
+        }
+      ]
+    }
+  ],
+  "governance": {
+    "default_data_classification": "internal",
+    "permissions": {
+      "data_read": [
+        "aiops.alerts",
+        "platform.health"
+      ],
+      "data_write": [],
+      "network": "none",
+      "secret_refs": []
+    },
+    "policy": {
+      "gateway_required": true,
+      "approval_required": false,
+      "evidence_required": true
+    }
+  },
+  "resources": {
+    "cpu": 1,
+    "memory_mb": 256,
+    "gpu": "none",
+    "timeout_seconds": 120
+  },
+  "observability": {
+    "trace_required": true,
+    "emits": [
+      "structured_log",
+      "metric",
+      "audit_event"
+    ],
+    "health": "declared_only"
+  },
+  "provenance": {
+    "source_refs": [
+      "docs/plugin-protocol.md",
+      "docs/plugin-topology-orchestration.md#2"
+    ]
+  },
+  "ui": {
+    "mode": "declarative",
+    "contribution_schema": "ui-contribution.schema.json"
+  }
+}

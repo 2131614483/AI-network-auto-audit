@@ -1,0 +1,29 @@
+{
+  "schema_version": "1.0.0",
+  "domain": "quant",
+  "name_zh": "量化金融",
+  "notes": "量化域：因子计算 / 实验研究 / 策略回研 / 快照守护 / 研究底稿。id 两段式（quant.experiment-evaluator），段语义差异大，用 stage_by_plugin 显式定点。",
+  "discovery": {
+    "globs": ["quant_*"]
+  },
+  "layers": {},
+  "ungrouped_stage": "q0",
+  "stages": [
+    {"key": "q1", "name_zh": "因子与信号", "order": 1, "color": "#6f9bff", "segments": ["factor"]},
+    {"key": "q2", "name_zh": "实验与回测", "order": 2, "color": "#4fd8e0", "segments": ["experiment", "backtest"]},
+    {"key": "q3", "name_zh": "投组快照", "order": 3, "color": "#7fe0b0", "segments": ["snapshot"]},
+    {"key": "q4", "name_zh": "研究沉淀", "order": 4, "color": "#b48ce0", "segments": ["research-note"]}
+  ],
+  "stage_by_plugin": {
+    "quant.factor-compute": "q1",
+    "quant.experiment-evaluator": "q2",
+    "quant.simulated-backtest": "q2",
+    "quant.snapshot-guard": "q3",
+    "quant.research-note-draft": "q4"
+  },
+  "trunk": [
+    ["q1", "q2"], ["q2", "q3"], ["q3", "q4"], ["q4", "q1"]
+  ],
+  "control_segments": [],
+  "source_refs": ["docs/quant-evidence-chain-plan.md"]
+}

@@ -1,0 +1,18 @@
+{
+  "schema_version": "1.0.0",
+  "plugin": {
+    "id": "aiops.ticket-draft",
+    "version": "0.1.0",
+    "sha256": "07db2634e1a0355fc1e5bb0c1c722c926b08edb6092efd0e6bbb817722a3b5af"
+  },
+  "protocol": {
+    "id": "aiops.ticket-draft",
+    "version": "0.1.0",
+    "sha256": "eab8b746ed2f6e3d0fa5434685290f03976a662916fee47eb9ef11a1b6e0622c"
+  },
+  "execution_mode": "isolated_subprocess",
+  "capabilities": [
+    "aiops.ticket.draft"
+  ],
+  "status": "verified"
+}

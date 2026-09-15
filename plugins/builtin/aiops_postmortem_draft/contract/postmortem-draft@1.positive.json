@@ -1,0 +1,41 @@
+{
+  "contract_id": "postmortem-draft",
+  "contract_version": "1.0.0",
+  "postmortem_id": "3f6e2b9d1845c70a",
+  "status": "draft",
+  "incident_refs": ["incident:9a1b2c3d4e5f6789"],
+  "title": "【复盘】BCSA_big_01/equipment-12 温度传感器越限（疑似过温停机）",
+  "overview": "温度传感器越限且连续三分钟无心跳，建议人工确认是否过温停机。\n\n复核理由：单源告警，需结合故障工单与日志人工复核。",
+  "timeline_steps": [
+    {"step": "事件归因", "sequence": 1, "reference": "incident:9a1b2c3d4e5f6789"},
+    {"step": "恢复核验", "sequence": 2, "reference": "verification:0a3f6e2b9d1845c7"}
+  ],
+  "root_cause_candidates": ["affected_system=BCSA_big_01"],
+  "action_items": [
+    {"action": "复核确认 BCSA_big_01/equipment-12 根本原因并补充故障日志证据", "owner": "reviewer", "priority": "high"}
+  ],
+  "verification_refs": ["file:///G:/数据/04-审计数据集与基准/PCCA-Benchmark/benchmark_cases/bigcase/BCSA/BCSA_big_01/verification.json"],
+  "evidence_refs": ["file:///G:/数据/04-审计数据集与基准/PCCA-Benchmark/benchmark_cases/bigcase/BCSA/BCSA_big_01/fault_tickets.json"],
+  "summary": {
+    "incidents": 1,
+    "severity": "critical",
+    "verification_refs": 1,
+    "truncated": false
+  },
+  "signature": {
+    "drafted_by": "aiops.postmortem-draft@0.1.0",
+    "published": false,
+    "publisher": null
+  },
+  "constraints": {
+    "no_auto_publish": true,
+    "requires_human_approval": true,
+    "immutable_source": true
+  },
+  "provenance": {
+    "incident_sha256": "a1b2c3d4e5f67890a1b2c3d4e5f67890a1b2c3d4e5f67890a1b2c3d4e5f67890",
+    "verification_sha256": "1a2b3c4d5e6f78901a2b3c4d5e6f78901a2b3c4d5e6f78901a2b3c4d5e6f7890",
+    "plugin": "aiops.postmortem-draft@0.1.0",
+    "draft_time": "2026-09-06T12:00:00Z"
+  }
+}

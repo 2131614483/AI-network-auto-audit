@@ -1,0 +1,8 @@
+{
+  "schema_version": "1.0.0",
+  "plugin": {"id": "quant.snapshot-guard", "version": "0.1.0", "sha256": "f977b8a07e291aefefcbad8095c90cda290b11c37b98b32e02233c8ae945d975"},
+  "protocol": {"id": "quant.snapshot-guard", "version": "0.1.0", "sha256": "aff1d5d2910ab640bf369753c623a74dff14655f19997cb0b419b17bccde8058"},
+  "execution_mode": "isolated_subprocess",
+  "capabilities": ["quant.dataset.validate"],
+  "status": "verified"
+}

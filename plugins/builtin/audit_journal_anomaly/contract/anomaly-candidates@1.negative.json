@@ -1,0 +1,30 @@
+{
+  "contract_id": "audit-quality-candidates",
+  "contract_version": "1.0.0",
+  "ledger_sha256": "a1b2c3d4e5f67890a1b2c3d4e5f67890a1b2c3d4e5f67890a1b2c3d4e5f67890",
+  "schema_mapping_version": "1.0.0",
+  "period": "2026-03",
+  "rule_pack_sha256": "2222222222222222222222222222222222222222222222222222222222222222",
+  "rules": ["invalid_date", "outlier_amount"],
+  "summary": {
+    "total_rows": 121,
+    "candidate_count": 3,
+    "invalid_dates": 2,
+    "outliers": 1,
+    "zscore_threshold": 3.0,
+    "truncated": false,
+    "self_confirm_finding": true
+  },
+  "candidates": [
+    {
+      "rule_id": "invalid_date:60",
+      "rule_key": "invalid_date",
+      "severity": "high",
+      "row_ref": "60",
+      "source_ref": "journal:a1b2c3d4:row:60",
+      "reason_code": "INVALID_DATE",
+      "score": 1.5,
+      "evidence": {"source_sha256": "a1b2c3d4e5f67890a1b2c3d4e5f67890a1b2c3d4e5f67890a1b2c3d4e5f67890", "date": "2026-02-30"}
+    }
+  ]
+}

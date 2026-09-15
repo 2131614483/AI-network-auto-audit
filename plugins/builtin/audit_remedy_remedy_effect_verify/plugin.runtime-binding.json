@@ -1,0 +1,18 @@
+{
+  "schema_version": "1.0.0",
+  "plugin": {
+    "id": "audit.remedy.remedy-effect-verify",
+    "version": "0.1.0",
+    "sha256": "95661c4a9c5ec568c78190534dff4b406fd402b8d208bc234c29091adcde3e9e"
+  },
+  "protocol": {
+    "id": "audit.remedy.remedy-effect-verify",
+    "version": "0.1.0",
+    "sha256": "259bc794df86abbaf67e54f1fe132c37c59bfb847e0d1f527ed3578c69f67d36"
+  },
+  "execution_mode": "isolated_subprocess",
+  "capabilities": [
+    "audit.remedy.remedy-effect-verify"
+  ],
+  "status": "verified"
+}

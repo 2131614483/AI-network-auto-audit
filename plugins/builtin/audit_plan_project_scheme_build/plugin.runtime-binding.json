@@ -1,0 +1,18 @@
+{
+  "schema_version": "1.0.0",
+  "plugin": {
+    "id": "audit.plan.project-scheme-build",
+    "version": "0.1.0",
+    "sha256": "0e238b2550e0c1a80b8309f6e9f6b9f71f856d622b28ae1c6b6368b1d667b1f3"
+  },
+  "protocol": {
+    "id": "audit.plan.project-scheme-build",
+    "version": "0.1.0",
+    "sha256": "66ae1dc8a1f141b3fda2a83b0ec11cd20e0b8a9022bf80507680bb17db68d5b5"
+  },
+  "execution_mode": "isolated_subprocess",
+  "capabilities": [
+    "audit.plan.project-scheme-build"
+  ],
+  "status": "verified"
+}

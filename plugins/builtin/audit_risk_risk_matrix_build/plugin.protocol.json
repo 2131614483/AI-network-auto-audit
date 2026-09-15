@@ -1,0 +1,136 @@
+{
+ "protocol_version": "1.0.0",
+ "id": "audit.risk.risk-matrix-build",
+ "version": "0.1.0",
+ "name": "风险矩阵生成",
+ "description": "汇总各类风险点生成影响-概率矩阵；上游 6 类风险扫描，下游输出至风险等级赋值。",
+ "kind": "visualization",
+ "domains": [
+  "audit",
+  "compliance"
+ ],
+ "lifecycle": "verified",
+ "compatibility": {
+  "host_protocol": ">=1.0.0 <2.0.0",
+  "adapters": [
+   "python"
+  ],
+  "fallback_behavior": "human_review"
+ },
+ "capabilities": [
+  {
+   "id": "audit.risk.risk-matrix-build",
+   "summary": "风险矩阵生成：汇总各类风险点生成影响-概率矩阵；上游 6 类风险扫描，下游输出至风险等级赋值。",
+   "side_effects": "read_only",
+   "idempotency": "input_sha256 + capability_version",
+   "inputs": [
+    {
+     "contract_id": "policy-risk-set",
+     "version": "1.0.0",
+     "format": "artifact_ref",
+     "delivery": "reference",
+     "classification": "audit_confidential",
+     "schema_ref": "anomaly-candidates.schema.json",
+     "max_bytes": 67108864
+    },
+    {
+     "contract_id": "industry-risk-set",
+     "version": "1.0.0",
+     "format": "artifact_ref",
+     "delivery": "reference",
+     "classification": "audit_confidential",
+     "schema_ref": "anomaly-candidates.schema.json",
+     "max_bytes": 67108864
+    },
+    {
+     "contract_id": "ic-risk-set",
+     "version": "1.0.0",
+     "format": "artifact_ref",
+     "delivery": "reference",
+     "classification": "audit_confidential",
+     "schema_ref": "anomaly-candidates.schema.json",
+     "max_bytes": 67108864
+    },
+    {
+     "contract_id": "finance-anomaly-set",
+     "version": "1.0.0",
+     "format": "artifact_ref",
+     "delivery": "reference",
+     "classification": "audit_confidential",
+     "schema_ref": "anomaly-candidates.schema.json",
+     "max_bytes": 67108864
+    },
+    {
+     "contract_id": "process-gap-set",
+     "version": "1.0.0",
+     "format": "artifact_ref",
+     "delivery": "reference",
+     "classification": "audit_confidential",
+     "schema_ref": "anomaly-candidates.schema.json",
+     "max_bytes": 67108864
+    },
+    {
+     "contract_id": "fraud-risk-set",
+     "version": "1.0.0",
+     "format": "artifact_ref",
+     "delivery": "reference",
+     "classification": "audit_confidential",
+     "schema_ref": "anomaly-candidates.schema.json",
+     "max_bytes": 67108864
+    }
+   ],
+   "outputs": [
+    {
+     "contract_id": "risk-matrix",
+     "version": "1.0.0",
+     "format": "json",
+     "delivery": "request_response",
+     "classification": "audit_confidential",
+     "schema_ref": "metric-series.schema.json",
+     "max_bytes": 16777216
+    }
+   ]
+  }
+ ],
+ "governance": {
+  "default_data_classification": "audit_confidential",
+  "permissions": {
+   "data_read": [
+    "audit.risk.risk-matrix-build.read"
+   ],
+   "data_write": [],
+   "network": "none",
+   "secret_refs": []
+  },
+  "policy": {
+   "gateway_required": true,
+   "approval_required": false,
+   "evidence_required": true
+  }
+ },
+ "resources": {
+  "cpu": 1,
+  "memory_mb": 256,
+  "gpu": "none",
+  "timeout_seconds": 300
+ },
+ "observability": {
+  "trace_required": true,
+  "emits": [
+   "structured_log",
+   "artifact_ref",
+   "audit_event"
+  ],
+  "health": "declared_only"
+ },
+ "provenance": {
+  "source_refs": [
+   "docs/audit-plugin-network-100.md#35",
+   "docs/插件开发与接入标准-UPP-v1.0.md",
+   "plugins/builtin/audit-risk-risk-matrix-build/runtime.py"
+  ]
+ },
+ "ui": {
+  "mode": "none"
+ }
+}

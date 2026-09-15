@@ -1,0 +1,34 @@
+{
+  "contract_id": "research-note-draft",
+  "contract_version": "1.0.0",
+  "note_id": "7c9a41f3e2b8d650",
+  "status": "draft",
+  "evaluation_refs": ["evaluation:a1b2c3d4e5f67890"],
+  "strategy": {"key": "momentum", "version": "2.1.0"},
+  "title": "【研究结论】momentum@2.1.0 模拟回测稳健性复核",
+  "overview": "依据实验评估（proposed）逐项复核：稳健性 stable 0.72，漂移 0 项，晋级建议 promote。\n\n初判：在稳健性与风险调整收益上满足晋级门槛，可进入独立 Reviewer 复核。",
+  "findings": [
+    "稳健性 stable（score 0.72），主要参考逐期收益稳定性与正向周期占比。",
+    "相对基线无指标漂移（drift_count=0）。"
+  ],
+  "recommendations": [
+    "晋级建议 promote，需独立 Reviewer 复核后由人工发布研究结论。"
+  ],
+  "summary": {"evaluations": 1, "recommendation": "promote", "truncated": false},
+  "signature": {
+    "drafted_by": "quant.research-note-draft@0.1.0",
+    "published": false,
+    "publisher": null
+  },
+  "constraints": {
+    "no_auto_publish": true,
+    "no_order_generation": true,
+    "requires_human_approval": true,
+    "immutable_source": true
+  },
+  "provenance": {
+    "evaluation_sha256": "a1b2c3d4e5f67890a1b2c3d4e5f67890a1b2c3d4e5f67890a1b2c3d4e5f67890",
+    "plugin": "quant.research-note-draft@0.1.0",
+    "draft_time": "2026-09-06T12:00:00Z"
+  }
+}

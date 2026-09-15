@@ -1,0 +1,50 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://audit.local/contracts/topology-remediation-proposal.schema.json",
+  "title": "TopologyRemediationProposal",
+  "description": "插件组网修复提案只读投影（M8）：一次漂移处置的证据记录——status 由不可变证据账本推导（pending_approval/approved/rejected/closed，终局不可翻转）；action 为建议修复动作；affected_slots 与 baseline 继承 M7 回滚裁定；remediation_run_id 仅在 approved 且已发起受治理重跑后非空；不携带节点账本正文/payload。",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["proposal_id", "verification_id", "run_id", "chain_key", "status", "action", "affected_slots", "baseline", "remediation_run_id", "reason", "created_at"],
+  "properties": {
+    "proposal_id": {"type": "string", "format": "uuid"},
+    "verification_id": {"type": "string", "format": "uuid"},
+    "run_id": {"type": "string", "format": "uuid"},
+    "chain_key": {"type": "string", "pattern": "^chain-[a-z0-9]{16}$"},
+    "status": {"enum": ["pending_approval", "approved", "rejected", "closed"]},
+    "action": {"enum": ["re-verify", "re-run-locked-release", "escalate-human"]},
+    "affected_slots": {"type": "array", "items": {"type": "string"}, "uniqueItems": true, "minItems": 1},
+    "baseline": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["reference_run_id", "chain_checksum", "planner_version"],
+      "properties": {
+        "reference_run_id": {"anyOf": [{"type": "string", "format": "uuid"}, {"type": "null"}]},
+        "chain_checksum": {"type": "string", "pattern": "^[a-f0-9]{64}$"},
+        "planner_version": {"type": "string", "maxLength": 64}
+      }
+    },
+    "remediation_run_id": {"anyOf": [{"type": "string", "format": "uuid"}, {"type": "null"}]},
+    "reason": {"type": "string", "maxLength": 500},
+    "trace_id": {"type": "string", "format": "uuid"},
+    "created_at": {"type": "string", "format": "date-time"}
+  },
+  "allOf": [
+    {
+      "if": {"properties": {"status": {"const": "approved"}}, "required": ["status"]},
+      "then": {"properties": {"remediation_run_id": {"anyOf": [{"type": "string", "format": "uuid"}, {"type": "null"}]}}}
+    },
+    {
+      "if": {"properties": {"status": {"const": "pending_approval"}}, "required": ["status"]},
+      "then": {"properties": {"remediation_run_id": {"const": null}}}
+    },
+    {
+      "if": {"properties": {"status": {"const": "rejected"}}, "required": ["status"]},
+      "then": {"properties": {"remediation_run_id": {"const": null}}}
+    },
+    {
+      "if": {"properties": {"status": {"const": "closed"}}, "required": ["status"]},
+      "then": {"properties": {"remediation_run_id": {"const": null}}}
+    }
+  ]
+}

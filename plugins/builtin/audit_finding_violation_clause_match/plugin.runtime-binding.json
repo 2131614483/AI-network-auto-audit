@@ -1,0 +1,18 @@
+{
+  "schema_version": "1.0.0",
+  "plugin": {
+    "id": "audit.finding.violation-clause-match",
+    "version": "0.1.0",
+    "sha256": "0720b4d520909a47705d77289381a10eb30d1e5030c7178f58212fe0bcaa9342"
+  },
+  "protocol": {
+    "id": "audit.finding.violation-clause-match",
+    "version": "0.1.0",
+    "sha256": "cd52e4280fd800fa90c39b8ee55fc232781aa5b73fe4780343c8492a0bba752f"
+  },
+  "execution_mode": "isolated_subprocess",
+  "capabilities": [
+    "audit.finding.violation-clause-match"
+  ],
+  "status": "verified"
+}

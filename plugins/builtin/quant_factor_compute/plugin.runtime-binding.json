@@ -1,0 +1,8 @@
+{
+  "schema_version": "1.0.0",
+  "plugin": {"id": "quant.factor-compute", "version": "0.1.0", "sha256": "cad370e5592ee7a2484215882fe687aacc90f47deb384282a18a86877c4631c9"},
+  "protocol": {"id": "quant.factor-compute", "version": "0.1.0", "sha256": "f26d7be04f221daf3b7e534a824dd9579cb72cee3ffb5138ad1092d96cdaca9a"},
+  "execution_mode": "isolated_subprocess",
+  "capabilities": ["quant.factor.compute"],
+  "status": "verified"
+}

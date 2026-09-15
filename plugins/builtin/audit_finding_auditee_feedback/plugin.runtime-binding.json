@@ -1,0 +1,18 @@
+{
+  "schema_version": "1.0.0",
+  "plugin": {
+    "id": "audit.finding.auditee-feedback",
+    "version": "0.1.0",
+    "sha256": "ee3d11e8965702f83ba49d36bc2a65c0c4aa770681a2416eea70782f7ccbf856"
+  },
+  "protocol": {
+    "id": "audit.finding.auditee-feedback",
+    "version": "0.1.0",
+    "sha256": "e5807371d7e353315b56cd274981721829f61c7bd184895a57a3ff547ce71127"
+  },
+  "execution_mode": "isolated_subprocess",
+  "capabilities": [
+    "audit.finding.auditee-feedback"
+  ],
+  "status": "verified"
+}

@@ -1,0 +1,58 @@
+.venv/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+node_modules/
+desktop/node_modules/
+desktop/out/
+# Stale build outputs left by earlier previsualisation passes.  `desktop/out/`
+# above only covers the canonical directory, so these were being picked up by
+# `git add -A` and would have shipped ~10 MB of dead bundles.
+desktop/out.*/
+desktop/npm-install.*.log
+dist/
+build/
+*.egg-info/
+.data/*
+# ...but the deterministic audit-simulation fixtures are test *inputs*,
+# not runtime state: ~12 small files that several suites read from
+# `.data/audit-sim/`.  Leaving them untracked meant a fresh clone, CI, or
+# another machine failed with FileNotFoundError on ledger.csv.  Note the
+# pattern is `.data/*` rather than `.data/` — git cannot re-include a path
+# whose parent directory is excluded outright.
+!.data/audit-sim/
+.env
+*.log
+# ...but the logs under a *deliverable* archive are the artifact itself, not
+# runtime noise.  Without these negations `*.log` above silently excluded the
+# three most important files of the run archive — including the main timeline
+# log — so the archive would have been committed without its centrepiece.
+!docs/全流程运行日志-20260912/**/*.log
+!docs/AI组网Demo-20260911-原始数据/**/*.log
+coverage.xml
+.coverage
+cankao/
+# TypeScript incremental build state (regenerated on every typecheck).
+*.tsbuildinfo
+# One-off local database probes at the repo root.  Not part of the project;
+# `_m7_check.py` even says "run once, delete later" in its own docstring.
+_conn_check.py
+_m7_check.py
+# A literal directory named "%SystemDrive%" gets created when a script using
+# %VAR% is run from a shell that does not expand it (Git Bash).  It ends up
+# holding copies of Windows' own ProgramData caches, which must never be
+# committed.  Junk — safe to delete, but ignored so it cannot leak in.
+# A stray duplicate of the run archive appeared on disk during the CI work
+# (1712 files, created 14:47 on 2026-09-12); its origin is not accounted for.
+# It is NOT deleted — the retention rule is "keep everything" — but it must not
+# be committed, since it is a byte-for-byte copy of
+# `docs/全流程运行日志-20260912/` and would double that archive in git.
+docs/全流程运行日志-20260912-完整归档/
+%SystemDrive%/
+# IDE state.  Nothing here is needed to build or run the project, and the
+# per-user files (misc.xml, modules.xml) only describe one machine's checkout.
+# `git rm -r --cached .idea` removed the already-tracked copies; the files stay
+# on disk.
+.idea/

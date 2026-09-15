@@ -1,0 +1,18 @@
+{
+  "schema_version": "1.0.0",
+  "plugin": {
+    "id": "audit.report.report-multi-review",
+    "version": "0.1.0",
+    "sha256": "71a89e358cd1ec29f2c5424a2f2d615eecff89483ef1ea911988bcf7e134cb36"
+  },
+  "protocol": {
+    "id": "audit.report.report-multi-review",
+    "version": "0.1.0",
+    "sha256": "4452e84a5c5b6cbf7fe134b673412d64bb04f8db3e11fb05843ff722ba10e15b"
+  },
+  "execution_mode": "isolated_subprocess",
+  "capabilities": [
+    "audit.report.report-multi-review"
+  ],
+  "status": "verified"
+}

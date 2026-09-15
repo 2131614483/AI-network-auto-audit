@@ -1,0 +1,54 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://audit.local/contracts/dataset-validation.schema.json",
+  "title": "DatasetValidation",
+  "description": "市场快照数据集校验输出：逐项检查结果、违规明细与汇总；不产生任何写入副作用。",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["contract_id", "contract_version", "snapshot_sha256", "summary", "checks", "violations"],
+  "properties": {
+    "contract_id": {"const": "dataset-validation"},
+    "contract_version": {"const": "1.0.0"},
+    "snapshot_sha256": {"type": "string", "pattern": "^[A-Fa-f0-9]{64}$"},
+    "summary": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["valid", "checked_columns", "checked_rows", "missing_values"],
+      "properties": {
+        "valid": {"type": "boolean"},
+        "checked_columns": {"type": "integer", "minimum": 0},
+        "checked_rows": {"type": "integer", "minimum": 0},
+        "missing_values": {"type": "integer", "minimum": 0},
+        "duplicate_timestamps": {"type": "integer", "minimum": 0},
+        "last_timestamp": {"type": "string", "format": "date-time"},
+        "first_timestamp": {"type": "string", "format": "date-time"},
+        "freshness_hours": {"type": "number", "minimum": 0}
+      }
+    },
+    "checks": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["check_id", "status", "message"],
+        "properties": {
+          "check_id": {"type": "string", "enum": ["csv_parse", "columns", "freshness", "point_in_time", "duplicate_timestamps", "missing_rate"]},
+          "status": {"type": "string", "enum": ["pass", "fail", "warn"]},
+          "message": {"type": "string", "minLength": 1, "maxLength": 1024}
+        }
+      }
+    },
+    "violations": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["check_id", "message"],
+        "properties": {
+          "check_id": {"type": "string", "enum": ["csv_parse", "columns", "freshness", "point_in_time", "duplicate_timestamps", "missing_rate"]},
+          "message": {"type": "string", "minLength": 1, "maxLength": 1024}
+        }
+      }
+    }
+  }
+}

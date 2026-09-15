@@ -1,0 +1,273 @@
+{
+  "schema_version": "1.0.0",
+  "reviewed_by": "audit-domain-review",
+  "reviewed_on": "2026-09-12",
+  "note": "端口的业务语义身份。受控词表：business_object 必须是某个 canonical 契约 id。别名只在 alias_groups 里生效（每条都有作者手写主链 .data/_ai_compose_demo.py 的 CHAIN 作证）；schema_ref 永远只是兼容性过滤器，不参与身份判定 —— 实测按 schema_ref 对齐会产生 ocr-image←masked-set 这类错误边。suggested_alias_groups 只登记、不生效。",
+  "alias_groups": [
+    {
+      "canonical": "finance-anomaly-set",
+      "members": [
+        "suspicion-set"
+      ],
+      "evidence": "CHAIN finance-anomaly-set -> suspicion-set",
+      "confirmed": true
+    },
+    {
+      "canonical": "issue-type-set",
+      "members": [
+        "issue-verify-input"
+      ],
+      "evidence": "CHAIN issue-type-set -> issue-verify-input",
+      "confirmed": true
+    },
+    {
+      "canonical": "violation-clause",
+      "members": [
+        "issue-trace-input"
+      ],
+      "evidence": "CHAIN violation-clause -> issue-trace-input",
+      "confirmed": true
+    },
+    {
+      "canonical": "project-scheme",
+      "members": [
+        "scheme-request"
+      ],
+      "evidence": "CHAIN project-scheme -> scheme-request",
+      "confirmed": true
+    },
+    {
+      "canonical": "photo-evidence",
+      "members": [
+        "evidence-input"
+      ],
+      "evidence": "CHAIN photo-evidence -> evidence-input",
+      "confirmed": true
+    },
+    {
+      "canonical": "report-frame",
+      "members": [
+        "report-draft-input"
+      ],
+      "evidence": "CHAIN report-frame -> report-draft-input",
+      "confirmed": true
+    },
+    {
+      "canonical": "final-issue-set",
+      "members": [
+        "history-issue-set"
+      ],
+      "evidence": "两侧同为 finding-draft.schema.json；issue-final-review 的最终问题集正是趋势分析要的历史问题集",
+      "confirmed": true
+    },
+    {
+      "canonical": "audit-notice",
+      "members": [
+        "notice-accept"
+      ],
+      "evidence": "两侧同为 document-content.schema.json；资料报送由审计通知书触发，受理即消费该通知书",
+      "confirmed": true
+    }
+  ],
+  "suggested_alias_groups": [
+    {
+      "canonical": "metric-output",
+      "members": [
+        "viz-input"
+      ],
+      "evidence": "同 metric-series；可视化消费度量输出，待评审",
+      "confirmed": false
+    }
+  ],
+  "external_inputs": [
+    {
+      "contract_id": "access-request",
+      "reason": "端口名表明其为外部/人工输入（request/query/raw/源数据），本网无生产者是设计行为"
+    },
+    {
+      "contract_id": "asset-input",
+      "reason": "端口名表明其为外部/人工输入（request/query/raw/源数据），本网无生产者是设计行为"
+    },
+    {
+      "contract_id": "audit-evidence-index",
+      "reason": "立项/计划阶段消费的既往证据索引，由审计库房/外部提供。注意它**不是** evidence-index 的别名：两者 schema 结构不同（AuditEvidenceIndex={evidence,period} vs EvidenceLineage={lineage_id,nodes,edges}），转换不可推导"
+    },
+    {
+      "contract_id": "audit-source-request",
+      "reason": "端口名表明其为外部/人工输入（request/query/raw/源数据），本网无生产者是设计行为"
+    },
+    {
+      "contract_id": "borrow-request",
+      "reason": "端口名表明其为外部/人工输入（request/query/raw/源数据），本网无生产者是设计行为"
+    },
+    {
+      "contract_id": "checkin-input",
+      "reason": "端口名表明其为外部/人工输入（request/query/raw/源数据），本网无生产者是设计行为"
+    },
+    {
+      "contract_id": "confirm-input",
+      "reason": "端口名表明其为外部/人工输入（request/query/raw/源数据），本网无生产者是设计行为"
+    },
+    {
+      "contract_id": "daily-progress",
+      "reason": "端口名表明其为外部/人工输入（request/query/raw/源数据），本网无生产者是设计行为"
+    },
+    {
+      "contract_id": "demand-input",
+      "reason": "端口名表明其为外部/人工输入（request/query/raw/源数据），本网无生产者是设计行为"
+    },
+    {
+      "contract_id": "encrypt-request",
+      "reason": "端口名表明其为外部/人工输入（request/query/raw/源数据），本网无生产者是设计行为"
+    },
+    {
+      "contract_id": "extension-request",
+      "reason": "端口名表明其为外部/人工输入（request/query/raw/源数据），本网无生产者是设计行为"
+    },
+    {
+      "contract_id": "field-finding-input",
+      "reason": "端口名表明其为外部/人工输入（request/query/raw/源数据），本网无生产者是设计行为"
+    },
+    {
+      "contract_id": "finding-set",
+      "reason": "已确认问题清单：由人工确认后提供。注意它**不是** finding-draft 的别名 —— 两者 schema 结构不同（FindingSet 需 engagement_id/engagement_name，FindingDraft 只有 draft_id/哈希/摘要），转换不可推导，因此只能作为外部输入"
+    },
+    {
+      "contract_id": "fraud-input",
+      "reason": "端口名表明其为外部/人工输入（request/query/raw/源数据），本网无生产者是设计行为"
+    },
+    {
+      "contract_id": "ic-flow",
+      "reason": "端口名表明其为外部/人工输入（request/query/raw/源数据），本网无生产者是设计行为"
+    },
+    {
+      "contract_id": "industry-benchmark",
+      "reason": "端口名表明其为外部/人工输入（request/query/raw/源数据），本网无生产者是设计行为"
+    },
+    {
+      "contract_id": "inquiry-request",
+      "reason": "端口名表明其为外部/人工输入（request/query/raw/源数据），本网无生产者是设计行为"
+    },
+    {
+      "contract_id": "interview-input",
+      "reason": "端口名表明其为外部/人工输入（request/query/raw/源数据），本网无生产者是设计行为"
+    },
+    {
+      "contract_id": "inventory-input",
+      "reason": "端口名表明其为外部/人工输入（request/query/raw/源数据），本网无生产者是设计行为"
+    },
+    {
+      "contract_id": "journal-artifact-ref",
+      "reason": "端口名表明其为外部/人工输入（request/query/raw/源数据），本网无生产者是设计行为"
+    },
+    {
+      "contract_id": "ledger-artifact-ref",
+      "reason": "端口名表明其为外部/人工输入（request/query/raw/源数据），本网无生产者是设计行为"
+    },
+    {
+      "contract_id": "lineage-query",
+      "reason": "端口名表明其为外部/人工输入（request/query/raw/源数据），本网无生产者是设计行为"
+    },
+    {
+      "contract_id": "log-event",
+      "reason": "端口名表明其为外部/人工输入（request/query/raw/源数据），本网无生产者是设计行为"
+    },
+    {
+      "contract_id": "mask-request",
+      "reason": "端口名表明其为外部/人工输入（request/query/raw/源数据），本网无生产者是设计行为"
+    },
+    {
+      "contract_id": "master-source",
+      "reason": "端口名表明其为外部/人工输入（request/query/raw/源数据），本网无生产者是设计行为"
+    },
+    {
+      "contract_id": "meeting-audio",
+      "reason": "端口名表明其为外部/人工输入（request/query/raw/源数据），本网无生产者是设计行为"
+    },
+    {
+      "contract_id": "metadata-query",
+      "reason": "端口名表明其为外部/人工输入（request/query/raw/源数据），本网无生产者是设计行为"
+    },
+    {
+      "contract_id": "metric-input",
+      "reason": "端口名表明其为外部/人工输入（request/query/raw/源数据），本网无生产者是设计行为"
+    },
+    {
+      "contract_id": "nlp-input",
+      "reason": "端口名表明其为外部/人工输入（request/query/raw/源数据），本网无生产者是设计行为"
+    },
+    {
+      "contract_id": "ocr-image",
+      "reason": "端口名表明其为外部/人工输入（request/query/raw/源数据），本网无生产者是设计行为"
+    },
+    {
+      "contract_id": "photo-input",
+      "reason": "端口名表明其为外部/人工输入（request/query/raw/源数据），本网无生产者是设计行为"
+    },
+    {
+      "contract_id": "plan-change",
+      "reason": "端口名表明其为外部/人工输入（request/query/raw/源数据），本网无生产者是设计行为"
+    },
+    {
+      "contract_id": "policy-input",
+      "reason": "端口名表明其为外部/人工输入（request/query/raw/源数据），本网无生产者是设计行为"
+    },
+    {
+      "contract_id": "process-input",
+      "reason": "端口名表明其为外部/人工输入（request/query/raw/源数据），本网无生产者是设计行为"
+    },
+    {
+      "contract_id": "project-flow-input",
+      "reason": "端口名表明其为外部/人工输入（request/query/raw/源数据），本网无生产者是设计行为"
+    },
+    {
+      "contract_id": "project-review-input",
+      "reason": "端口名表明其为外部/人工输入（request/query/raw/源数据），本网无生产者是设计行为"
+    },
+    {
+      "contract_id": "quality-input",
+      "reason": "端口名表明其为外部/人工输入（request/query/raw/源数据），本网无生产者是设计行为"
+    },
+    {
+      "contract_id": "raw-biz-set",
+      "reason": "端口名表明其为外部/人工输入（request/query/raw/源数据），本网无生产者是设计行为"
+    },
+    {
+      "contract_id": "raw-finance-set",
+      "reason": "端口名表明其为外部/人工输入（request/query/raw/源数据），本网无生产者是设计行为"
+    },
+    {
+      "contract_id": "released-graph-ref",
+      "reason": "端口名表明其为外部/人工输入（request/query/raw/源数据），本网无生产者是设计行为"
+    },
+    {
+      "contract_id": "remedy-evidence",
+      "reason": "端口名表明其为外部/人工输入（request/query/raw/源数据），本网无生产者是设计行为"
+    },
+    {
+      "contract_id": "rule-input",
+      "reason": "端口名表明其为外部/人工输入（request/query/raw/源数据），本网无生产者是设计行为"
+    },
+    {
+      "contract_id": "sampling-input",
+      "reason": "端口名表明其为外部/人工输入（request/query/raw/源数据），本网无生产者是设计行为"
+    },
+    {
+      "contract_id": "search-query",
+      "reason": "端口名表明其为外部/人工输入（request/query/raw/源数据），本网无生产者是设计行为"
+    },
+    {
+      "contract_id": "tag-query",
+      "reason": "端口名表明其为外部/人工输入（request/query/raw/源数据），本网无生产者是设计行为"
+    },
+    {
+      "contract_id": "viz-input",
+      "reason": "端口名表明其为外部/人工输入（request/query/raw/源数据），本网无生产者是设计行为"
+    },
+    {
+      "contract_id": "workflow-request",
+      "reason": "端口名表明其为外部/人工输入（request/query/raw/源数据），本网无生产者是设计行为"
+    }
+  ],
+  "unreviewed_inputs": []
+}

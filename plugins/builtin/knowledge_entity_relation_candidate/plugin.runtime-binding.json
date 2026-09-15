@@ -1,0 +1,8 @@
+{
+  "schema_version": "1.0.0",
+  "plugin": {"id": "knowledge.entity-relation-candidate", "version": "0.1.0", "sha256": "48a3ab8740505f56358bafdd2555a30b5c273e2f40f3bba52d87e0df7389edfb"},
+  "protocol": {"id": "knowledge.entity-relation-candidate", "version": "0.1.0", "sha256": "54039a7eba7f6abb8e8867911c99b7d9485bda9b30e13b4211ae0e56e73fa3fc"},
+  "execution_mode": "isolated_subprocess",
+  "capabilities": ["knowledge.extract.relations"],
+  "status": "verified"
+}

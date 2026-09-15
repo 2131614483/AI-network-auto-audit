@@ -1,0 +1,18 @@
+{
+  "schema_version": "1.0.0",
+  "plugin": {
+    "id": "audit.foundation.biz-standardize",
+    "version": "0.1.0",
+    "sha256": "037752cf45eda76649df9d71984bbfeda585d2983dfe0f72f31875e860400606"
+  },
+  "protocol": {
+    "id": "audit.foundation.biz-standardize",
+    "version": "0.1.0",
+    "sha256": "4d474ec1cc4c63e3bcee2f4ceb3f087fc0c190178773bff7b56610cba534411b"
+  },
+  "execution_mode": "isolated_subprocess",
+  "capabilities": [
+    "audit.foundation.biz-standardize"
+  ],
+  "status": "verified"
+}

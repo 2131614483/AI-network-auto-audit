@@ -1,0 +1,18 @@
+{
+  "schema_version": "1.0.0",
+  "plugin": {
+    "id": "audit.foundation.data-mask",
+    "version": "0.1.0",
+    "sha256": "7ee26292993f2aad277304f2abfa8d35cb941c5adfaf313357a1c8b6881709ac"
+  },
+  "protocol": {
+    "id": "audit.foundation.data-mask",
+    "version": "0.1.0",
+    "sha256": "46ce5d22e343c8655d64fe530f5cc7d44f3838da4626f2ba191782f3538e569b"
+  },
+  "execution_mode": "isolated_subprocess",
+  "capabilities": [
+    "audit.foundation.data-mask"
+  ],
+  "status": "verified"
+}

@@ -1,0 +1,18 @@
+{
+  "schema_version": "1.0.0",
+  "plugin": {
+    "id": "audit.risk.risk-heatmap-draw",
+    "version": "0.1.0",
+    "sha256": "33ab628a4ee7d82a15eacec182c091160f565a252ee1100a088fc56458a08516"
+  },
+  "protocol": {
+    "id": "audit.risk.risk-heatmap-draw",
+    "version": "0.1.0",
+    "sha256": "44f66efa8beb55a3044382d705dc1680b544364b18575ebd4e1964eb7ba2e175"
+  },
+  "execution_mode": "isolated_subprocess",
+  "capabilities": [
+    "audit.risk.risk-heatmap-draw"
+  ],
+  "status": "verified"
+}

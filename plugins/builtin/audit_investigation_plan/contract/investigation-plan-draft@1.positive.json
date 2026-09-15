@@ -1,0 +1,45 @@
+{
+  "contract_id": "investigation-plan-draft",
+  "contract_version": "1.0.0",
+  "anomaly_set_sha256": "a1b2c3d4e5f67890a1b2c3d4e5f67890a1b2c3d4e5f67890a1b2c3d4e5f67890",
+  "plan_id": "a1b2c3d4e5f67890",
+  "period": "2026-03",
+  "rule_pack_sha256": "2222222222222222222222222222222222222222222222222222222222222222",
+  "steps": [
+    {
+      "step_id": "a1b2c3d4e5f67890",
+      "order": 1,
+      "rule_key": "invalid_date",
+      "action": "核对异常行的记账日期与原始业务日期。命中 1 条、最高严重度 high。",
+      "target_refs": ["journal:a1b2c3d4:row:60"],
+      "required_evidence": ["原始凭单"],
+      "rationale": "规则命中 1 条候选，最高严重度 high，需主动证伪反证后才能继续。"
+    }
+  ],
+  "evidence_gaps": [
+    {
+      "gap_id": "a1b2c3d4e5f67890",
+      "evidence_type": "原始凭单",
+      "purpose": "验证 invalid_date 反证与业务实质所需材料。",
+      "rule_keys": ["invalid_date"]
+    }
+  ],
+  "counter_hypotheses": [
+    {
+      "hypothesis_id": "a1b2c3d4e5f67890",
+      "hypothesis": "异常日期由系统换算或跨期调整正常产生，非人为改期。",
+      "rule_key": "invalid_date",
+      "verify_with": ["原始业务单据", "系统日切日志", "跨期调整审批"],
+      "severity": "high"
+    }
+  ],
+  "summary": {
+    "covered_candidates": 1,
+    "covered_rules": 1,
+    "steps": 1,
+    "evidence_gaps": 1,
+    "counter_hypotheses": 1,
+    "truncated": false,
+    "unknown_rule_count": 0
+  }
+}

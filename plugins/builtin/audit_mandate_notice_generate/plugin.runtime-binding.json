@@ -1,0 +1,18 @@
+{
+  "schema_version": "1.0.0",
+  "plugin": {
+    "id": "audit.mandate.notice-generate",
+    "version": "0.1.0",
+    "sha256": "0a58bff80f38ee247da822d9f408661e71f8437cf81aa0ee867d70ef40cb4ea8"
+  },
+  "protocol": {
+    "id": "audit.mandate.notice-generate",
+    "version": "0.1.0",
+    "sha256": "b100163963f7b1d37c7ca7f1c438be9524b79bd6e6aaab6d64193507a4441ba5"
+  },
+  "execution_mode": "isolated_subprocess",
+  "capabilities": [
+    "audit.mandate.notice-generate"
+  ],
+  "status": "verified"
+}

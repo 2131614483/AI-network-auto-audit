@@ -1,0 +1,94 @@
+{
+ "protocol_version": "1.0.0",
+ "id": "audit.field.interview-record",
+ "version": "0.1.0",
+ "name": "访谈记录管理",
+ "description": "记录访谈提纲/内容/要点；上游审计程序，调用 NLP 整理纪要。",
+ "kind": "ingestion",
+ "domains": [
+  "audit",
+  "compliance"
+ ],
+ "lifecycle": "verified",
+ "compatibility": {
+  "host_protocol": ">=1.0.0 <2.0.0",
+  "adapters": [
+   "python"
+  ],
+  "fallback_behavior": "human_review"
+ },
+ "capabilities": [
+  {
+   "id": "audit.field.interview-record",
+   "summary": "访谈记录管理：记录访谈提纲/内容/要点；上游审计程序，调用 NLP 整理纪要。",
+   "side_effects": "read_only",
+   "idempotency": "input_sha256 + capability_version",
+   "inputs": [
+    {
+     "contract_id": "interview-input",
+     "version": "1.0.0",
+     "format": "artifact_ref",
+     "delivery": "reference",
+     "classification": "audit_confidential",
+     "schema_ref": "artifact-ref.schema.json",
+     "max_bytes": 268435456
+    }
+   ],
+   "outputs": [
+    {
+     "contract_id": "interview-note",
+     "version": "1.0.0",
+     "format": "json",
+     "delivery": "request_response",
+     "classification": "audit_confidential",
+     "schema_ref": "document-content.schema.json",
+     "max_bytes": 67108864
+    }
+   ],
+   "invokes": [
+    "audit.foundation.nlp-process"
+   ]
+  }
+ ],
+ "governance": {
+  "default_data_classification": "audit_confidential",
+  "permissions": {
+   "data_read": [
+    "audit.field.interview-record.read"
+   ],
+   "data_write": [],
+   "network": "none",
+   "secret_refs": []
+  },
+  "policy": {
+   "gateway_required": true,
+   "approval_required": false,
+   "evidence_required": true
+  }
+ },
+ "resources": {
+  "cpu": 1,
+  "memory_mb": 256,
+  "gpu": "none",
+  "timeout_seconds": 300
+ },
+ "observability": {
+  "trace_required": true,
+  "emits": [
+   "structured_log",
+   "artifact_ref",
+   "audit_event"
+  ],
+  "health": "declared_only"
+ },
+ "provenance": {
+  "source_refs": [
+   "docs/audit-plugin-network-100.md#55",
+   "docs/插件开发与接入标准-UPP-v1.0.md",
+   "plugins/builtin/audit_field_interview_record/runtime.py"
+  ]
+ },
+ "ui": {
+  "mode": "none"
+ }
+}

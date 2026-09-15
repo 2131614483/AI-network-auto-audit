@@ -1,0 +1,18 @@
+{
+  "schema_version": "1.0.0",
+  "plugin": {
+    "id": "audit.foundation.nlp-process",
+    "version": "0.1.0",
+    "sha256": "0ecaa0ea0bd9b234382dfd0e25f88775286337c5a80e159c8d17c7b60a84e42a"
+  },
+  "protocol": {
+    "id": "audit.foundation.nlp-process",
+    "version": "0.1.0",
+    "sha256": "6b35a739519863261d21306e40abc459d83e99014bcb2cdab567e862028fe77f"
+  },
+  "execution_mode": "isolated_subprocess",
+  "capabilities": [
+    "audit.foundation.nlp-process"
+  ],
+  "status": "verified"
+}

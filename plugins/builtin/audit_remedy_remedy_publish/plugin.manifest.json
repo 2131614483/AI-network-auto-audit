@@ -1,0 +1,45 @@
+{
+ "id": "audit.remedy.remedy-publish",
+ "version": "0.1.0",
+ "name": "整改结果公示（契约声明）",
+ "runtime": "python",
+ "entrypoint": "plugins.builtin.audit_remedy_remedy_publish.runtime:handle",
+ "capabilities": [
+  "audit.remedy.remedy-publish"
+ ],
+ "inputs": {
+  "capability": "audit.remedy.remedy-publish",
+  "schema": "workflow.schema.json",
+  "content_type": "application/json"
+ },
+ "outputs": {
+  "capability": "audit.remedy.remedy-publish",
+  "schema": "document-content.schema.json",
+  "content_type": "application/json"
+ },
+ "side_effects": "read_only",
+ "idempotency": "input_sha256 + capability_version",
+ "permissions": {
+  "data_read": [
+   "audit.remedy.remedy-publish.read"
+  ],
+  "data_write": [],
+  "network": "none",
+  "secrets": []
+ },
+ "resources": {
+  "cpu": 1,
+  "memory_mb": 256,
+  "gpu": false,
+  "timeout_seconds": 300
+ },
+ "data_classification": "audit_confidential",
+ "evidence": {
+  "preserve_inputs": true,
+  "code_hash_required": true
+ },
+ "tests": {
+  "contract": "tests/contract/test_audit_remedy_remedy_publish_contract.py",
+  "golden": "tests/unit/test_audit_remedy_remedy_publish_runtime.py"
+ }
+}

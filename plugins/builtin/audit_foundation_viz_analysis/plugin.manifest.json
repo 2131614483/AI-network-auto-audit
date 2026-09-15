@@ -1,0 +1,45 @@
+{
+ "id": "audit.foundation.viz-analysis",
+ "version": "0.1.0",
+ "name": "可视化分析（契约声明）",
+ "runtime": "python",
+ "entrypoint": "plugins.builtin.audit_foundation_viz_analysis.runtime:handle",
+ "capabilities": [
+  "audit.foundation.viz-analysis"
+ ],
+ "inputs": {
+  "capability": "audit.foundation.viz-analysis",
+  "schema": "metric-series.schema.json",
+  "content_type": "application/json"
+ },
+ "outputs": {
+  "capability": "audit.foundation.viz-analysis",
+  "schema": "artifact-ref.schema.json",
+  "content_type": "application/json"
+ },
+ "side_effects": "read_only",
+ "idempotency": "input_sha256 + capability_version",
+ "permissions": {
+  "data_read": [
+   "audit.foundation.viz-analysis.read"
+  ],
+  "data_write": [],
+  "network": "none",
+  "secrets": []
+ },
+ "resources": {
+  "cpu": 1,
+  "memory_mb": 256,
+  "gpu": false,
+  "timeout_seconds": 300
+ },
+ "data_classification": "audit_confidential",
+ "evidence": {
+  "preserve_inputs": true,
+  "code_hash_required": true
+ },
+ "tests": {
+  "contract": "tests/contract/test_audit_foundation_viz_analysis_contract.py",
+  "golden": "tests/unit/test_audit_foundation_viz_analysis_runtime.py"
+ }
+}

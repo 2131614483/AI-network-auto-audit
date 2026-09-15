@@ -1,0 +1,63 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://audit-network.local/schemas/quant-evidence-chain.schema.json",
+  "title": "QuantEvidenceChain",
+  "description": "Read-only evidence-chain (lineage) contract for the QT quant module: backtest -> dataset -> snapshot with code/data SHA and point-in-time gate.",
+  "type": "object",
+  "definitions": {
+    "uuid": { "type": "string", "format": "uuid" }
+  },
+  "properties": {
+    "kind": {
+      "const": "quant_evidence_chain",
+      "description": "Discriminator: lineage snapshot of a simulated backtest."
+    },
+    "backtest_id": { "$ref": "#/definitions/uuid" },
+    "backtest": {
+      "type": "object",
+      "properties": {
+        "id": { "$ref": "#/definitions/uuid" },
+        "strategy_key": { "type": "string" },
+        "status": { "type": "string" },
+        "parameters": {
+          "type": "object",
+          "properties": {
+            "data_snapshot_sha256": { "type": "string" },
+            "code_sha256": { "type": "string" },
+            "point_in_time_gate": { "type": "string" }
+          },
+          "required": ["point_in_time_gate"],
+          "additionalProperties": true
+        },
+        "metrics": {
+          "type": "object",
+          "properties": {
+            "total_return": { "type": "number" },
+            "volatility": { "type": "number" },
+            "max_drawdown": { "type": "number" },
+            "simulated_only": { "type": "boolean" }
+          },
+          "required": ["simulated_only"],
+          "additionalProperties": true
+        },
+        "created_at": { "type": "string", "format": "date-time" }
+      },
+      "required": ["id", "strategy_key", "status"],
+      "additionalProperties": true
+    },
+    "dataset": {
+      "type": "object",
+      "properties": {
+        "id": { "$ref": "#/definitions/uuid" },
+        "key": { "type": "string" },
+        "as_of": { "type": ["string", "null"], "format": "date-time" },
+        "freshness_status": { "type": "string" },
+        "metadata": { "type": "object" }
+      },
+      "required": ["id", "key", "freshness_status"],
+      "additionalProperties": true
+    }
+  },
+  "required": ["kind", "backtest_id", "backtest"],
+  "additionalProperties": true
+}

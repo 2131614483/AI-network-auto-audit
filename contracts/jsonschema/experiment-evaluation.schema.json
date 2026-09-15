@@ -1,0 +1,85 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://audit.local/contracts/experiment-evaluation.schema.json",
+  "title": "ExperimentEvaluation",
+  "description": "量化实验评估草稿（quant.experiment-evaluator 输出）：对模拟回测报告（可结合基线冠军报告）计算确定性稳健性、漂移与晋级建议。草稿只进入研究提案，不更新生产模型、不生成订单；晋级必须经独立 Reviewer 或人工确认。",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["contract_id", "contract_version", "experiment_id", "report_sha256", "strategy_key", "strategy_version", "snapshot_sha256", "reference_time", "status", "robustness", "drift", "promotion", "summary"],
+  "properties": {
+    "contract_id": {"const": "experiment-evaluation"},
+    "contract_version": {"const": "1.0.0"},
+    "experiment_id": {"type": "string", "pattern": "^[A-Fa-f0-9]{16}$"},
+    "report_sha256": {"type": "string", "pattern": "^[A-Fa-f0-9]{64}$"},
+    "baseline_sha256": {"type": "string", "pattern": "^[A-Fa-f0-9]{64}$"},
+    "strategy_key": {"type": "string", "minLength": 1, "maxLength": 255},
+    "strategy_version": {"type": "string", "pattern": "^(0|[1-9][0-9]*)\\.(0|[1-9][0-9]*)\\.(0|[1-9][0-9]*)(?:-[0-9A-Za-z.-]+)?(?:\\+[0-9A-Za-z.-]+)?$"},
+    "snapshot_sha256": {"type": "string", "pattern": "^[A-Fa-f0-9]{64}$"},
+    "reference_time": {"type": "string", "format": "date-time"},
+    "status": {"const": "proposed"},
+    "robustness": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["overall", "score", "basis"],
+      "properties": {
+        "overall": {"type": "string", "enum": ["stable", "moderate", "fragile"]},
+        "score": {"type": "number", "minimum": 0, "maximum": 1},
+        "basis": {"type": "string", "enum": ["period_returns", "summary_metrics"]},
+        "period_return_stability": {"type": "number", "minimum": 0, "maximum": 1},
+        "positive_period_ratio": {"type": "number", "minimum": 0, "maximum": 1},
+        "max_drawdown": {"type": "number", "maximum": 0},
+        "volatility": {"type": "number", "minimum": 0},
+        "notes": {"type": "array", "items": {"type": "string", "minLength": 1, "maxLength": 512}}
+      }
+    },
+    "drift": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["available", "drift_count", "compared_metrics"],
+      "properties": {
+        "available": {"type": "boolean"},
+        "drift_count": {"type": "integer", "minimum": 0},
+        "worst_metric": {"type": ["string", "null"], "description": "漂移最严重指标名；无漂移时为 null。"},
+        "compared_metrics": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["metric", "challenger", "baseline", "drifted", "threshold"],
+            "properties": {
+              "metric": {"type": "string", "minLength": 1, "maxLength": 64},
+              "challenger": {"type": "number"},
+              "baseline": {"type": "number"},
+              "absolute_delta": {"type": "number"},
+              "relative_delta": {"type": ["number", "null"]},
+              "drifted": {"type": "boolean"},
+              "threshold": {"type": "number"}
+            }
+          }
+        }
+      }
+    },
+    "promotion": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["recommendation", "rationale", "blockers"],
+      "properties": {
+        "recommendation": {"type": "string", "enum": ["promote", "hold", "reject"]},
+        "rationale": {"type": "string", "minLength": 1, "maxLength": 2048},
+        "blockers": {"type": "array", "items": {"type": "string", "minLength": 1, "maxLength": 512}}
+      }
+    },
+    "evidence_refs": {"type": "array", "maxItems": 64, "items": {"type": "string", "minLength": 1, "maxLength": 2048}},
+    "summary": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["report_sha256", "baseline_included", "recommendation", "truncated"],
+      "properties": {
+        "report_sha256": {"type": "string", "pattern": "^[A-Fa-f0-9]{64}$"},
+        "baseline_included": {"type": "boolean"},
+        "recommendation": {"type": "string", "enum": ["promote", "hold", "reject"]},
+        "truncated": {"type": "boolean"}
+      }
+    }
+  }
+}

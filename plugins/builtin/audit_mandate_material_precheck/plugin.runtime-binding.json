@@ -1,0 +1,18 @@
+{
+  "schema_version": "1.0.0",
+  "plugin": {
+    "id": "audit.mandate.material-precheck",
+    "version": "0.1.0",
+    "sha256": "fcaa1a875967465cd062f00e0c8c0fd35cceb4fe7c9c31fc3c7ab3f646147ac9"
+  },
+  "protocol": {
+    "id": "audit.mandate.material-precheck",
+    "version": "0.1.0",
+    "sha256": "716074e23b0037cf7cac3f810d8e02d71d4a0a4ccc6a3cb0c240568085411344"
+  },
+  "execution_mode": "isolated_subprocess",
+  "capabilities": [
+    "audit.mandate.material-precheck"
+  ],
+  "status": "verified"
+}

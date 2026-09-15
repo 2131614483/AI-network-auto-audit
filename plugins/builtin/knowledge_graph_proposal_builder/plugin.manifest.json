@@ -1,0 +1,33 @@
+{
+  "id": "knowledge.graph-proposal-builder",
+  "version": "0.1.0",
+  "name": "图谱提案构建（影子 ChangeSet 草稿，本地只读）",
+  "runtime": "python",
+  "entrypoint": "plugins.builtin.knowledge_graph_proposal_builder.runtime:handle",
+  "capabilities": ["graph.proposal.build"],
+  "inputs": {
+    "capability": "graph.proposal.build",
+    "schema": "graph-candidate-set.schema.json",
+    "content_type": "application/json"
+  },
+  "outputs": {
+    "capability": "graph.proposal.build",
+    "schema": "graph-proposal-draft@1.0.0",
+    "content_type": "application/json"
+  },
+  "side_effects": "read_only",
+  "idempotency": "candidate_set_sha256 + space_level + max_proposals",
+  "permissions": {
+    "data_read": ["knowledge.entity_relation_candidates", "graph.snapshot"],
+    "data_write": [],
+    "network": "none",
+    "secrets": []
+  },
+  "resources": {"cpu": 1, "memory_mb": 256, "gpu": false, "timeout_seconds": 300},
+  "data_classification": "internal",
+  "evidence": {"preserve_inputs": true, "code_hash_required": true},
+  "tests": {
+    "contract": "tests/contract/test_knowledge_graph_proposal_contract.py",
+    "golden": "tests/unit/test_knowledge_graph_proposal_runtime.py"
+  }
+}

@@ -1,0 +1,18 @@
+{
+  "schema_version": "1.0.0",
+  "plugin": {
+    "id": "audit.risk.fraud-risk-match",
+    "version": "0.1.0",
+    "sha256": "98deab626ecec1afd82b970eb4b838bb66cc2ff0f82e4da9aafd2b4e4e709b61"
+  },
+  "protocol": {
+    "id": "audit.risk.fraud-risk-match",
+    "version": "0.1.0",
+    "sha256": "a042847d26778cf3fc4fa3d249844481831948c9349b7d9d22cf1d047447724c"
+  },
+  "execution_mode": "isolated_subprocess",
+  "capabilities": [
+    "audit.risk.fraud-risk-match"
+  ],
+  "status": "verified"
+}

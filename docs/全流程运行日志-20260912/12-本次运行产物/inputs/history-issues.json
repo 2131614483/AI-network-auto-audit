@@ -1,0 +1,1 @@
+{"contract_id": "finding-draft", "contract_version": "1.0.0", "findings": [{"issue_id": "H-1", "category": "资金管理", "severity": "high"}, {"issue_id": "H-2", "category": "资金管理", "severity": "medium"}, {"issue_id": "H-3", "category": "采购管理", "severity": "low"}, {"issue_id": "H-4", "category": "内控缺陷", "severity": "high"}]}

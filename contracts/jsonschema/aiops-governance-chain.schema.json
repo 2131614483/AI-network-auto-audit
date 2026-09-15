@@ -1,0 +1,48 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://audit-network.local/schemas/aiops-governance-chain.schema.json",
+  "title": "AIOpsGovernanceChain",
+  "description": "Tenant-isolated, local-simulation-only AIOps lineage and human Canary verification contract.",
+  "type": "object",
+  "definitions": {
+    "uuid": { "type": "string", "format": "uuid" }
+  },
+  "properties": {
+    "kind": { "const": "aiops_governance_chain" },
+    "incident_id": { "$ref": "#/definitions/uuid" },
+    "simulated_only": { "const": true },
+    "incident": {
+      "type": "object",
+      "properties": {
+        "id": { "$ref": "#/definitions/uuid" },
+        "title": { "type": "string" },
+        "status": { "type": "string" },
+        "created_at": { "type": "string", "format": "date-time" }
+      },
+      "required": ["id", "title", "status"],
+      "additionalProperties": true
+    },
+    "alerts": { "type": "array", "items": { "type": "object" } },
+    "proposals": { "type": "array", "items": { "type": "object" } },
+    "change_requests": { "type": "array", "items": { "type": "object" } },
+    "executions": { "type": "array", "items": { "type": "object" } },
+    "verifications": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "id": { "$ref": "#/definitions/uuid" },
+          "execution_id": { "$ref": "#/definitions/uuid" },
+          "outcome": { "enum": ["healthy", "rollback"] },
+          "reviewer_label": { "type": "string", "minLength": 2 },
+          "trace_id": { "$ref": "#/definitions/uuid" },
+          "created_at": { "type": "string", "format": "date-time" }
+        },
+        "required": ["id", "execution_id", "outcome", "reviewer_label", "trace_id"],
+        "additionalProperties": true
+      }
+    }
+  },
+  "required": ["kind", "incident_id", "simulated_only", "incident", "alerts", "proposals", "change_requests", "executions", "verifications"],
+  "additionalProperties": true
+}

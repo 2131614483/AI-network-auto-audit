@@ -1,0 +1,36 @@
+# Line-ending policy — load-bearing, not cosmetic.
+#
+# `plugins/builtin/*/plugin.runtime-binding.json` records a SHA-256 of each
+# descriptor file's *raw bytes*, and `load_verified_binding` recomputes it at
+# runtime to decide whether a plugin is still "verified":
+#
+#     protocol_hash = _sha256(protocol_path)
+#     if binding["protocol"]["sha256"] != protocol_hash:
+#         raise PluginRuntimeError("protocol binding does not match its verified descriptor")
+#
+# With `core.autocrlf=true` a Windows checkout produced CRLF bytes while a Linux
+# checkout produced LF, so the *same commit* verified on Windows and failed
+# everywhere else — 22 tests failed in CI with exactly that error.  Pinning LF
+# makes the bytes a file hashes identical on every platform, so the recorded
+# hashes stay true.
+* text=auto eol=lf
+
+# Windows-native scripting keeps CRLF: cmd.exe is unreliable with LF-only batch
+# files, and nothing hashes these, so there is no cost to leaving them alone.
+*.bat text eol=crlf
+*.ps1 text eol=crlf
+
+# Never attempt text normalisation on binaries.
+*.png  binary
+*.jpg  binary
+*.jpeg binary
+*.gif  binary
+*.ico  binary
+*.pdf  binary
+*.zip  binary
+*.gz   binary
+*.db   binary
+*.woff binary
+*.woff2 binary
+*.ttf  binary
+*.pyd  binary

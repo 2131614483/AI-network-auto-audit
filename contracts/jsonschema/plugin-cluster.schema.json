@@ -1,0 +1,47 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://audit.local/contracts/plugin-cluster.schema.json",
+  "title": "PluginCluster",
+  "description": "L0 插件拓扑集群声明；仅描述未来插件的调度边界，不安装或执行插件。",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["id", "name", "axis", "layer", "domains", "routing_budget"],
+  "properties": {
+    "id": {"type": "string", "pattern": "^[a-z][a-z0-9]*(?:[._-][a-z0-9]+)*$", "maxLength": 120},
+    "name": {"type": "string", "minLength": 1, "maxLength": 200},
+    "axis": {"type": "string", "enum": ["business_domain", "capability_family", "runtime_pool", "governance_zone"]},
+    "layer": {"const": "L0"},
+    "domains": {
+      "type": "array",
+      "minItems": 1,
+      "uniqueItems": true,
+      "items": {"type": "string", "pattern": "^[a-z][a-z0-9]*(?:[._-][a-z0-9]+)*$", "maxLength": 80}
+    },
+    "parent_cluster_id": {"type": "string", "pattern": "^[a-z][a-z0-9]*(?:[._-][a-z0-9]+)*$"},
+    "description": {"type": "string", "maxLength": 2000},
+    "routing_budget": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["max_candidates", "max_chain_length", "max_latency_ms"],
+      "properties": {
+        "max_candidates": {"type": "integer", "minimum": 1, "maximum": 100},
+        "max_chain_length": {"type": "integer", "minimum": 1, "maximum": 32},
+        "max_latency_ms": {"type": "integer", "minimum": 1, "maximum": 120000}
+      }
+    },
+    "allowed_bridge_kinds": {
+      "type": "array",
+      "uniqueItems": true,
+      "items": {"type": "string", "enum": ["artifact_ref", "capability_contract", "released_graph_ref", "health_signal"]}
+    },
+    "configuration_policy": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "allow_user_override": {"type": "boolean"},
+        "allow_runtime_override": {"type": "boolean"},
+        "runtime_override_ttl_seconds": {"type": "integer", "minimum": 1, "maximum": 86400}
+      }
+    }
+  }
+}

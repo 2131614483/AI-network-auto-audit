@@ -1,0 +1,24 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="color-scheme" content="dark light" />
+    <title>审计智能中枢</title>
+    <link rel="stylesheet" href="/web/app.css" />
+  </head>
+  <body>
+    <main id="app" aria-live="polite">
+      <header class="topbar"><div><p class="eyebrow">AUDIT NETWORK / CONTROL PLANE</p><h1>审计智能中枢</h1></div><div class="connection"><span id="connection-dot"></span><span id="connection-status">正在连接控制平面</span></div></header>
+      <section class="tenant-bar" aria-label="租户上下文"><label for="tenant-slug">租户</label><input id="tenant-slug" value="local-dev" autocomplete="off" /><button id="connect-tenant" type="button">加载工作区</button><small id="tenant-context">尚未选择租户</small></section>
+      <nav class="tabs" aria-label="中枢导航"><button class="tab active" data-view="overview">运行总览</button><button class="tab" data-view="knowledge">知识库</button><button class="tab" data-view="plugins">插件工作台</button><button class="tab" data-view="approvals">审批中心</button><button class="tab" data-view="policy">风险模拟</button></nav>
+      <p id="notice" class="notice">正在读取 GUI 契约…</p>
+      <section id="overview" class="view active"><div id="overview-cards" class="cards"></div><article class="panel"><h2>安全执行边界</h2><p>所有写入和工具调用必须先通过策略网关。此界面仅调用同源控制平面接口，不能直接执行插件或交易。</p><a href="/docs" target="_blank" rel="noreferrer">查看 API 契约</a></article></section>
+      <section id="knowledge" class="view"><article class="panel"><h2>文件夹式知识库导入</h2><p>可选择单个文件或整个文件夹。文本、表格和 Office 文件会直接入库；PDF/图片登记给本地 MinerU，音视频登记给本地转写器。内容始终留在本机。</p><form id="knowledge-upload"><label>文件或文件夹<input id="knowledge-files" name="files" type="file" multiple webkitdirectory directory /></label><small>支持 MD、TXT、CSV、DOCX、XLSX、PDF、图片、音频与视频；单文件上限由本机配置控制。</small><button type="submit">上传并创建知识任务</button></form><pre id="knowledge-result" class="result">请选择文件或文件夹。</pre></article></section>
+      <section id="plugins" class="view"><article class="panel"><h2>插件工作台</h2><p>插件仅以经过模式验证的声明式贡献加入导航和视图；不加载任意插件脚本。</p><div id="plugin-list" class="empty">正在读取已启用贡献…</div></article></section>
+      <section id="approvals" class="view"><article class="panel"><div class="panel-heading"><div><h2>审批中心</h2><p>仅展示当前租户的审批记录。审批决定仍要求具备 Actor 身份与幂等键。</p></div><button id="refresh-approvals" type="button">刷新</button></div><div class="table-wrap"><table><thead><tr><th>能力</th><th>风险</th><th>状态</th><th>创建时间</th></tr></thead><tbody id="approval-list"><tr><td colspan="4">请先加载工作区。</td></tr></tbody></table></div></article></section>
+      <section id="policy" class="view"><article class="panel"><h2>风险 / 策略模拟</h2><p>模拟不会创建工具调用、审批或授权租约。</p><form id="policy-form"><label>能力<input name="capability" value="graph.neighbors.read" required maxlength="255" /></label><label>风险等级<select name="risk_class"><option value="read_only">只读</option><option value="low">低</option><option value="medium" selected>中</option><option value="high">高</option><option value="critical">关键</option></select></label><label>副作用<select name="side_effects"><option value="read_only">只读</option><option value="write_data">写入数据</option><option value="external_action">外部操作</option></select></label><label>参数（JSON）<textarea name="arguments" rows="5">{}</textarea></label><button type="submit">运行安全模拟</button></form><pre id="simulation-result" class="result">等待模拟。</pre></article></section>
+    </main>
+    <script type="module" src="/web/app.js"></script>
+  </body>
+</html>

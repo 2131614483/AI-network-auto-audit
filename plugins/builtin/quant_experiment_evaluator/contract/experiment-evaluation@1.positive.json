@@ -1,0 +1,50 @@
+{
+  "contract_id": "experiment-evaluation",
+  "contract_version": "1.0.0",
+  "experiment_id": "a1b2c3d4e5f67890",
+  "report_sha256": "a1b2c3d4e5f67890a1b2c3d4e5f67890a1b2c3d4e5f67890a1b2c3d4e5f67890",
+  "baseline_sha256": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+  "strategy_key": "momentum",
+  "strategy_version": "2.1.0",
+  "snapshot_sha256": "a1b2c3d4e5f67890a1b2c3d4e5f67890a1b2c3d4e5f67890a1b2c3d4e5f67890",
+  "reference_time": "2026-03-31T00:00:00Z",
+  "status": "proposed",
+  "robustness": {
+    "overall": "stable",
+    "score": 0.72,
+    "basis": "period_returns",
+    "period_return_stability": 0.88,
+    "positive_period_ratio": 0.83,
+    "max_drawdown": -0.08,
+    "volatility": 0.11,
+    "notes": ["基于 12 个逐期收益计算稳健性。"]
+  },
+  "drift": {
+    "available": true,
+    "drift_count": 0,
+    "worst_metric": null,
+    "compared_metrics": [
+      {
+        "metric": "sharpe",
+        "challenger": 1.7,
+        "baseline": 1.5,
+        "absolute_delta": 0.2,
+        "relative_delta": 0.1333,
+        "drifted": false,
+        "threshold": 0.2
+      }
+    ]
+  },
+  "promotion": {
+    "recommendation": "promote",
+    "rationale": "挑战者在稳健性与风险调整收益上满足晋级门槛，可进入独立 Reviewer 复核。",
+    "blockers": []
+  },
+  "evidence_refs": ["factor-pack:abc123", "snapshot:snap-2026-03"],
+  "summary": {
+    "report_sha256": "a1b2c3d4e5f67890a1b2c3d4e5f67890a1b2c3d4e5f67890a1b2c3d4e5f67890",
+    "baseline_included": true,
+    "recommendation": "promote",
+    "truncated": false
+  }
+}

@@ -1,0 +1,18 @@
+{
+  "schema_version": "1.0.0",
+  "plugin": {
+    "id": "aiops.recovery-verifier",
+    "version": "0.1.0",
+    "sha256": "6216eed4a068e53964dfb29c14cbc7fd1e79d1f7da52302f026cfade8f915876"
+  },
+  "protocol": {
+    "id": "aiops.recovery-verifier",
+    "version": "0.1.0",
+    "sha256": "db6ef94b9056762047346cc462ad99b3f9c2a2317b9ab6ee9de1634ba22b105a"
+  },
+  "execution_mode": "isolated_subprocess",
+  "capabilities": [
+    "aiops.recovery.verify"
+  ],
+  "status": "verified"
+}

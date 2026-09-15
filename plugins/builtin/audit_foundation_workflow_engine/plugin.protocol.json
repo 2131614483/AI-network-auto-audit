@@ -1,0 +1,91 @@
+{
+ "protocol_version": "1.0.0",
+ "id": "audit.foundation.workflow-engine",
+ "version": "0.1.0",
+ "name": "工作流引擎",
+ "description": "驱动各类审批、流转流程；⊣ 穿透所有审批、流转、派单节点。",
+ "kind": "workflow",
+ "domains": [
+  "audit",
+  "compliance"
+ ],
+ "lifecycle": "verified",
+ "compatibility": {
+  "host_protocol": ">=1.0.0 <2.0.0",
+  "adapters": [
+   "python"
+  ],
+  "fallback_behavior": "human_review"
+ },
+ "capabilities": [
+  {
+   "id": "audit.foundation.workflow-engine",
+   "summary": "工作流引擎：驱动各类审批、流转流程；⊣ 穿透所有审批、流转、派单节点。",
+   "side_effects": "read_only",
+   "idempotency": "input_sha256 + capability_version",
+   "inputs": [
+    {
+     "contract_id": "workflow-request",
+     "version": "1.0.0",
+     "format": "artifact_ref",
+     "delivery": "reference",
+     "classification": "audit_confidential",
+     "schema_ref": "artifact-ref.schema.json",
+     "max_bytes": 268435456
+    }
+   ],
+   "outputs": [
+    {
+     "contract_id": "workflow-state",
+     "version": "1.0.0",
+     "format": "json",
+     "delivery": "request_response",
+     "classification": "audit_confidential",
+     "schema_ref": "workflow.schema.json",
+     "max_bytes": 4194304
+    }
+   ]
+  }
+ ],
+ "governance": {
+  "default_data_classification": "audit_confidential",
+  "permissions": {
+   "data_read": [
+    "audit.foundation.workflow-engine.read"
+   ],
+   "data_write": [],
+   "network": "none",
+   "secret_refs": []
+  },
+  "policy": {
+   "gateway_required": true,
+   "approval_required": false,
+   "evidence_required": true
+  }
+ },
+ "resources": {
+  "cpu": 1,
+  "memory_mb": 256,
+  "gpu": "none",
+  "timeout_seconds": 300
+ },
+ "observability": {
+  "trace_required": true,
+  "emits": [
+   "structured_log",
+   "artifact_ref",
+   "audit_event"
+  ],
+  "health": "declared_only"
+ },
+ "provenance": {
+  "source_refs": [
+   "docs/audit-plugin-network-100.md#17",
+   "docs/插件开发与接入标准-UPP-v1.0.md",
+   "plugins/builtin/audit_foundation_workflow_engine/runtime.py"
+  ]
+ },
+ "ui": {
+  "mode": "none"
+ }
+}

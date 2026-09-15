@@ -1,0 +1,44 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Run 画布 · 数据流播放演示</title>
+<style>
+  :root { color-scheme: dark; }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; height: 100%; background: #05070e; color: #e5e7eb;
+    font-family: "Microsoft YaHei UI", "Segoe UI", sans-serif; overflow: hidden; }
+  .topbar { display: flex; align-items: center; gap: 16px; padding: 12px 18px;
+    border-bottom: 1px solid #1b2431; background: linear-gradient(180deg, #0a0f1a, #070b13); }
+  .topbar h1 { font-size: 15px; margin: 0; font-weight: 600; letter-spacing: .5px; }
+  .topbar .sub { font-size: 11.5px; color: #8b97a8; }
+  #hud { margin-left: auto; font-size: 12px; color: #9fb4cc; font-family: Consolas, monospace; }
+  .legend { display: flex; gap: 16px; padding: 8px 18px; font-size: 11.5px; color: #9fb4cc;
+    border-bottom: 1px solid #141c28; background: #070b13; }
+  .legend span { display: inline-flex; align-items: center; gap: 6px; }
+  .swatch { width: 22px; height: 0; border-top-width: 2.4px; border-top-style: solid; }
+  .stage-wrap { flex: 1; height: calc(100vh - 92px); overflow: hidden; padding: 26px;
+    display: flex; align-items: flex-start; justify-content: center;
+    background:
+      radial-gradient(circle at 30% 20%, rgba(46,129,247,.10), transparent 55%),
+      radial-gradient(circle at 75% 80%, rgba(127,224,192,.07), transparent 55%), #05070e; }
+  svg { display: block; }
+</style>
+</head>
+<body>
+  <div class="topbar">
+    <h1>Run 画布 · ComfyUI 式数据流可视化</h1>
+    <span class="sub">凭证穿透 → 底稿编制 → 证据索引 → 问题定性（合成演示数据，零后端 / 零执行）</span>
+    <div id="hud">初始化…</div>
+  </div>
+  <div class="legend">
+    <span><i class="swatch" style="border-top-color:#2b3a4d"></i>未导通</span>
+    <span><i class="swatch" style="border-top-color:#ffd98a"></i>数据正在端口间传递（数据包）</span>
+    <span><i class="swatch" style="border-top-color:#52e08a;border-top-style:dashed"></i>已送达 / 已产出</span>
+    <span>节点左侧=输入端口，右侧=输出端口；汇聚节点可见两个输入端口同时接入</span>
+  </div>
+  <div class="stage-wrap"><svg id="stage"></svg></div>
+  <script src="./flow-canvas-demo.js"></script>
+</body>
+</html>

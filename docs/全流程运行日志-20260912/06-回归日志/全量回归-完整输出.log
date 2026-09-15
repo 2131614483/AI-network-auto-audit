@@ -1,0 +1,64 @@
+........................................................................ [  5%]
+........................................................................ [ 11%]
+........................................................................ [ 17%]
+.............................sss.............................s.......... [ 23%]
+........................................................................ [ 29%]
+........................................................................ [ 35%]
+.....................................................s.................. [ 41%]
+.......................s..s..ss......................................... [ 47%]
+........................................................................ [ 53%]
+........................................................................ [ 58%]
+........................................................................ [ 64%]
+........................................................................ [ 70%]
+........................................................................ [ 76%]
+........................................................................ [ 82%]
+........................................................................ [ 88%]
+........................................................................ [ 94%]
+......................................................................   [100%]
+============================== warnings summary ===============================
+.venv\Lib\site-packages\fastapi\testclient.py:1
+  D:\pythonpro\audit_network\.venv\Lib\site-packages\fastapi\testclient.py:1: StarletteDeprecationWarning: Using `httpx` with `starlette.testclient` is deprecated; install `httpx2` instead.
+    from starlette.testclient import TestClient as TestClient  # noqa
+
+.venv\Lib\site-packages\starlette\testclient.py:53
+  D:\pythonpro\audit_network\.venv\Lib\site-packages\starlette\testclient.py:53: DeprecationWarning: The anyio.abc.BlockingPortal alias is deprecated, use anyio.from_thread.BlockingPortal instead.
+    _PortalFactoryType = Callable[[], AbstractContextManager[anyio.abc.BlockingPortal]]
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+============================ slowest 25 durations =============================
+1095.86s call     tests/integration/test_plugin_topology_evidence_integration.py::test_evidence_api_anchor_verify_export_end_to_end
+914.65s call     tests/integration/test_plugin_topology_evidence_integration.py::test_evidence_verify_detects_source_tamper_and_recovers
+361.02s call     tests/integration/test_plugin_topology_evidence_integration.py::test_evidence_export_never_contains_payload_body
+351.74s call     tests/integration/test_plugin_topology_evidence_integration.py::test_evidence_anchor_is_append_only_and_replay_idempotent
+12.99s call     tests/integration/test_plugin_runtime_api.py::test_verified_plugin_runtime_api_reads_a_local_artifact_after_policy_gate
+12.39s call     tests/integration/test_plugin_runtime_api.py::test_recovery_verifier_plugin_api_returns_immutable_ledger_after_policy_gate
+8.27s call     tests/integration/test_plugin_runtime_api.py::test_finding_draft_plugin_api_returns_finding_draft_after_policy_gate
+7.78s call     tests/integration/test_plugin_runtime_api.py::test_playbook_proposer_plugin_api_returns_remediation_proposal_after_policy_gate
+7.20s call     tests/integration/test_plugin_runtime_api.py::test_postmortem_draft_plugin_api_returns_unpublished_draft_after_policy_gate
+7.02s call     tests/integration/test_plugin_runtime_api.py::test_research_note_draft_plugin_api_returns_unpublished_note_after_policy_gate
+6.85s call     tests/integration/test_plugin_runtime_api.py::test_alert_triage_plugin_api_after_policy_gate
+6.83s call     tests/integration/test_plugin_runtime_api.py::test_ledger_quality_plugin_api_validates_snapshot_after_policy_gate
+6.81s call     tests/integration/test_plugin_runtime_api.py::test_evidence_lineage_plugin_api_queries_a_released_graph_after_policy_gate
+6.58s call     tests/integration/test_plugin_runtime_api.py::test_investigation_plan_plugin_api_returns_plan_draft_after_policy_gate
+6.50s call     tests/integration/test_plugin_runtime_api.py::test_verified_plugin_runtime_api_denial_returns_before_isolated_execution
+6.43s call     tests/integration/test_plugin_runtime_api.py::test_graph_proposal_plugin_api_returns_shadow_draft_after_policy_gate
+6.33s call     tests/integration/test_plugin_runtime_api.py::test_simulated_backtest_plugin_api_after_policy_gate
+6.26s call     tests/integration/test_plugin_runtime_api.py::test_journal_anomaly_plugin_api_after_policy_gate
+6.22s call     tests/integration/test_plugin_runtime_api.py::test_rca_ranker_plugin_api_after_policy_gate
+6.19s call     tests/integration/test_plugin_runtime_api.py::test_retention_recommendation_plugin_api_returns_proposed_retention_after_policy_gate
+6.17s call     tests/integration/test_plugin_runtime_api.py::test_report_draft_plugin_api_returns_unsigned_draft_after_policy_gate
+6.06s call     tests/integration/test_plugin_runtime_api.py::test_workpaper_export_plugin_api_returns_draft_after_policy_gate
+5.98s call     tests/integration/test_plugin_runtime_api.py::test_ticket_draft_plugin_api_returns_unsent_draft_after_policy_gate
+4.12s call     tests/integration/test_cw0_observability_tenant.py::test_trace_locate_db_failure_is_unavailable_not_empty_success
+3.94s call     tests/integration/test_plugin_topology_evidence_integration.py::test_evidence_scope_filtering_matches_anchor_scope
+=========================== short test summary info ===========================
+SKIPPED [1] tests\integration\test_cw2_full_log_ai.py:193: 本地 ollama 服务不可用（跳过真实 AI 调用）
+SKIPPED [1] tests\integration\test_cw2_full_log_ai.py:207: 本地 ollama 服务不可用（跳过真实 AI 调用）
+SKIPPED [1] tests\integration\test_cw2_full_log_ai.py:239: 本地 ollama 服务不可用（跳过真实 AI 调用）
+SKIPPED [1] tests\integration\test_cw5_ai_planning.py:272: set AUDIT_NETWORK_RUN_OLLAMA_TESTS=1 to run the local-model smoke (slow, real inference)
+SKIPPED [1] tests\integration\test_plugin_topology_isolated_integration.py:166: isolated drill already recorded; rerun after test-db rebuild
+SKIPPED [1] tests\integration\test_rich_media_mineru.py:45: set AUDIT_NETWORK_RUN_MINERU_TESTS=1 to run real MinerU integration
+SKIPPED [1] tests\integration\test_rich_media_queue_mineru.py:43: set AUDIT_NETWORK_RUN_MINERU_TESTS=1 to run real MinerU queue integration
+SKIPPED [1] tests\integration\test_worker.py:31: external worker consumed the shared test queue
+SKIPPED [1] tests\integration\test_worker.py:58: external worker consumed the shared test event before the failure callback
+1213 passed, 9 skipped, 2 warnings in 3006.86s (0:50:06)

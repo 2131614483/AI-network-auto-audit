@@ -1,0 +1,21 @@
+{
+  "conflict-alert": {
+    "checks": [
+      {
+        "check_id": "columns",
+        "message": "排班成员 0 人（待人工确认），冲突 0 项",
+        "status": "pass"
+      }
+    ],
+    "contract_id": "dataset-validation",
+    "contract_version": "1.0.0",
+    "snapshot_sha256": "94d3d490ca5b966e0efe0100f82db64f10cff82fc17b2b2c41cb6119d587d415",
+    "summary": {
+      "checked_columns": 2,
+      "checked_rows": 0,
+      "missing_values": 0,
+      "valid": true
+    },
+    "violations": []
+  }
+}

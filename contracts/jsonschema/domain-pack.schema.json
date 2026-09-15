@@ -1,0 +1,92 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://audit.local/contracts/domain-pack.schema.json",
+  "title": "DomainPack",
+  "description": "A declarative description of one business domain: which plugins belong to it, how they group into stages, and what the domain-specific wiring rules are. The audit pack reproduces the values that used to be hardcoded in packages/ai_planner/nebula_graph.py; a second pack (aiops) is what proves the framework is not audit-specific.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "domain", "discovery", "stages"],
+  "properties": {
+    "schema_version": {"type": "string", "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+$"},
+    "domain": {"type": "string", "pattern": "^[a-z][a-z0-9-]*$"},
+    "name_zh": {"type": "string"},
+    "notes": {"type": "string"},
+
+    "discovery": {
+      "description": "Which plugin folders belong to this domain. Replaces the hardcoded `root.glob(\"audit-*\")`.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["globs"],
+      "properties": {
+        "globs": {"type": "array", "minItems": 1, "items": {"type": "string"}}
+      }
+    },
+
+    "layers": {
+      "description": "Id segments that mark the non-business layers. A plugin in one of these layers has no stage.",
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "governance": {"type": "string"},
+        "support": {"type": "string"}
+      }
+    },
+
+    "ungrouped_stage": {
+      "description": "Stage key for a business plugin whose segment is not registered. It keeps an unfamiliar plugin visible instead of making it disappear.",
+      "type": "string"
+    },
+
+    "stages": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["key", "name_zh", "order"],
+        "properties": {
+          "key": {"type": "string", "pattern": "^[a-z][a-z0-9]*$"},
+          "name_zh": {"type": "string"},
+          "order": {"type": "integer", "minimum": 0},
+          "color": {"type": "string", "pattern": "^#[0-9a-fA-F]{6}$"},
+          "segments": {
+            "description": "Id segments that classify a plugin into this stage.",
+            "type": "array",
+            "items": {"type": "string"}
+          },
+          "texture": {"type": "array", "items": {"type": "string"}}
+        }
+      }
+    },
+
+    "stage_by_plugin": {
+      "description": "Explicit plugin id -> stage overrides. Needed when several plugins share an id segment (aiops.alert-triage and aiops.alert-correlation both segment to `alert`), so segment matching alone cannot separate them.",
+      "type": "object",
+      "additionalProperties": {"type": "string"}
+    },
+
+    "trunk": {
+      "description": "The closed-loop main ring between stages, for display. It is a visualisation ring: the compiler forbids a cyclic data graph, so this is never emitted as plan edges.",
+      "type": "array",
+      "items": {"type": "array", "minItems": 2, "maxItems": 2, "items": {"type": "string"}}
+    },
+
+    "control_segments": {
+      "description": "Id tails of the full-process penetrating control plugins (cross-cutting, not a chain stage).",
+      "type": "array",
+      "items": {"type": "string"}
+    },
+
+    "semantics_ref": {
+      "description": "Path (relative to the pack) of the reviewed semantics catalog for this domain.",
+      "type": "string"
+    },
+
+    "prompt": {
+      "description": "System prompt wording for the planner in this domain. Replaces the hardcoded audit-only prompt.",
+      "type": "string"
+    },
+
+    "source_refs": {"type": "array", "items": {"type": "string"}}
+  }
+}

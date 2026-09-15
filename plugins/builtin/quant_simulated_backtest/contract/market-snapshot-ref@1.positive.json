@@ -1,0 +1,26 @@
+{
+  "contract_id": "market-snapshot-ref",
+  "contract_version": "1.0.0",
+  "artifact": {
+    "artifact_id": "1e2d3c4b-5a69-4875-9f0a-1b2c3d4e5f60",
+    "tenant_id": "9f8e7d6c-5b4a-4a32-8c1d-0e1f2a3b4c5d",
+    "uri": "file:///G:/数据/07-量化数据集/snapshot/20260905_1559_market.csv",
+    "media_type": "text/csv",
+    "sha256": "ab12cd34ef567890ab12cd34ef567890ab12cd34ef567890ab12cd34ef567890",
+    "size_bytes": 2048512,
+    "classification": "restricted"
+  },
+  "reference_time": "2026-09-05T15:59:00+08:00",
+  "max_freshness_hours": 6,
+  "point_in_time": true,
+  "data_frequency": "minute",
+  "expected_columns": [
+    "datetime",
+    "code",
+    "open",
+    "high",
+    "low",
+    "close",
+    "volume"
+  ]
+}

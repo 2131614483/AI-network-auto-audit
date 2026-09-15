@@ -1,0 +1,18 @@
+{
+  "schema_version": "1.0.0",
+  "plugin": {
+    "id": "audit.foundation.lineage-track",
+    "version": "0.1.0",
+    "sha256": "4ed56578a7ba19aa787b7bdf365958f18d02fe2b764ba18e7a013edef800ef40"
+  },
+  "protocol": {
+    "id": "audit.foundation.lineage-track",
+    "version": "0.1.0",
+    "sha256": "1bacfcf1328bd10876e71b20438be374f4f0004b08d7ccaa18a26a309f317539"
+  },
+  "execution_mode": "isolated_subprocess",
+  "capabilities": [
+    "audit.foundation.lineage-track"
+  ],
+  "status": "verified"
+}

@@ -1,0 +1,8 @@
+{
+  "schema_version": "1.0.0",
+  "plugin": {"id": "audit.journal-anomaly", "version": "0.1.0", "sha256": "32816ab87587c850df3c7484c1d92477c98195861d46e612f4232998eb3994c9"},
+  "protocol": {"id": "audit.journal-anomaly", "version": "0.1.0", "sha256": "3c2cf45f05c635c50e68509b8f51718904189a8f9327aa079a8dd528366c3185"},
+  "execution_mode": "isolated_subprocess",
+  "capabilities": ["audit.journal.detect"],
+  "status": "verified"
+}

@@ -1,0 +1,176 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://audit.local/contracts/topology-upsert.schema.json",
+  "title": "TopologyUpsert",
+  "description": "插件拓扑登记/更新服务载荷；按 kind 判别集群、蓝图、成员、边或契约。所有写入必须携带幂等键；蓝图载荷不得携带执行字段（runtime/entrypoint/package_path/permissions）。",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["kind", "idempotency_key", "payload"],
+  "properties": {
+    "kind": {"type": "string", "enum": ["cluster", "blueprint", "membership", "edge", "contract", "bridge"]},
+    "idempotency_key": {"type": "string", "minLength": 1, "maxLength": 255},
+    "trace_id": {"type": "string", "format": "uuid"},
+    "payload": {"type": "object", "additionalProperties": true}
+  },
+  "allOf": [
+    {
+      "if": {"properties": {"kind": {"const": "cluster"}}, "required": ["kind"]},
+      "then": {
+        "properties": {
+          "payload": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["key", "name", "axis", "layer", "domains", "routing_budget"],
+            "properties": {
+              "key": {"type": "string", "pattern": "^[a-z][a-z0-9]*(?:[._-][a-z0-9]+)*$", "maxLength": 120},
+              "name": {"type": "string", "minLength": 1, "maxLength": 200},
+              "axis": {"type": "string", "enum": ["business_domain", "capability_family", "runtime_pool", "governance_zone"]},
+              "layer": {"const": "L0"},
+              "domains": {"type": "array", "minItems": 1, "uniqueItems": true, "items": {"type": "string", "pattern": "^[a-z][a-z0-9]*(?:[._-][a-z0-9]+)*$", "maxLength": 80}},
+              "parent_cluster_key": {"type": "string", "pattern": "^[a-z][a-z0-9]*(?:[._-][a-z0-9]+)*$"},
+              "description": {"type": "string", "maxLength": 2000},
+              "routing_budget": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": ["max_candidates", "max_chain_length", "max_latency_ms"],
+                "properties": {
+                  "max_candidates": {"type": "integer", "minimum": 1, "maximum": 100},
+                  "max_chain_length": {"type": "integer", "minimum": 1, "maximum": 32},
+                  "max_latency_ms": {"type": "integer", "minimum": 1, "maximum": 120000}
+                }
+              },
+              "allowed_bridge_kinds": {
+                "type": "array",
+                "uniqueItems": true,
+                "items": {"type": "string", "enum": ["artifact_ref", "capability_contract", "released_graph_ref", "health_signal"]}
+              }
+            }
+          }
+        },
+        "required": ["payload"]
+      }
+    },
+    {
+      "if": {"properties": {"kind": {"const": "blueprint"}}, "required": ["kind"]},
+      "then": {
+        "properties": {
+          "payload": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["key", "name", "blueprint_type", "capability_contract", "source_refs"],
+            "properties": {
+              "key": {"type": "string", "pattern": "^[a-z][a-z0-9]*(?:[._-][a-z0-9]+)*$", "maxLength": 160},
+              "name": {"type": "string", "minLength": 1, "maxLength": 200},
+              "blueprint_type": {"type": "string", "enum": ["capability", "producer", "consumer"]},
+              "primary_cluster_key": {"type": "string", "pattern": "^[a-z][a-z0-9]*(?:[._-][a-z0-9]+)*$"},
+              "lifecycle": {"const": "planned"},
+              "capability_contract": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": ["capability", "version"],
+                "properties": {
+                  "capability": {"type": "string", "pattern": "^[a-z][a-z0-9]*(?:[._-][a-z0-9]+)+$"},
+                  "version": {"type": "string", "pattern": "^(0|[1-9][0-9]*)\\.(0|[1-9][0-9]*)\\.(0|[1-9][0-9]*)(?:-[0-9A-Za-z.-]+)?$"},
+                  "inputs": {"type": "array", "items": {"type": "string"}},
+                  "outputs": {"type": "array", "items": {"type": "string"}}
+                }
+              },
+              "source_refs": {
+                "type": "array",
+                "minItems": 1,
+                "items": {"type": "object", "required": ["kind", "uri"], "properties": {"kind": {"type": "string"}, "uri": {"type": "string"}}}
+              }
+            },
+            "not": {
+              "anyOf": [
+                {"required": ["runtime"]},
+                {"required": ["entrypoint"]},
+                {"required": ["package_path"]},
+                {"required": ["permissions"]}
+              ]
+            }
+          }
+        },
+        "required": ["payload"]
+      }
+    },
+    {
+      "if": {"properties": {"kind": {"const": "membership"}}, "required": ["kind"]},
+      "then": {
+        "properties": {
+          "payload": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["blueprint_key", "cluster_key", "axis"],
+            "properties": {
+              "blueprint_key": {"type": "string", "pattern": "^[a-z][a-z0-9]*(?:[._-][a-z0-9]+)*$", "maxLength": 160},
+              "cluster_key": {"type": "string", "pattern": "^[a-z][a-z0-9]*(?:[._-][a-z0-9]+)*$", "maxLength": 120},
+              "axis": {"type": "string", "enum": ["business", "capability", "resource", "governance"]}
+            }
+          }
+        },
+        "required": ["payload"]
+      }
+    },
+    {
+      "if": {"properties": {"kind": {"const": "edge"}}, "required": ["kind"]},
+      "then": {
+        "properties": {
+          "payload": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["source_blueprint_key", "target_blueprint_key", "relation_type"],
+            "properties": {
+              "source_blueprint_key": {"type": "string", "pattern": "^[a-z][a-z0-9]*(?:[._-][a-z0-9]+)*$", "maxLength": 160},
+              "target_blueprint_key": {"type": "string", "pattern": "^[a-z][a-z0-9]*(?:[._-][a-z0-9]+)*$", "maxLength": 160},
+              "relation_type": {"type": "string", "enum": ["depends_on", "data_flow", "fallback", "bridge"]},
+              "condition_ref": {"type": "string", "maxLength": 180},
+              "weight": {"type": "number", "exclusiveMinimum": 0, "maximum": 1}
+            }
+          }
+        },
+        "required": ["payload"]
+      }
+    },
+    {
+      "if": {"properties": {"kind": {"const": "contract"}}, "required": ["kind"]},
+      "then": {
+        "properties": {
+          "payload": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["contract_id", "contract_version", "kind", "format", "classification", "schema_ref"],
+            "properties": {
+              "contract_id": {"type": "string", "pattern": "^[a-z][a-z0-9-]*$", "maxLength": 120},
+              "contract_version": {"type": "string", "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+$"},
+              "kind": {"type": "string", "enum": ["input", "output", "event"]},
+              "format": {"type": "string", "enum": ["json", "artifact_ref"]},
+              "classification": {"type": "string", "enum": ["public", "internal", "audit_confidential", "restricted"]},
+              "schema_ref": {"type": "string", "maxLength": 255}
+            }
+          }
+        },
+        "required": ["payload"]
+      }
+    },
+    {
+      "if": {"properties": {"kind": {"const": "bridge"}}, "required": ["kind"]},
+      "then": {
+        "properties": {
+          "payload": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["blueprint_key", "ref_kind", "bridge_ref"],
+            "properties": {
+              "blueprint_key": {"type": "string", "pattern": "^[a-z][a-z0-9]*(?:[._-][a-z0-9]+)*$", "maxLength": 160},
+              "ref_kind": {"type": "string", "enum": ["artifact_ref", "capability_contract", "released_graph_ref", "health_signal"]},
+              "bridge_ref": {"type": "string", "minLength": 3, "maxLength": 255},
+              "status": {"type": "string", "enum": ["active", "inactive"]}
+            }
+          }
+        },
+        "required": ["payload"]
+      }
+    }
+  ]
+}

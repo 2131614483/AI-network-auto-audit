@@ -1,0 +1,33 @@
+{
+  "id": "audit.ledger-quality",
+  "version": "0.1.0",
+  "name": "审计总账质量校验（本地只读）",
+  "runtime": "python",
+  "entrypoint": "plugins.builtin.audit_ledger_quality.runtime:handle",
+  "capabilities": ["audit.ledger.validate"],
+  "inputs": {
+    "capability": "audit.ledger.validate",
+    "schema": "ledger-artifact-ref.schema.json",
+    "content_type": "application/json"
+  },
+  "outputs": {
+    "capability": "audit.ledger.validate",
+    "schema": "audit-quality-candidates@1.0.0",
+    "content_type": "application/json"
+  },
+  "side_effects": "read_only",
+  "idempotency": "ledger_sha256 + schema_mapping_version + rule_pack_sha256",
+  "permissions": {
+    "data_read": ["audit.ledger.snapshot"],
+    "data_write": [],
+    "network": "none",
+    "secrets": []
+  },
+  "resources": {"cpu": 1, "memory_mb": 256, "gpu": false, "timeout_seconds": 300},
+  "data_classification": "audit_confidential",
+  "evidence": {"preserve_inputs": true, "code_hash_required": true},
+  "tests": {
+    "contract": "tests/contract/test_audit_ledger_quality_contract.py",
+    "golden": "tests/unit/test_audit_ledger_quality_runtime.py"
+  }
+}

@@ -1,0 +1,18 @@
+{
+  "schema_version": "1.0.0",
+  "plugin": {
+    "id": "audit.evidence.workpaper-template-update",
+    "version": "0.1.0",
+    "sha256": "2cc349f08bc5e014df96cb911183a5a1054406dc24fb72085abfc46bcd0888cf"
+  },
+  "protocol": {
+    "id": "audit.evidence.workpaper-template-update",
+    "version": "0.1.0",
+    "sha256": "91b23a236524a26dc4b717716cb745db3a323bc36c3566c26a75e8e942850ed0"
+  },
+  "execution_mode": "isolated_subprocess",
+  "capabilities": [
+    "audit.evidence.workpaper-template-update"
+  ],
+  "status": "verified"
+}

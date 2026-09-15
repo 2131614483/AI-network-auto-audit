@@ -1,0 +1,91 @@
+{
+  "protocol_version": "1.0.0",
+  "id": "knowledge.document-ingestion",
+  "version": "0.1.0",
+  "name": "知识文档摄入",
+  "description": "声明 PDF、图片与文本的本地提取、规范化与可追溯交接契约。",
+  "kind": "ingestion",
+  "domains": [
+    "knowledge",
+    "audit"
+  ],
+  "lifecycle": "contract_only",
+  "compatibility": {
+    "host_protocol": ">=1.0.0 <2.0.0",
+    "adapters": [
+      "python",
+      "node",
+      "mcp"
+    ],
+    "fallback_behavior": "human_review"
+  },
+  "capabilities": [
+    {
+      "id": "knowledge.extract.document",
+      "summary": "从不可变文件引用产出带来源定位的结构化文档内容。",
+      "side_effects": "read_only",
+      "idempotency": "artifact_sha256",
+      "inputs": [
+        {
+          "contract_id": "artifact-ref",
+          "version": "1.0.0",
+          "format": "artifact_ref",
+          "delivery": "reference",
+          "classification": "internal",
+          "schema_ref": "artifact-ref.schema.json"
+        }
+      ],
+      "outputs": [
+        {
+          "contract_id": "document-content",
+          "version": "1.0.0",
+          "format": "json",
+          "delivery": "artifact_ref",
+          "classification": "internal",
+          "schema_ref": "document-content.schema.json"
+        }
+      ]
+    }
+  ],
+  "governance": {
+    "default_data_classification": "internal",
+    "permissions": {
+      "data_read": [
+        "knowledge.documents"
+      ],
+      "data_write": [],
+      "network": "none",
+      "secret_refs": []
+    },
+    "policy": {
+      "gateway_required": true,
+      "approval_required": false,
+      "evidence_required": true
+    }
+  },
+  "resources": {
+    "cpu": 1,
+    "memory_mb": 256,
+    "gpu": "optional",
+    "timeout_seconds": 300
+  },
+  "observability": {
+    "trace_required": true,
+    "emits": [
+      "structured_log",
+      "metric",
+      "artifact_ref"
+    ],
+    "health": "declared_only"
+  },
+  "provenance": {
+    "source_refs": [
+      "docs/plugin-protocol.md",
+      "docs/plugin-topology-orchestration.md#2.4"
+    ]
+  },
+  "ui": {
+    "mode": "declarative",
+    "contribution_schema": "ui-contribution.schema.json"
+  }
+}

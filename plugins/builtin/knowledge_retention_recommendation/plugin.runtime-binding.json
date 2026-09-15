@@ -1,0 +1,18 @@
+{
+  "schema_version": "1.0.0",
+  "plugin": {
+    "id": "knowledge.retention-recommendation",
+    "version": "0.1.0",
+    "sha256": "22241ba9444fa99376bc875f40920c789bc753fb7378026ed05854bdf292d389"
+  },
+  "protocol": {
+    "id": "knowledge.retention-recommendation",
+    "version": "0.1.0",
+    "sha256": "42723a96578366e6a8d596acb45d1e2edbbf1f3947754f82272a2ef162e2acb1"
+  },
+  "execution_mode": "isolated_subprocess",
+  "capabilities": [
+    "knowledge.retention.recommend"
+  ],
+  "status": "verified"
+}

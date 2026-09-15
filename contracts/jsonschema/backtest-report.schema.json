@@ -1,0 +1,51 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://audit.local/contracts/backtest-report.schema.json",
+  "title": "BacktestReport",
+  "description": "模拟回测报告（quant.simulated-backtest 输出、quant.experiment-evaluator 输入）：冻结快照上的策略回测指标与逐期收益。报告永远是 simulated_only 模拟投影，不构成交易请求，也不代表生产表现。",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["contract_id", "contract_version", "backtest_id", "strategy_key", "strategy_version", "code_sha256", "snapshot_sha256", "reference_time", "point_in_time_gate", "metrics", "summary"],
+  "properties": {
+    "contract_id": {"const": "backtest-report"},
+    "contract_version": {"const": "1.0.0"},
+    "backtest_id": {"type": "string", "minLength": 1, "maxLength": 255},
+    "strategy_key": {"type": "string", "minLength": 1, "maxLength": 255},
+    "strategy_version": {"type": "string", "pattern": "^(0|[1-9][0-9]*)\\.(0|[1-9][0-9]*)\\.(0|[1-9][0-9]*)(?:-[0-9A-Za-z.-]+)?(?:\\+[0-9A-Za-z.-]+)?$"},
+    "code_sha256": {"type": "string", "pattern": "^[A-Fa-f0-9]{64}$"},
+    "snapshot_sha256": {"type": "string", "pattern": "^[A-Fa-f0-9]{64}$"},
+    "reference_time": {"type": "string", "format": "date-time"},
+    "point_in_time_gate": {"type": "string", "format": "date-time"},
+    "parameters": {"type": "object", "additionalProperties": true},
+    "metrics": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["simulated_only"],
+      "properties": {
+        "simulated_only": {"const": true},
+        "total_return": {"type": "number"},
+        "annualized_return": {"type": "number"},
+        "volatility": {"type": "number", "minimum": 0},
+        "sharpe": {"type": "number"},
+        "max_drawdown": {"type": "number", "maximum": 0},
+        "win_rate": {"type": "number", "minimum": 0, "maximum": 1},
+        "n_periods": {"type": "integer", "minimum": 1}
+      }
+    },
+    "period_returns": {
+      "type": "array",
+      "maxItems": 100000,
+      "items": {"type": "number"}
+    },
+    "summary": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["simulated", "source_refs"],
+      "properties": {
+        "simulated": {"const": true},
+        "source_refs": {"type": "array", "items": {"type": "string", "minLength": 1, "maxLength": 2048}},
+        "truncated": {"type": "boolean"}
+      }
+    }
+  }
+}

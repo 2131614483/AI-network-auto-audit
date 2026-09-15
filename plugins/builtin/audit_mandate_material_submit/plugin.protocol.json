@@ -1,0 +1,91 @@
+{
+ "protocol_version": "1.0.0",
+ "id": "audit.mandate.material-submit",
+ "version": "0.1.0",
+ "name": "被审单位资料报送",
+ "description": "在线收集被审单位前置资料；上游通知书下发，下游输出至资料预检。",
+ "kind": "ingestion",
+ "domains": [
+  "audit",
+  "compliance"
+ ],
+ "lifecycle": "verified",
+ "compatibility": {
+  "host_protocol": ">=1.0.0 <2.0.0",
+  "adapters": [
+   "python"
+  ],
+  "fallback_behavior": "human_review"
+ },
+ "capabilities": [
+  {
+   "id": "audit.mandate.material-submit",
+   "summary": "被审单位资料报送：在线收集被审单位前置资料；上游通知书下发，下游输出至资料预检。",
+   "side_effects": "read_only",
+   "idempotency": "input_sha256 + capability_version",
+   "inputs": [
+    {
+     "contract_id": "notice-accept",
+     "version": "1.0.0",
+     "format": "artifact_ref",
+     "delivery": "reference",
+     "classification": "audit_confidential",
+     "schema_ref": "document-content.schema.json",
+     "max_bytes": 268435456
+    }
+   ],
+   "outputs": [
+    {
+     "contract_id": "submitted-material",
+     "version": "1.0.0",
+     "format": "json",
+     "delivery": "request_response",
+     "classification": "audit_confidential",
+     "schema_ref": "artifact-ref.schema.json",
+     "max_bytes": 268435456
+    }
+   ]
+  }
+ ],
+ "governance": {
+  "default_data_classification": "audit_confidential",
+  "permissions": {
+   "data_read": [
+    "audit.mandate.material-submit.read"
+   ],
+   "data_write": [],
+   "network": "none",
+   "secret_refs": []
+  },
+  "policy": {
+   "gateway_required": true,
+   "approval_required": false,
+   "evidence_required": true
+  }
+ },
+ "resources": {
+  "cpu": 1,
+  "memory_mb": 256,
+  "gpu": "none",
+  "timeout_seconds": 300
+ },
+ "observability": {
+  "trace_required": true,
+  "emits": [
+   "structured_log",
+   "artifact_ref",
+   "audit_event"
+  ],
+  "health": "declared_only"
+ },
+ "provenance": {
+  "source_refs": [
+   "docs/audit-plugin-network-100.md#26",
+   "docs/插件开发与接入标准-UPP-v1.0.md",
+   "plugins/builtin/audit_mandate_material_submit/runtime.py"
+  ]
+ },
+ "ui": {
+  "mode": "none"
+ }
+}

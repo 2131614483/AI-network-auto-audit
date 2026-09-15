@@ -1,0 +1,34 @@
+{
+  "schema_version": "1.0.0",
+  "domain": "audit",
+  "name_zh": "审计",
+  "notes": "逐字复现此前硬编码在 packages/ai_planner/nebula_graph.py 中的 STAGES / TRUNK / CONTROL_SEGMENTS / 层段常量，因此加载本包不改变任何既有行为。",
+  "discovery": {
+    "globs": ["audit_*"]
+  },
+  "layers": {
+    "governance": "govern",
+    "support": "foundation"
+  },
+  "ungrouped_stage": "s0",
+  "stages": [
+    {"key": "s1", "name_zh": "立项与准备", "order": 1, "color": "#6f9bff", "segments": ["mandate"]},
+    {"key": "s2", "name_zh": "风险识别与评估", "order": 2, "color": "#5fb8ff", "segments": ["risk"]},
+    {"key": "s3", "name_zh": "计划与资源调度", "order": 3, "color": "#4fd8e0", "segments": ["plan", "investigation"]},
+    {"key": "s4", "name_zh": "现场审计实施", "order": 4, "color": "#52e0c4", "segments": ["field", "ledger", "journal"]},
+    {"key": "s5", "name_zh": "证据与底稿管理", "order": 5, "color": "#6fe0a0", "segments": ["evidence", "workpaper"]},
+    {"key": "s6", "name_zh": "问题核查与定性", "order": 6, "color": "#8cd07f", "segments": ["finding"]},
+    {"key": "s7", "name_zh": "报告与成果输出", "order": 7, "color": "#b48ce0", "segments": ["report"]},
+    {"key": "s8", "name_zh": "整改跟踪与闭环", "order": 8, "color": "#e08cc8", "segments": ["remedy"]}
+  ],
+  "trunk": [
+    ["s1", "s2"], ["s2", "s3"], ["s3", "s4"], ["s4", "s5"],
+    ["s5", "s6"], ["s6", "s7"], ["s7", "s8"], ["s8", "gov"], ["gov", "s1"]
+  ],
+  "control_segments": [
+    "data-mask", "data-encrypt", "workflow-engine", "permission-control", "audit-log"
+  ],
+  "semantics_ref": "../semantics/contract-aliases.json",
+  "prompt": "你是审计工作流规划器。你只输出一个 JSON 对象，不含任何其他文字。你必须只使用给定的能力召回清单里的 capability；不得发明插件、端口或能力。你不得执行任何动作、不得调用工具、不得读取或修改文件。数据只能引用用户明确授权的数据源。若无法满足目标，输出 plan_key 为 plan- 开头的空缺口 JSON。",
+  "source_refs": ["docs/audit-plugin-network-100.md"]
+}

@@ -1,0 +1,18 @@
+{
+  "schema_version": "1.0.0",
+  "plugin": {
+    "id": "audit.field.inventory-count",
+    "version": "0.1.0",
+    "sha256": "0a21495ec8369e1a23d663308d1024226854301969b360f9ac187380d71666a4"
+  },
+  "protocol": {
+    "id": "audit.field.inventory-count",
+    "version": "0.1.0",
+    "sha256": "006a7303a2f89fe64eb6e3d0376e16f1c23dba4b987cfaeb651f5f8ef7caf862"
+  },
+  "execution_mode": "isolated_subprocess",
+  "capabilities": [
+    "audit.field.inventory-count"
+  ],
+  "status": "verified"
+}

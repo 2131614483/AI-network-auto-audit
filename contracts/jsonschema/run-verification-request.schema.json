@@ -1,0 +1,16 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://audit.local/contracts/run-verification-request.schema.json",
+  "title": "RunVerificationRequest",
+  "description": "运行验证请求（M7）：对一条 status=success 的隔离执行运行发起结果核查——逐节点对照参考运行（reference_run_id 可省略，缺省取同链最近一次成功运行）的可复现性比对；纯 DB 比对、零子进程；必须携带幂等键；reason 必填说明核查用途；任意额外字段拒绝。",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["run_id", "reason", "idempotency_key"],
+  "properties": {
+    "run_id": {"type": "string", "format": "uuid"},
+    "reference_run_id": {"anyOf": [{"type": "string", "format": "uuid"}, {"type": "null"}]},
+    "reason": {"type": "string", "minLength": 1, "maxLength": 500},
+    "idempotency_key": {"type": "string", "minLength": 1, "maxLength": 255},
+    "trace_id": {"type": "string", "format": "uuid"}
+  }
+}

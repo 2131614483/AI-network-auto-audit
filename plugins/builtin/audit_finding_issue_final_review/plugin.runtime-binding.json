@@ -1,0 +1,18 @@
+{
+  "schema_version": "1.0.0",
+  "plugin": {
+    "id": "audit.finding.issue-final-review",
+    "version": "0.1.0",
+    "sha256": "2617eeba0d11687696f365d8c3479c4b175a6b033d036880d58b94bfd29d3afc"
+  },
+  "protocol": {
+    "id": "audit.finding.issue-final-review",
+    "version": "0.1.0",
+    "sha256": "799ea71361c59bfa8e52dda00a23959d140f554e17852561a10d1460fb6e6f64"
+  },
+  "execution_mode": "isolated_subprocess",
+  "capabilities": [
+    "audit.finding.issue-final-review"
+  ],
+  "status": "verified"
+}

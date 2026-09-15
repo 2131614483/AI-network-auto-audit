@@ -1,0 +1,48 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://audit.local/contracts/topology-evidence-proof.schema.json",
+  "title": "TopologyEvidenceProof",
+  "description": "Plugin Topology M9：全链一致性证明——重算每环 row_hash + 校验前驱连续性后返回 verified 或精确首个差异环定位（源表 + 主键 + 环号）。verified=true 时 first_mismatch 必须为 null。",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "chain_key", "scope", "total_anchors", "tail_hash",
+    "verified", "first_mismatch", "checked_at", "trace_id"
+  ],
+  "properties": {
+    "chain_key": {"type": "string", "pattern": "^evidence://[0-9a-f-]{36}/full$"},
+    "scope": {
+      "enum": ["full", "topology", "chain", "execution", "verification", "remediation"]
+    },
+    "total_anchors": {"type": "integer", "minimum": 0},
+    "tail_hash": {"type": "string", "pattern": "^[a-f0-9]{64}$"},
+    "verified": {"type": "boolean"},
+    "first_mismatch": {
+      "anyOf": [
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["seq", "source_table", "source_pk"],
+          "properties": {
+            "seq": {"type": "integer", "minimum": 1},
+            "source_table": {"type": "string", "minLength": 1, "maxLength": 64},
+            "source_pk": {"type": "string", "minLength": 1, "maxLength": 64}
+          }
+        },
+        {"type": "null"}
+      ]
+    },
+    "checked_at": {"type": "string", "format": "date-time"},
+    "trace_id": {"type": "string", "format": "uuid"}
+  },
+  "allOf": [
+    {
+      "if": {"properties": {"verified": {"const": true}}, "required": ["verified"]},
+      "then": {"properties": {"first_mismatch": {"const": null}}}
+    },
+    {
+      "if": {"properties": {"verified": {"const": false}}, "required": ["verified"]},
+      "then": {"properties": {"first_mismatch": {"type": "object"}}}
+    }
+  ]
+}

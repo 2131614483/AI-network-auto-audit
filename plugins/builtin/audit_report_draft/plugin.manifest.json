@@ -1,0 +1,33 @@
+{
+  "id": "audit.report-draft",
+  "version": "0.1.0",
+  "name": "审计报告草稿（受审批输出，只读）",
+  "runtime": "python",
+  "entrypoint": "plugins.builtin.audit_report_draft.runtime:handle",
+  "capabilities": ["audit.report.draft"],
+  "inputs": {
+    "capability": "audit.report.draft",
+    "schema": "finding-set.schema.json",
+    "content_type": "application/json"
+  },
+  "outputs": {
+    "capability": "audit.report.draft",
+    "schema": "report-draft@1.0.0",
+    "content_type": "application/json"
+  },
+  "side_effects": "read_only",
+  "idempotency": "finding_set_sha256_and_template_version",
+  "permissions": {
+    "data_read": ["audit.findings", "audit.evidence"],
+    "data_write": [],
+    "network": "none",
+    "secrets": []
+  },
+  "resources": {"cpu": 1, "memory_mb": 256, "gpu": false, "timeout_seconds": 120},
+  "data_classification": "audit_confidential",
+  "evidence": {"preserve_inputs": true, "code_hash_required": true},
+  "tests": {
+    "contract": "tests/contract/test_audit_report_draft_contract.py",
+    "golden": "tests/unit/test_audit_report_draft_runtime.py"
+  }
+}

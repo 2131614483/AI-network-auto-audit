@@ -1,0 +1,18 @@
+{
+  "schema_version": "1.0.0",
+  "plugin": {
+    "id": "quant.research-note-draft",
+    "version": "0.1.0",
+    "sha256": "61a59d9b7fa639143910c53e18ae5082e902c47f301f4f70a9650d3fe8036446"
+  },
+  "protocol": {
+    "id": "quant.research-note-draft",
+    "version": "0.1.0",
+    "sha256": "c3f3cfd09100a198868224969ec91b6006d9fa615e875761234b1024d3c7b369"
+  },
+  "execution_mode": "isolated_subprocess",
+  "capabilities": [
+    "quant.research-note.draft"
+  ],
+  "status": "verified"
+}

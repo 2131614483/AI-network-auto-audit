@@ -1,0 +1,94 @@
+{
+ "protocol_version": "1.0.0",
+ "id": "audit.report.notice-mask-publish",
+ "version": "0.1.0",
+ "name": "公告信息脱敏发布",
+ "description": "报告脱敏后对内发布；调用数据脱敏，输出至公示节点。",
+ "kind": "governance",
+ "domains": [
+  "audit",
+  "compliance"
+ ],
+ "lifecycle": "verified",
+ "compatibility": {
+  "host_protocol": ">=1.0.0 <2.0.0",
+  "adapters": [
+   "python"
+  ],
+  "fallback_behavior": "human_review"
+ },
+ "capabilities": [
+  {
+   "id": "audit.report.notice-mask-publish",
+   "summary": "公告信息脱敏发布：报告脱敏后对内发布；调用数据脱敏，输出至公示节点。",
+   "side_effects": "read_only",
+   "idempotency": "input_sha256 + capability_version",
+   "inputs": [
+    {
+     "contract_id": "report-approved",
+     "version": "1.0.0",
+     "format": "artifact_ref",
+     "delivery": "reference",
+     "classification": "audit_confidential",
+     "schema_ref": "report-draft.schema.json",
+     "max_bytes": 16777216
+    }
+   ],
+   "outputs": [
+    {
+     "contract_id": "published-notice",
+     "version": "1.0.0",
+     "format": "json",
+     "delivery": "request_response",
+     "classification": "audit_confidential",
+     "schema_ref": "document-content.schema.json",
+     "max_bytes": 67108864
+    }
+   ],
+   "invokes": [
+    "audit.foundation.data-mask"
+   ]
+  }
+ ],
+ "governance": {
+  "default_data_classification": "audit_confidential",
+  "permissions": {
+   "data_read": [
+    "audit.report.notice-mask-publish.read"
+   ],
+   "data_write": [],
+   "network": "none",
+   "secret_refs": []
+  },
+  "policy": {
+   "gateway_required": true,
+   "approval_required": false,
+   "evidence_required": true
+  }
+ },
+ "resources": {
+  "cpu": 1,
+  "memory_mb": 256,
+  "gpu": "none",
+  "timeout_seconds": 300
+ },
+ "observability": {
+  "trace_required": true,
+  "emits": [
+   "structured_log",
+   "artifact_ref",
+   "audit_event"
+  ],
+  "health": "declared_only"
+ },
+ "provenance": {
+  "source_refs": [
+   "docs/audit-plugin-network-100.md#87",
+   "docs/插件开发与接入标准-UPP-v1.0.md",
+   "plugins/builtin/audit_report_notice_mask_publish/runtime.py"
+  ]
+ },
+ "ui": {
+  "mode": "none"
+ }
+}

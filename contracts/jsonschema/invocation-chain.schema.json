@@ -1,0 +1,67 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://audit.local/contracts/invocation-chain.schema.json",
+  "title": "InvocationChain",
+  "description": "插件拓扑物化调用链：由 plan_only 路由计划派生，链序为确定性无环拓扑序，链间端口只接线契约与公共桥接 Ref。链恒 plan_only，违反者拒绝；绝不携带可执行表达式或证据正文。",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["chain_key", "plan_key", "mode", "planner_version", "chain_order", "port_bindings", "created_at", "trace_id"],
+  "properties": {
+    "chain_key": {"type": "string", "pattern": "^chain-[a-z0-9]{16}$"},
+    "plan_key": {"type": "string", "pattern": "^plan-[a-z0-9]{16}$"},
+    "mode": {"const": "plan_only"},
+    "planner_version": {"type": "string", "pattern": "^(0|[1-9][0-9]*)\\.(0|[1-9][0-9]*)\\.(0|[1-9][0-9]*)(?:-[0-9A-Za-z.-]+)?$"},
+    "chain_order": {
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 32,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["slot_key", "blueprint_key", "ordinal", "role"],
+        "properties": {
+          "slot_key": {"type": "string", "pattern": "^[a-z][a-z0-9_]*(?:[._-][a-z0-9]+)*$"},
+          "blueprint_key": {"type": "string", "pattern": "^[a-z][a-z0-9]*(?:[._-][a-z0-9]+)*$"},
+          "capability": {"type": "string", "pattern": "^[a-z][a-z0-9]*(?:[._-][a-z0-9]+)+$"},
+          "ordinal": {"type": "integer", "minimum": 0},
+          "role": {"const": "primary"}
+        }
+      }
+    },
+    "fallbacks": {
+      "type": "array",
+      "maxItems": 8,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["slot_key", "blueprint_key", "order"],
+        "properties": {
+          "slot_key": {"type": "string", "pattern": "^[a-z][a-z0-9_]*(?:[._-][a-z0-9]+)*$"},
+          "blueprint_key": {"type": "string", "pattern": "^[a-z][a-z0-9]*(?:[._-][a-z0-9]+)*$"},
+          "order": {"type": "integer", "minimum": 0},
+          "reason": {"type": "string", "maxLength": 1000}
+        }
+      }
+    },
+    "port_bindings": {
+      "type": "array",
+      "maxItems": 64,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["producer_slot", "consumer_slot", "relation_type", "bind_mode", "contract_ref", "payload_disallowed"],
+        "properties": {
+          "producer_slot": {"type": "string", "pattern": "^[a-z][a-z0-9_]*(?:[._-][a-z0-9]+)*$"},
+          "consumer_slot": {"type": "string", "pattern": "^[a-z][a-z0-9_]*(?:[._-][a-z0-9]+)*$"},
+          "relation_type": {"type": "string", "enum": ["depends_on", "data_flow", "fallback", "bridge"]},
+          "bind_mode": {"type": "string", "enum": ["contract_ref", "bridge_ref"]},
+          "contract_ref": {"type": "string", "minLength": 1, "maxLength": 180},
+          "payload_disallowed": {"const": true}
+        }
+      }
+    },
+    "release_locked": {"type": "boolean"},
+    "created_at": {"type": "string", "format": "date-time"},
+    "trace_id": {"type": "string", "format": "uuid"}
+  }
+}

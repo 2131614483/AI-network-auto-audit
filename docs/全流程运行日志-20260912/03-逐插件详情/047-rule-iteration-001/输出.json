@@ -1,0 +1,38 @@
+{
+  "updated-rule-pack": {
+    "checks": [
+      {
+        "check_id": "columns",
+        "message": "规则迭代 3 条",
+        "status": "pass"
+      }
+    ],
+    "contract_id": "dataset-validation",
+    "contract_version": "1.0.0",
+    "rules": [
+      {
+        "rule_id": "RULE-资金管理",
+        "target": "资金管理",
+        "weight": 2.0
+      },
+      {
+        "rule_id": "RULE-采购管理",
+        "target": "采购管理",
+        "weight": 1.0
+      },
+      {
+        "rule_id": "RULE-内控缺陷",
+        "target": "内控缺陷",
+        "weight": 1.0
+      }
+    ],
+    "snapshot_sha256": "0000000000000000000000000000000000000000000000000000000000000000",
+    "summary": {
+      "checked_columns": 3,
+      "checked_rows": 3,
+      "missing_values": 0,
+      "valid": true
+    },
+    "violations": []
+  }
+}

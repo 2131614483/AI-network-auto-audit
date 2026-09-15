@@ -1,0 +1,36 @@
+{
+  "contract_id": "experiment-evaluation",
+  "contract_version": "1.0.0",
+  "experiment_id": "a1b2c3d4e5f67890",
+  "report_sha256": "a1b2c3d4e5f67890a1b2c3d4e5f67890a1b2c3d4e5f67890a1b2c3d4e5f67890",
+  "baseline_sha256": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+  "strategy_key": "",
+  "strategy_version": "2.1.0",
+  "snapshot_sha256": "a1b2c3d4e5f67890a1b2c3d4e5f67890a1b2c3d4e5f67890a1b2c3d4e5f67890",
+  "reference_time": "2026-03-31T00:00:00Z",
+  "status": "confirmed",
+  "robustness": {
+    "overall": "fragile",
+    "score": -1.0,
+    "basis": "period_returns",
+    "notes": []
+  },
+  "drift": {
+    "available": true,
+    "drift_count": -1,
+    "worst_metric": null,
+    "compared_metrics": []
+  },
+  "promotion": {
+    "recommendation": "publish",
+    "rationale": "反例：非提案状态、越界分数与未知晋级建议。",
+    "blockers": []
+  },
+  "evidence_refs": [],
+  "summary": {
+    "report_sha256": "a1b2c3d4e5f67890a1b2c3d4e5f67890a1b2c3d4e5f67890a1b2c3d4e5f67890",
+    "baseline_included": true,
+    "recommendation": "publish",
+    "truncated": false
+  }
+}

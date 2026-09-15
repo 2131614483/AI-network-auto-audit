@@ -1,0 +1,18 @@
+{
+  "schema_version": "1.0.0",
+  "plugin": {
+    "id": "audit.risk.risk-matrix-build",
+    "version": "0.1.0",
+    "sha256": "c2e036b4e11c549af7267f65d6e0337c9fec4b34b8c39c7742c052493ced1585"
+  },
+  "protocol": {
+    "id": "audit.risk.risk-matrix-build",
+    "version": "0.1.0",
+    "sha256": "1a86825ba08566859b0dc4f00a8ed7df0090144e6098696f2c98adcbcf27631d"
+  },
+  "execution_mode": "isolated_subprocess",
+  "capabilities": [
+    "audit.risk.risk-matrix-build"
+  ],
+  "status": "verified"
+}

@@ -1,0 +1,61 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://audit.local/contracts/run-verification.schema.json",
+  "title": "RunVerification",
+  "description": "运行验证只读投影（M7）：一次对隔离运行的核查结果——全匹配 verified（无回滚裁定）或任一不一致/缺参照 drifted（附带只读回滚裁定投影）；节点计数守恒；不携带节点账本正文/payload。",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["verification_id", "run_id", "chain_key", "reference_run_id", "status", "node_total", "node_matched", "node_mismatched", "node_ref_missing", "reason", "rollback_verdict", "trace_id", "created_at"],
+  "properties": {
+    "verification_id": {"type": "string", "format": "uuid"},
+    "run_id": {"type": "string", "format": "uuid"},
+    "chain_key": {"type": "string", "pattern": "^chain-[a-z0-9]{16}$"},
+    "reference_run_id": {"anyOf": [{"type": "string", "format": "uuid"}, {"type": "null"}]},
+    "status": {"enum": ["verified", "drifted"]},
+    "node_total": {"type": "integer", "minimum": 0},
+    "node_matched": {"type": "integer", "minimum": 0},
+    "node_mismatched": {"type": "integer", "minimum": 0},
+    "node_ref_missing": {"type": "integer", "minimum": 0},
+    "reason": {"type": "string", "maxLength": 500},
+    "rollback_verdict": {"anyOf": [{"$ref": "#/$defs/rollbackVerdict"}, {"type": "null"}]},
+    "trace_id": {"type": "string", "format": "uuid"},
+    "created_at": {"type": "string", "format": "date-time"}
+  },
+  "allOf": [
+    {
+      "if": {"properties": {"status": {"const": "verified"}}, "required": ["status"]},
+      "then": {
+        "required": ["rollback_verdict"],
+        "properties": {"rollback_verdict": {"const": null}}
+      }
+    },
+    {
+      "if": {"properties": {"status": {"const": "drifted"}}, "required": ["status"]},
+      "then": {
+        "required": ["rollback_verdict"],
+        "properties": {"rollback_verdict": {"$ref": "#/$defs/rollbackVerdict"}}
+      }
+    }
+  ],
+  "$defs": {
+    "rollbackVerdict": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["action", "affected_slots", "baseline"],
+      "properties": {
+        "action": {"enum": ["re-verify", "re-run-locked-release", "escalate-human"]},
+        "affected_slots": {"type": "array", "items": {"type": "string"}, "uniqueItems": true},
+        "baseline": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["reference_run_id", "chain_checksum", "planner_version"],
+          "properties": {
+            "reference_run_id": {"anyOf": [{"type": "string", "format": "uuid"}, {"type": "null"}]},
+            "chain_checksum": {"type": "string", "pattern": "^[a-f0-9]{64}$"},
+            "planner_version": {"type": "string", "maxLength": 64}
+          }
+        }
+      }
+    }
+  }
+}

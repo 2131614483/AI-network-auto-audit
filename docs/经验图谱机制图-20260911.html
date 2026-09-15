@@ -1,0 +1,73 @@
+﻿<html style="margin:0;padding:0;">
+<div style="background-color:transparent;box-sizing:border-box;">
+  <div style="font-family:'Roboto','PingFang SC','Segoe UI',Arial,sans-serif;background:#F4F3EE;border-radius:16px;padding:16px 18px;box-sizing:border-box;">
+    <div style="font-size:16px;font-weight:600;color:#1A1B1C;">经验积累与图谱动态更新 · 机制总览</div>
+    <div style="font-size:12px;color:#6B7280;margin-top:2px;">运行事实 → 经验投影 → 三级更新 → 叠加回知识星云（系统自动积累事实，人决定结构）</div>
+
+    <!-- 第一层：运行事实源 -->
+    <div style="font-size:12px;font-weight:600;color:#4B5563;margin-top:14px;">① 业务运行留下的事实（既有表，只读）</div>
+    <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:6px;">
+      <div style="flex:1 1 150px;min-width:0;padding:8px 10px;background:#FFFFFF;border:0.5px solid rgba(0,0,0,0.08);border-radius:10px;box-sizing:border-box;font-size:11.5px;color:#1A1B1C;">topology.execution_runs<br><span style="color:#6B7280;">一次业务链运行与成败</span></div>
+      <div style="flex:1 1 150px;min-width:0;padding:8px 10px;background:#FFFFFF;border:0.5px solid rgba(0,0,0,0.08);border-radius:10px;box-sizing:border-box;font-size:11.5px;color:#1A1B1C;">control.node_attempts<br><span style="color:#6B7280;">每节点 input_bindings / output_refs / SHA</span></div>
+      <div style="flex:1 1 150px;min-width:0;padding:8px 10px;background:#FFFFFF;border:0.5px solid rgba(0,0,0,0.08);border-radius:10px;box-sizing:border-box;font-size:11.5px;color:#1A1B1C;">event.outbox · evidence<br><span style="color:#6B7280;">node.finished 事件 / 证据锚点</span></div>
+    </div>
+    <div style="text-align:center;color:#9AA0AB;font-size:14px;margin:6px 0;">↓ run 终态触发（独立短事务，幂等）</div>
+
+    <!-- 投影器 -->
+    <div style="padding:10px 12px;background:linear-gradient(135deg,rgba(139,200,234,0.20),rgba(139,200,234,0.34));border:0.5px solid rgba(0,0,0,0.08);border-radius:12px;box-sizing:border-box;">
+      <div style="font-size:13px;font-weight:600;color:#1A1B1C;">② ExperienceProjector 经验投影器（新增，只读事实 / 只写经验库）</div>
+      <div style="font-size:11.5px;color:#4B5563;margin-top:4px;line-height:1.55;">同一 run 内：消费者 input_bindings 的 source_instance → 解析生产者 plugin_id，得到一次「实际交接」 A→B@契约（带产物 SHA、成败、耗时）；与设计态 dataflow 边比对，分流为「已验证」与「设计外」。</div>
+    </div>
+    <div style="text-align:center;color:#9AA0AB;font-size:14px;margin:6px 0;">↓</div>
+
+    <!-- 经验三层存储 -->
+    <div style="font-size:12px;font-weight:600;color:#4B5563;">③ 经验域三层（新增 experience.*，RLS 强制隔离）</div>
+    <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:6px;">
+      <div style="flex:1 1 170px;min-width:0;padding:8px 10px;background:#FFFFFF;border-left:3px solid #94D8C3;border:0.5px solid rgba(0,0,0,0.08);border-radius:10px;box-sizing:border-box;">
+        <div style="font-size:12px;font-weight:600;color:#1A1B1C;">edge/node_observations</div>
+        <div style="font-size:11px;color:#4B5563;margin-top:3px;line-height:1.5;">原始观测 · <b>append-only 不可硬删</b>，幂等 ON CONFLICT DO NOTHING</div>
+      </div>
+      <div style="flex:1 1 170px;min-width:0;padding:8px 10px;background:#FFFFFF;border-left:3px solid #9BBBF4;border:0.5px solid rgba(0,0,0,0.08);border-radius:10px;box-sizing:border-box;">
+        <div style="font-size:12px;font-weight:600;color:#1A1B1C;">edge/node_stats</div>
+        <div style="font-size:11px;color:#4B5563;margin-top:3px;line-height:1.5;">聚合统计 · 次数/成功率/Wilson 置信下界/衰减权重，<b>可随时重建</b></div>
+      </div>
+      <div style="flex:1 1 170px;min-width:0;padding:8px 10px;background:#FFFFFF;border-left:3px solid #E1B98F;border:0.5px solid rgba(0,0,0,0.08);border-radius:10px;box-sizing:border-box;">
+        <div style="font-size:12px;font-weight:600;color:#1A1B1C;">relation_suggestions</div>
+        <div style="font-size:11px;color:#4B5563;margin-top:3px;line-height:1.5;">设计外候选 · proposed→accepted/dismissed 状态机，留痕不删</div>
+      </div>
+    </div>
+
+    <!-- 三级更新 -->
+    <div style="font-size:12px;font-weight:600;color:#4B5563;margin-top:14px;">④ 三级动态更新（自动积累事实，人工确认结构）</div>
+    <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:6px;">
+      <div style="flex:1 1 150px;min-width:0;padding:8px 10px;background:linear-gradient(135deg,rgba(148,216,195,0.22),rgba(148,216,195,0.38));border-radius:10px;box-sizing:border-box;">
+        <div style="font-size:12px;font-weight:600;color:#1A6B57;">L0 自动统计</div>
+        <div style="font-size:11px;color:#374151;margin-top:3px;line-height:1.5;">系统自动 · 只改边宽/颜色/排序，不改关系、不授权</div>
+      </div>
+      <div style="flex:1 1 150px;min-width:0;padding:8px 10px;background:linear-gradient(135deg,rgba(225,185,143,0.22),rgba(225,185,143,0.40));border-radius:10px;box-sizing:border-box;">
+        <div style="font-size:12px;font-weight:600;color:#8A5A22;">L1 候选关系</div>
+        <div style="font-size:11px;color:#374151;margin-top:3px;line-height:1.5;">系统发现设计外协作 → 金色虚线「建议连线」，不直接进图</div>
+      </div>
+      <div style="flex:1 1 150px;min-width:0;padding:8px 10px;background:linear-gradient(135deg,rgba(155,187,244,0.22),rgba(155,187,244,0.40));border-radius:10px;box-sizing:border-box;">
+        <div style="font-size:12px;font-weight:600;color:#2F4E96;">L2 人工固化</div>
+        <div style="font-size:11px;color:#374151;margin-top:3px;line-height:1.5;">采纳走 change_sets→release / 转 manifest 修订；驳回留痕</div>
+      </div>
+    </div>
+    <div style="text-align:center;color:#9AA0AB;font-size:14px;margin:6px 0;">↓ 经验覆盖层叠加设计态图</div>
+
+    <!-- 叠加到 UI -->
+    <div style="display:flex;gap:8px;flex-wrap:wrap;">
+      <div style="flex:1 1 200px;min-width:0;padding:10px 12px;background:#FFFFFF;border:0.5px solid rgba(0,0,0,0.08);border-radius:12px;box-sizing:border-box;">
+        <div style="font-size:12px;font-weight:600;color:#1A1B1C;">⑤ 知识星云呈现</div>
+        <div style="font-size:11px;color:#4B5563;margin-top:4px;line-height:1.6;">实线=验证过（宽∝频次、色∝成功率）；细灰虚线=声明但没跑过；金色虚线=设计外候选；详情可下钻 run/attempt/产物 SHA。</div>
+      </div>
+    </div>
+
+    <!-- 安全横切 -->
+    <div style="margin-top:12px;padding:9px 12px;background:rgba(26,27,28,0.05);border:0.5px dashed rgba(0,0,0,0.18);border-radius:10px;box-sizing:border-box;font-size:11px;color:#4B5563;line-height:1.6;">
+      <b style="color:#1A1B1C;">横切安全（Phase 9 边界）</b>：全程经 Policy Gateway（读 read_only / 写 low 可配审批）· 每请求租户 + Trace ID + 幂等键 · RLS 强制隔离、账号无 BYPASSRLS · 观测证据不硬删、聚合可重建 · 不执行插件 / 不触外网 / 不开放 AUTO，迁移 0055/0056 显式执行。
+    </div>
+    <div style="font-size:11px;color:#6B7280;margin-top:10px;">依据：现有表结构（迁移 0004/0042/0046/0052/0054）、ports_executor / dag_persistence 运行账本、nebula_graph 设计态图；本图为方案设计示意。</div>
+  </div>
+</div>
+</html>

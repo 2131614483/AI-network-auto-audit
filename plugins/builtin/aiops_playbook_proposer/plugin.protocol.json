@@ -1,0 +1,48 @@
+{
+  "protocol_version": "1.0.0",
+  "id": "aiops.playbook-proposer",
+  "version": "0.1.0",
+  "name": "AIOps 修复提案",
+  "description": "基于 rca-candidates@1 根因候选集合，确定性地选择 Playbook 并输出修复提案草稿：前置条件、结构化动作（不含自由 Shell）、canary 与回滚建议。提案只进入 AIOps 修复提案影子区，不生成自由 Shell、不创建 ChangeRequest、不执行变更；执行必须经 Policy Gateway、ChangeRequest 与人工审批。",
+  "kind": "analysis",
+  "domains": ["aiops"],
+  "lifecycle": "contract_only",
+  "compatibility": {"host_protocol": ">=1.0.0 <2.0.0", "adapters": ["python"], "fallback_behavior": "human_review"},
+  "capabilities": [
+    {
+      "id": "aiops.remediation.propose",
+      "summary": "把 rca-candidates@1 转换为 remediation-proposal@1：固定 Playbook 关键字匹配、前置条件、结构化动作、canary 与回滚建议；输出草稿不创建 ChangeRequest、不执行变更。",
+      "side_effects": "read_only",
+      "idempotency": "rca_candidates_sha256 + max_playbooks + canary_scope",
+      "inputs": [
+        {
+          "contract_id": "rca-candidates",
+          "version": "1.0.0",
+          "format": "artifact_ref",
+          "delivery": "reference",
+          "classification": "internal",
+          "schema_ref": "rca-candidates.schema.json"
+        }
+      ],
+      "outputs": [
+        {
+          "contract_id": "remediation-proposal",
+          "version": "1.0.0",
+          "format": "json",
+          "delivery": "request_response",
+          "classification": "internal",
+          "schema_ref": "remediation-proposal.schema.json"
+        }
+      ]
+    }
+  ],
+  "governance": {
+    "default_data_classification": "internal",
+    "permissions": {"data_read": ["aiops.rca_candidates"], "data_write": [], "network": "none", "secret_refs": []},
+    "policy": {"gateway_required": true, "approval_required": false, "evidence_required": true}
+  },
+  "resources": {"cpu": 1, "memory_mb": 256, "gpu": "none", "timeout_seconds": 300},
+  "observability": {"trace_required": true, "emits": ["structured_log", "artifact_ref", "audit_event"], "health": "declared_only"},
+  "provenance": {"source_refs": ["docs/审计组网插件规划-v1.md#3.3", "docs/审计组网插件规划-v1.md#4.2", "docs/插件开发与接入标准-UPP-v1.0.md"]},
+  "ui": {"mode": "none"}
+}

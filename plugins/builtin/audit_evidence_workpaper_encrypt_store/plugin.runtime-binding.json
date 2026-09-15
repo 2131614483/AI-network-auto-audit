@@ -1,0 +1,18 @@
+{
+  "schema_version": "1.0.0",
+  "plugin": {
+    "id": "audit.evidence.workpaper-encrypt-store",
+    "version": "0.1.0",
+    "sha256": "1b44ee96297400d965f424d6c652432ca2ee5b61147e990d765eedc480a12cb8"
+  },
+  "protocol": {
+    "id": "audit.evidence.workpaper-encrypt-store",
+    "version": "0.1.0",
+    "sha256": "044741214bf716e95ef7d04b1b56ed5cfe5aff4902465217c53d33d0b5ca0d41"
+  },
+  "execution_mode": "isolated_subprocess",
+  "capabilities": [
+    "audit.evidence.workpaper-encrypt-store"
+  ],
+  "status": "verified"
+}

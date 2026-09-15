@@ -1,0 +1,59 @@
+{
+  "contract_id": "report-draft",
+  "contract_version": "1.0.0",
+  "report_id": "6a7b8c9d0e1f2a3b",
+  "report_kind": "report",
+  "status": "draft",
+  "engagement_id": "4c8e2a6d-b5f1-4d9a-a37e-8b0c2d4f6e1a",
+  "engagement_name": "BCSA 大案例 01 - 2026-09 报告草稿验收",
+  "template_version": "1.2.0",
+  "body": {
+    "cover": {
+      "engagement_id": "4c8e2a6d-b5f1-4d9a-a37e-8b0c2d4f6e1a",
+      "engagement_name": "BCSA 大案例 01 - 2026-09 报告草稿验收",
+      "template_version": "1.2.0",
+      "finding_count": 1,
+      "severity_summary": {"high": 1, "medium": 0, "low": 0}
+    },
+    "executive_summary": "本报告草稿基于 1 项已确认发现生成，其中高风险 1 项。",
+    "findings": [
+      {
+        "section_id": "0a1b2c3d4e5f6789",
+        "finding_id": "0f2c4e6a-8d59-4b7c-a21e-7d9f0b3a6c52",
+        "title": "采购凭证金额越界（单笔超阈值）",
+        "severity": "high",
+        "claim_id": "2c4e6a8d-59f3-4b7c-a21e-7d9f0b3a6c52",
+        "claim": "凭证 PO-202609-0017 金额越界且无审批留痕。",
+        "reviewer_label": "审计-张三",
+        "evidence_refs": ["file:///G:/数据/expense_ledger.csv"],
+        "confirmed_at": "2026-09-05T10:30:00+08:00"
+      }
+    ]
+  },
+  "conclusion": "建议管理层针对高风险发现补充控制措施，并在签发前完成人工复核。",
+  "signature": {
+    "draft_by": "audit.report-draft@0.1.0",
+    "signed": false,
+    "issuer": "audit_engagement_lead"
+  },
+  "summary": {
+    "findings": 1,
+    "high": 1,
+    "medium": 0,
+    "low": 0,
+    "evidence_refs": 1,
+    "truncated": false
+  },
+  "constraints": {
+    "no_overwrite": true,
+    "requires_human_approval": true,
+    "immutable_source": true,
+    "human_issuance_required": true
+  },
+  "provenance": {
+    "source_sha256": "a1b2c3d4e5f67890a1b2c3d4e5f67890a1b2c3d4e5f67890a1b2c3d4e5f67890",
+    "template_version": "1.2.0",
+    "plugin": "audit.report-draft@0.1.0",
+    "draft_time": "2026-09-06T00:00:00Z"
+  }
+}

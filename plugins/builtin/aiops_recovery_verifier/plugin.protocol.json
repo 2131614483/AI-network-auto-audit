@@ -1,0 +1,105 @@
+{
+  "protocol_version": "1.0.0",
+  "id": "aiops.recovery-verifier",
+  "version": "0.1.0",
+  "name": "AIOps 恢复核验",
+  "description": "基于基线/观测指标序列（可结合修复提案）进行确定性基线对比、SLO/业务探针核验，输出不可变核验账本条目：recovered / not_recovered / insufficient_data。核验不执行修复、不解除熔断、不创建 ChangeRequest。",
+  "kind": "analysis",
+  "domains": [
+    "aiops"
+  ],
+  "lifecycle": "contract_only",
+  "compatibility": {
+    "host_protocol": ">=1.0.0 <2.0.0",
+    "adapters": [
+      "python"
+    ],
+    "fallback_behavior": "human_review"
+  },
+  "capabilities": [
+    {
+      "id": "aiops.recovery.verify",
+      "summary": "把 baseline metric-series@1、observed metric-series@1（可选 remediation-proposal@1）转换为 recovery-verification@1：基线对比、SLO/探针核验与不可变结论；不执行修复、不解除熔断。",
+      "side_effects": "read_only",
+      "idempotency": "baseline_sha256 + observed_sha256 + proposal_sha256 + availability_target + threshold_ratio",
+      "inputs": [
+        {
+          "contract_id": "baseline-metric-series",
+          "version": "1.0.0",
+          "format": "artifact_ref",
+          "delivery": "reference",
+          "classification": "internal",
+          "schema_ref": "metric-series.schema.json"
+        },
+        {
+          "contract_id": "observed-metric-series",
+          "version": "1.0.0",
+          "format": "artifact_ref",
+          "delivery": "reference",
+          "classification": "internal",
+          "schema_ref": "metric-series.schema.json"
+        },
+        {
+          "contract_id": "remediation-proposal",
+          "version": "1.0.0",
+          "format": "artifact_ref",
+          "delivery": "reference",
+          "classification": "internal",
+          "schema_ref": "remediation-proposal.schema.json"
+        }
+      ],
+      "outputs": [
+        {
+          "contract_id": "recovery-verification",
+          "version": "1.0.0",
+          "format": "json",
+          "delivery": "request_response",
+          "classification": "internal",
+          "schema_ref": "recovery-verification.schema.json"
+        }
+      ]
+    }
+  ],
+  "governance": {
+    "default_data_classification": "internal",
+    "permissions": {
+      "data_read": [
+        "aiops.metric_series",
+        "aiops.remediation_proposal"
+      ],
+      "data_write": [],
+      "network": "none",
+      "secret_refs": []
+    },
+    "policy": {
+      "gateway_required": true,
+      "approval_required": false,
+      "evidence_required": true
+    }
+  },
+  "resources": {
+    "cpu": 1,
+    "memory_mb": 256,
+    "gpu": "none",
+    "timeout_seconds": 300
+  },
+  "observability": {
+    "trace_required": true,
+    "emits": [
+      "structured_log",
+      "artifact_ref",
+      "audit_event"
+    ],
+    "health": "declared_only"
+  },
+  "provenance": {
+    "source_refs": [
+      "docs/审计组网插件规划-v1.md#3.3",
+      "docs/审计组网插件规划-v1.md#4.2",
+      "docs/插件开发与接入标准-UPP-v1.0.md"
+    ]
+  },
+  "ui": {
+    "mode": "none"
+  }
+}

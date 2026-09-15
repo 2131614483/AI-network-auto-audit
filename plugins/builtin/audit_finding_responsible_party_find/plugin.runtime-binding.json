@@ -1,0 +1,18 @@
+{
+  "schema_version": "1.0.0",
+  "plugin": {
+    "id": "audit.finding.responsible-party-find",
+    "version": "0.1.0",
+    "sha256": "0326d8201460fbcf73256bd7d83f4d73dfd5b3fd072b8bf0a211381191275e0d"
+  },
+  "protocol": {
+    "id": "audit.finding.responsible-party-find",
+    "version": "0.1.0",
+    "sha256": "45a37a94794dffbf033a4a00de60b98c76e675c60f418cface5090b3e0aafe3c"
+  },
+  "execution_mode": "isolated_subprocess",
+  "capabilities": [
+    "audit.finding.responsible-party-find"
+  ],
+  "status": "verified"
+}

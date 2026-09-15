@@ -1,0 +1,18 @@
+{
+  "schema_version": "1.0.0",
+  "plugin": {
+    "id": "audit.foundation.metadata-manage",
+    "version": "0.1.0",
+    "sha256": "19e12fde92b7d466c91b307a1fb11bc888392070d95c0a023b174c119806a4fa"
+  },
+  "protocol": {
+    "id": "audit.foundation.metadata-manage",
+    "version": "0.1.0",
+    "sha256": "1cb4979e04786825fde188fb78e0f8aeb20d5bf00b95e5f613efb009d694f981"
+  },
+  "execution_mode": "isolated_subprocess",
+  "capabilities": [
+    "audit.foundation.metadata-manage"
+  ],
+  "status": "verified"
+}

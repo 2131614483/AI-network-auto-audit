@@ -1,0 +1,18 @@
+{
+  "schema_version": "1.0.0",
+  "plugin": {
+    "id": "audit.report.report-data-check",
+    "version": "0.1.0",
+    "sha256": "d464ab74f49e81ff6c412d4ca30517c5acda6ba894be23abc048735af21f1463"
+  },
+  "protocol": {
+    "id": "audit.report.report-data-check",
+    "version": "0.1.0",
+    "sha256": "ea47254068cfbd91c28466da79eb83096ef5348cd04f363a1b3754b54e1f3766"
+  },
+  "execution_mode": "isolated_subprocess",
+  "capabilities": [
+    "audit.report.report-data-check"
+  ],
+  "status": "verified"
+}

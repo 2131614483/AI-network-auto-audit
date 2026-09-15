@@ -1,0 +1,18 @@
+{
+  "schema_version": "1.0.0",
+  "plugin": {
+    "id": "audit.foundation.metric-compute",
+    "version": "0.1.0",
+    "sha256": "1ec092dfbde0a63848967b0c713ff954c70e7b2880ba6ccaf810dae3103f84f3"
+  },
+  "protocol": {
+    "id": "audit.foundation.metric-compute",
+    "version": "0.1.0",
+    "sha256": "ec6e20de25499aa8269cb56a435a97bad2b6812d9cd048b505d9f8627b69a085"
+  },
+  "execution_mode": "isolated_subprocess",
+  "capabilities": [
+    "audit.foundation.metric-compute"
+  ],
+  "status": "verified"
+}

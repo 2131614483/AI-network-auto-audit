@@ -1,0 +1,26 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://audit.local/contracts/policy-decision.schema.json",
+  "title": "PolicyDecision",
+  "description": "Policy Gateway 对一次工具调用或动作请求的不可变裁决。",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["decision_id", "tenant_id", "tool_call_id", "policy_version", "decision", "risk_score", "reason", "decided_at"],
+  "properties": {
+    "decision_id": {"type": "string", "format": "uuid"},
+    "tenant_id": {"type": "string", "format": "uuid"},
+    "tool_call_id": {"type": "string", "format": "uuid"},
+    "policy_set_id": {"type": "string", "format": "uuid"},
+    "policy_version": {"type": "string", "minLength": 1},
+    "decision": {"type": "string", "enum": ["ALLOW", "DENY", "REQUIRE_APPROVAL", "FREEZE"]},
+    "risk_score": {"type": "number", "minimum": 0, "maximum": 100},
+    "matched_rule_ids": {"type": "array", "uniqueItems": true, "items": {"type": "string", "format": "uuid"}},
+    "reviewer_type": {"type": "string", "enum": ["deterministic", "human", "hybrid"]},
+    "reviewer_id": {"type": "string", "format": "uuid"},
+    "reason": {"type": "string", "minLength": 1, "maxLength": 4000},
+    "decision_payload": {"type": "object", "additionalProperties": true},
+    "authorization_lease_id": {"type": "string", "format": "uuid"},
+    "decided_at": {"type": "string", "format": "date-time"},
+    "signature_hash": {"type": "string", "pattern": "^[A-Fa-f0-9]{64}$"}
+  }
+}

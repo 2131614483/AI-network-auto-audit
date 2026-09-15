@@ -1,0 +1,622 @@
+{
+  "schema_version": "1.0.0",
+  "case": "黔岭酒业2025年度财务报表审计_实验组_高难度",
+  "source_file_count": 51,
+  "source_files": [
+    {
+      "path": "00_资料总览.md",
+      "bytes": 3011,
+      "sha256": "e43f22e86852c040237cfff287a485141ea5134c785068ce714ad3d9cdc82269"
+    },
+    {
+      "path": "01_账务资料/合并范围内子公司清单.csv",
+      "bytes": 660,
+      "sha256": "781d8ad529739212b80a39eb599ae11c98184fa45767c0330dbf3e3cb13c61ff"
+    },
+    {
+      "path": "01_账务资料/总账科目与核算维度设置说明.md",
+      "bytes": 1484,
+      "sha256": "9fb634b4462eb043b05efa2de5065a3edcd2931dd725a52152b135518cc4a729"
+    },
+    {
+      "path": "01_账务资料/科目余额表_P_黔岭酒业股份有限公司.csv",
+      "bytes": 4346,
+      "sha256": "0f10af546f46982c6f1d13b1c1a9af7b1797d2f1e50e349cb29c3c4ad0f8df3f"
+    },
+    {
+      "path": "01_账务资料/科目余额表_S1_黔岭销售有限公司.csv",
+      "bytes": 2133,
+      "sha256": "76a32d3136fe5c2560e511288fd07abc65d3c503c252b523cf3e8d717d306686"
+    },
+    {
+      "path": "01_账务资料/科目余额表_S2_黔岭酒类包装有限公司.csv",
+      "bytes": 2044,
+      "sha256": "7b481d3cc14e77df696d70e651ffd2439f9a184ab4aa0aab77baaa7231b3b63b"
+    },
+    {
+      "path": "01_账务资料/管理层编制的合并财务报表_未审数.csv",
+      "bytes": 2648,
+      "sha256": "9c095c2595098c30b93d8b80ced3cbe27d6662d5c7dc77ee56b0d9cce13cf4d7"
+    },
+    {
+      "path": "01_账务资料/记账凭证_2025年度明细.csv",
+      "bytes": 41521,
+      "sha256": "f3a1d738dacf34325aa24199a2ddd1b24509322a4ded4728528c6d2a738dda88"
+    },
+    {
+      "path": "02_业务资料/主要供应商及付款流水.csv",
+      "bytes": 621,
+      "sha256": "07906393e4a87543664e66f964af8e89e6a99b69dcb3ac4e0eb1701497501290"
+    },
+    {
+      "path": "02_业务资料/主要客户清单_前五名.csv",
+      "bytes": 430,
+      "sha256": "b6c8456240037cdab2fab09335e32706ddd4a43a2c334dc01ff812e1f39cd463"
+    },
+    {
+      "path": "02_业务资料/产销量与销量明细.csv",
+      "bytes": 1509,
+      "sha256": "99a64d8ba5cac5f648e94c01c397c1d13c34344aaa78b9cbae3a5d88cbc40eef"
+    },
+    {
+      "path": "02_业务资料/关联方及关联交易清单.csv",
+      "bytes": 460,
+      "sha256": "22d4a7395bfbe16ce2fc966368b27607629c130b2229fae9a12274a62f3070f9"
+    },
+    {
+      "path": "02_业务资料/固定资产卡片明细表.csv",
+      "bytes": 3416,
+      "sha256": "8c7e8ebd4e1589d48ce7e392c7be4ea630376ef8ee87f153014cbbf7ac2f26ce"
+    },
+    {
+      "path": "02_业务资料/在建工程明细表.csv",
+      "bytes": 393,
+      "sha256": "652c796ccdb6f01c452b760e91f41479d0cb37b16d315b689beebdc61d321832"
+    },
+    {
+      "path": "02_业务资料/存货入库明细表.csv",
+      "bytes": 717,
+      "sha256": "d87de29cc80bc3817bc50759dfc6a1c23e5b125a83c974342c8e7eb8943c167c"
+    },
+    {
+      "path": "02_业务资料/存货收发存明细表.csv",
+      "bytes": 983,
+      "sha256": "fe11663881cdd0e584a76f59d7875fcb1539f54e794d7d5bce1ef00f6ef9adfe"
+    },
+    {
+      "path": "02_业务资料/应付账款账龄明细表.csv",
+      "bytes": 520,
+      "sha256": "e2ef9a68412221ab8c3e9399675b558d601840c153a84f6e6b791dfa034954c9"
+    },
+    {
+      "path": "02_业务资料/应收账款明细表_按客户.csv",
+      "bytes": 774,
+      "sha256": "60ab12612cebab5209bdda3c446c862ae99ed373fe15ef4d4f7987c425b64360"
+    },
+    {
+      "path": "02_业务资料/应收账款账龄明细表_管理层编制.csv",
+      "bytes": 972,
+      "sha256": "ad1be17346a8bef700c34e48f0669caca94ace5d1f39fd980313c8be17b51809"
+    },
+    {
+      "path": "02_业务资料/无形资产及长期待摊费用明细表.csv",
+      "bytes": 339,
+      "sha256": "2a5b3e74ca9fa468dacfaf9bb3543705bf0ef2c71c2621dedf6d8ff8fdba3d07"
+    },
+    {
+      "path": "02_业务资料/期间费用明细表.csv",
+      "bytes": 610,
+      "sha256": "1bf0e720fd49d8bfa9b3806b236c5732230dd16ab39d8a4bd38682a6f05c9004"
+    },
+    {
+      "path": "02_业务资料/职工薪酬明细表.csv",
+      "bytes": 396,
+      "sha256": "7e672a0632ed696906c17a3e860357e9e3ff08148945874e3853103bab3fa448"
+    },
+    {
+      "path": "02_业务资料/采购发票登记簿.csv",
+      "bytes": 563,
+      "sha256": "22bea0de65d762aeaf4afc0273dc8219022269df3e6883a3511fae9891fd093e"
+    },
+    {
+      "path": "02_业务资料/重大销售与采购合同台账.csv",
+      "bytes": 1974,
+      "sha256": "ae461f1006a42b8674ef22152ff54878b9d0e7103350fa90d9d1836060c8aa1c"
+    },
+    {
+      "path": "02_业务资料/销售出库单清单.csv",
+      "bytes": 4316,
+      "sha256": "8c28e8da278f107d5f2a9efbb10bfec58295c98074c58f2305fed4606c60ae69"
+    },
+    {
+      "path": "02_业务资料/销售明细_分产品分渠道分地区.csv",
+      "bytes": 3246,
+      "sha256": "d319c91c70892317e69ffdca7373156107dec058cc3aded83271815e76fa7068"
+    },
+    {
+      "path": "02_业务资料/预付账款账龄明细表.csv",
+      "bytes": 344,
+      "sha256": "6e05cb4c990b988b67905c40db5a3b895343fd50dcc9e644328c7be241a51327"
+    },
+    {
+      "path": "03_治理资料/会计政策与会计估计.md",
+      "bytes": 2263,
+      "sha256": "1e05ebd500b242e79ce0d1f0d7fc072af6193a145d34e2b515f0b9fca6078fcf"
+    },
+    {
+      "path": "03_治理资料/公司章程与主要制度清单.md",
+      "bytes": 1034,
+      "sha256": "569ff66b435c21878d2fe2a98dbf2998627d124a817a8fe662cb547b5821a898"
+    },
+    {
+      "path": "03_治理资料/内部控制自我评价报告摘要.md",
+      "bytes": 1079,
+      "sha256": "bfbae6d69b6fd3bd54ce4622b2d687cc01a62582b59c34af3b5d26fbcbc51e5b"
+    },
+    {
+      "path": "03_治理资料/总经理办公会纪要_2026Q1.md",
+      "bytes": 1103,
+      "sha256": "90d65496735a5c18d0f4b16f4b583628b9ea83bdf54f5f41ffb8366ecee8e3af"
+    },
+    {
+      "path": "03_治理资料/组织架构与关键管理人员.md",
+      "bytes": 1530,
+      "sha256": "a11aaed286251170ffa706f5f37fe77b5aa80c6f8e915c6d40599653e3eab54b"
+    },
+    {
+      "path": "03_治理资料/董事会决议汇编_2025.md",
+      "bytes": 2616,
+      "sha256": "ddeaedd10a8d894fad9688b486902fbfbf6895c4a705decbe4496c86a44d4002"
+    },
+    {
+      "path": "04_税务资料/个人所得税申报缴纳表.csv",
+      "bytes": 305,
+      "sha256": "a1e2c2aae3e4052a7caf6bebca29f009cec2b1d7a0130f11fb931c7260d3493a"
+    },
+    {
+      "path": "04_税务资料/应交税费明细表_分主体.csv",
+      "bytes": 707,
+      "sha256": "3c053d34289df321008e600a3e2b88cc39b84ea1f641fb3ca50edfa32830e017"
+    },
+    {
+      "path": "04_税务资料/税种税率及税收优惠说明.md",
+      "bytes": 1360,
+      "sha256": "3c18a8502cab790c17aad79ef0a0a3318f2ac455f6133ee3f3b17edb09f9cf34"
+    },
+    {
+      "path": "04_税务资料/纳税申报与缴纳汇总.csv",
+      "bytes": 775,
+      "sha256": "b535ac0d04776a43ecff3e730663be3c4abca044c19a5c2c5117faaa7fe994a3"
+    },
+    {
+      "path": "05_银行资料/借款合同与质押清单.csv",
+      "bytes": 470,
+      "sha256": "3b1c0b00ef712237621d60e2a58d110e9be33241ca128737cabf7774d9d51255"
+    },
+    {
+      "path": "05_银行资料/银行存款日记账_募集资金专户_2025.csv",
+      "bytes": 304,
+      "sha256": "9136e994b6597d35e2bca10fbd15a04f24c171b66e8f8dc4ee7f3ddd0939d78c"
+    },
+    {
+      "path": "05_银行资料/银行存款日记账_黔岭销售基本户_2025.csv",
+      "bytes": 1087,
+      "sha256": "740f91c4f06dd1b068ec63e88dbe4d09c9bddbc4938e8b613a3ed1fda97a6b1f"
+    },
+    {
+      "path": "05_银行资料/银行对账单_黔岭销售基本户_2025.csv",
+      "bytes": 1002,
+      "sha256": "9c0b77d142b2d95817005ed43c00b3bd836790f0be21b892d51f324e4b459957"
+    },
+    {
+      "path": "05_银行资料/银行账户清单.csv",
+      "bytes": 603,
+      "sha256": "68d0e6968453c93ee7ac9e784f65138876d83cce3055e9cb85360d77b78f4f59"
+    },
+    {
+      "path": "06_其他资料/工商登记资料摘录.md",
+      "bytes": 1723,
+      "sha256": "6c8f0dc98bc1882b6d1f531868244eae43a8fb2178f066a8e94a782b9d22f0c2"
+    },
+    {
+      "path": "06_其他资料/年末资产盘点表.csv",
+      "bytes": 667,
+      "sha256": "5123edad4883ab2b018d94fbc6dc77f33d1228b6573f45c6de715ea2e7a138c7"
+    },
+    {
+      "path": "06_其他资料/政府补助文件摘要.csv",
+      "bytes": 542,
+      "sha256": "66b2c6eac104a54cb941bfdcdda4cc1cb887f533f844524a3ab6d1860329961d"
+    },
+    {
+      "path": "06_其他资料/法律事项说明.md",
+      "bytes": 1340,
+      "sha256": "208f33dc04a3cff1808590b3b68a4f64da35eb4855e3605cf7b039e92cdd7701"
+    },
+    {
+      "path": "06_其他资料/管理层声明书.md",
+      "bytes": 945,
+      "sha256": "b063c6d8700fcda59463f77280555791c6b2b31ec6fd30d29e0e8301a8fec9d8"
+    },
+    {
+      "path": "06_其他资料/财务报表附注（未审）.md",
+      "bytes": 4577,
+      "sha256": "c6084b7b19195c898ee6055f83267a7278a60669eee94d94a686c6f994e9fb24"
+    },
+    {
+      "path": "06_其他资料/资料交接记录.md",
+      "bytes": 3686,
+      "sha256": "1e87cf5af6d38fc29fb7af898358f914c7d8323b4de95e26169400a9e58e0f48"
+    },
+    {
+      "path": "06_其他资料/近两年主要财务指标.md",
+      "bytes": 775,
+      "sha256": "7ff58fb12ac6232ec229afeb9999524bb2bfbf38bd0bf19c2b24bb3a294c64b0"
+    },
+    {
+      "path": "06_其他资料/重大承诺事项与或有事项说明.md",
+      "bytes": 1068,
+      "sha256": "c2d1eefbbf9e4faf57b01c2c1197a4034f2d1d4b2608f70230bf39f3f5fb20ac"
+    }
+  ],
+  "csv_key_scan_count": 35,
+  "csv_key_scans": [
+    {
+      "path": "01_账务资料/合并范围内子公司清单.csv",
+      "status": "pass",
+      "row_count": 4,
+      "key_fields": [
+        "统一社会信用代码"
+      ],
+      "duplicate_keys": []
+    },
+    {
+      "path": "01_账务资料/科目余额表_P_黔岭酒业股份有限公司.csv",
+      "status": "pass",
+      "row_count": 44,
+      "key_fields": [
+        "科目编码"
+      ],
+      "duplicate_keys": []
+    },
+    {
+      "path": "01_账务资料/科目余额表_S1_黔岭销售有限公司.csv",
+      "status": "pass",
+      "row_count": 22,
+      "key_fields": [
+        "科目编码"
+      ],
+      "duplicate_keys": []
+    },
+    {
+      "path": "01_账务资料/科目余额表_S2_黔岭酒类包装有限公司.csv",
+      "status": "pass",
+      "row_count": 20,
+      "key_fields": [
+        "科目编码"
+      ],
+      "duplicate_keys": []
+    },
+    {
+      "path": "01_账务资料/管理层编制的合并财务报表_未审数.csv",
+      "status": "pass",
+      "row_count": 53,
+      "key_fields": [
+        "报表",
+        "项目"
+      ],
+      "duplicate_keys": []
+    },
+    {
+      "path": "01_账务资料/记账凭证_2025年度明细.csv",
+      "status": "pass",
+      "row_count": 235,
+      "key_fields": [
+        "凭证号",
+        "主体代码",
+        "科目编码",
+        "借方金额",
+        "贷方金额",
+        "摘要",
+        "单据日期",
+        "合同号"
+      ],
+      "duplicate_keys": []
+    },
+    {
+      "path": "02_业务资料/主要供应商及付款流水.csv",
+      "status": "pass",
+      "row_count": 7,
+      "key_fields": [
+        "序号"
+      ],
+      "duplicate_keys": []
+    },
+    {
+      "path": "02_业务资料/主要客户清单_前五名.csv",
+      "status": "pass",
+      "row_count": 5,
+      "key_fields": [
+        "排名"
+      ],
+      "duplicate_keys": []
+    },
+    {
+      "path": "02_业务资料/产销量与销量明细.csv",
+      "status": "pass",
+      "row_count": 18,
+      "key_fields": [
+        "会计主体",
+        "季度",
+        "产品",
+        "出库日期",
+        "销售金额"
+      ],
+      "duplicate_keys": []
+    },
+    {
+      "path": "02_业务资料/关联方及关联交易清单.csv",
+      "status": "pass",
+      "row_count": 4,
+      "key_fields": [
+        "关联方名称",
+        "本期交易类型"
+      ],
+      "duplicate_keys": []
+    },
+    {
+      "path": "02_业务资料/固定资产卡片明细表.csv",
+      "status": "pass",
+      "row_count": 21,
+      "key_fields": [
+        "资产编号"
+      ],
+      "duplicate_keys": []
+    },
+    {
+      "path": "02_业务资料/在建工程明细表.csv",
+      "status": "pass",
+      "row_count": 3,
+      "key_fields": [
+        "工程名称"
+      ],
+      "duplicate_keys": []
+    },
+    {
+      "path": "02_业务资料/存货入库明细表.csv",
+      "status": "pass",
+      "row_count": 5,
+      "key_fields": [
+        "入库单号"
+      ],
+      "duplicate_keys": []
+    },
+    {
+      "path": "02_业务资料/存货收发存明细表.csv",
+      "status": "pass",
+      "row_count": 9,
+      "key_fields": [
+        "会计主体",
+        "存货类别"
+      ],
+      "duplicate_keys": []
+    },
+    {
+      "path": "02_业务资料/应付账款账龄明细表.csv",
+      "status": "pass",
+      "row_count": 4,
+      "key_fields": [
+        "会计主体",
+        "供应商名称"
+      ],
+      "duplicate_keys": []
+    },
+    {
+      "path": "02_业务资料/应收账款明细表_按客户.csv",
+      "status": "pass",
+      "row_count": 7,
+      "key_fields": [
+        "会计主体",
+        "客户名称",
+        "原销售合同"
+      ],
+      "duplicate_keys": []
+    },
+    {
+      "path": "02_业务资料/应收账款账龄明细表_管理层编制.csv",
+      "status": "pass",
+      "row_count": 7,
+      "key_fields": [
+        "会计主体",
+        "客户名称"
+      ],
+      "duplicate_keys": []
+    },
+    {
+      "path": "02_业务资料/无形资产及长期待摊费用明细表.csv",
+      "status": "pass",
+      "row_count": 3,
+      "key_fields": [
+        "项目"
+      ],
+      "duplicate_keys": []
+    },
+    {
+      "path": "02_业务资料/期间费用明细表.csv",
+      "status": "pass",
+      "row_count": 11,
+      "key_fields": [
+        "费用项目"
+      ],
+      "duplicate_keys": []
+    },
+    {
+      "path": "02_业务资料/职工薪酬明细表.csv",
+      "status": "pass",
+      "row_count": 3,
+      "key_fields": [
+        "会计主体",
+        "薪酬类别"
+      ],
+      "duplicate_keys": []
+    },
+    {
+      "path": "02_业务资料/采购发票登记簿.csv",
+      "status": "pass",
+      "row_count": 4,
+      "key_fields": [
+        "发票号"
+      ],
+      "duplicate_keys": []
+    },
+    {
+      "path": "02_业务资料/重大销售与采购合同台账.csv",
+      "status": "pass",
+      "row_count": 12,
+      "key_fields": [
+        "合同编号"
+      ],
+      "duplicate_keys": []
+    },
+    {
+      "path": "02_业务资料/销售出库单清单.csv",
+      "status": "pass",
+      "row_count": 87,
+      "key_fields": [
+        "出库单号"
+      ],
+      "duplicate_keys": []
+    },
+    {
+      "path": "02_业务资料/销售明细_分产品分渠道分地区.csv",
+      "status": "pass",
+      "row_count": 18,
+      "key_fields": [
+        "出库单号"
+      ],
+      "duplicate_keys": []
+    },
+    {
+      "path": "02_业务资料/预付账款账龄明细表.csv",
+      "status": "pass",
+      "row_count": 2,
+      "key_fields": [
+        "会计主体",
+        "供应商",
+        "款项性质",
+        "发生日期"
+      ],
+      "duplicate_keys": []
+    },
+    {
+      "path": "04_税务资料/个人所得税申报缴纳表.csv",
+      "status": "pass",
+      "row_count": 3,
+      "key_fields": [
+        "所属期",
+        "扣缴义务人",
+        "缴款主体"
+      ],
+      "duplicate_keys": []
+    },
+    {
+      "path": "04_税务资料/应交税费明细表_分主体.csv",
+      "status": "pass",
+      "row_count": 7,
+      "key_fields": [
+        "会计主体",
+        "税种"
+      ],
+      "duplicate_keys": []
+    },
+    {
+      "path": "04_税务资料/纳税申报与缴纳汇总.csv",
+      "status": "pass",
+      "row_count": 8,
+      "key_fields": [
+        "税种"
+      ],
+      "duplicate_keys": []
+    },
+    {
+      "path": "05_银行资料/借款合同与质押清单.csv",
+      "status": "pass",
+      "row_count": 2,
+      "key_fields": [
+        "合同号"
+      ],
+      "duplicate_keys": []
+    },
+    {
+      "path": "05_银行资料/银行存款日记账_募集资金专户_2025.csv",
+      "status": "pass",
+      "row_count": 4,
+      "key_fields": [
+        "日期",
+        "摘要",
+        "借方(收款)",
+        "贷方(付款)"
+      ],
+      "duplicate_keys": []
+    },
+    {
+      "path": "05_银行资料/银行存款日记账_黔岭销售基本户_2025.csv",
+      "status": "pass",
+      "row_count": 15,
+      "key_fields": [
+        "日期",
+        "摘要",
+        "借方(收款)",
+        "贷方(付款)"
+      ],
+      "duplicate_keys": []
+    },
+    {
+      "path": "05_银行资料/银行对账单_黔岭销售基本户_2025.csv",
+      "status": "pass",
+      "row_count": 14,
+      "key_fields": [
+        "日期",
+        "摘要",
+        "借方(收款)",
+        "贷方(付款)"
+      ],
+      "duplicate_keys": []
+    },
+    {
+      "path": "05_银行资料/银行账户清单.csv",
+      "status": "pass",
+      "row_count": 5,
+      "key_fields": [
+        "账号"
+      ],
+      "duplicate_keys": []
+    },
+    {
+      "path": "06_其他资料/年末资产盘点表.csv",
+      "status": "pass",
+      "row_count": 10,
+      "key_fields": [
+        "资产编号"
+      ],
+      "duplicate_keys": []
+    },
+    {
+      "path": "06_其他资料/政府补助文件摘要.csv",
+      "status": "pass",
+      "row_count": 2,
+      "key_fields": [
+        "文号"
+      ],
+      "duplicate_keys": []
+    }
+  ],
+  "source_inventory_sha256": "59b465f19b12f01859fb8533dd63fcd789098b971d1b5e69df608f9a67767b6b",
+  "evidence_binding": {
+    "audit_evidence_sha256": "d7da7fdbe0f1ebee14477432c1c05c78cee7dd9ef7e479efedc7b97dd11f795d",
+    "audit_verify_hard_sha256": "ce12a76edf434077d36a8ac2004bdaed231c9880de7965dc9e6a0dda891f886a",
+    "report_path": "审计报告-黔岭酒业2025年度财务报表审计(实验组_高难度).md",
+    "report_recorded_evidence_sha256": "d7da7fdbe0f1ebee14477432c1c05c78cee7dd9ef7e479efedc7b97dd11f795d",
+    "report_binds_current_evidence": true
+  }
+}

@@ -1,0 +1,17 @@
+{
+  "name": "audit-network-web",
+  "private": true,
+  "version": "0.1.0",
+  "scripts": {
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run web/src",
+    "desktop:dev": "npm --prefix desktop run dev",
+    "desktop:build": "npm --prefix desktop run build",
+    "desktop:typecheck": "npm --prefix desktop run typecheck",
+    "desktop:test": "npm --prefix desktop run test"
+  },
+  "devDependencies": {
+    "typescript": "^5.6.0",
+    "vitest": "^2.0.0"
+  }
+}

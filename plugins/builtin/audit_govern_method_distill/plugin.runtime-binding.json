@@ -1,0 +1,18 @@
+{
+  "schema_version": "1.0.0",
+  "plugin": {
+    "id": "audit.govern.method-distill",
+    "version": "0.1.0",
+    "sha256": "eee4e1291cc46520d299bf14f55aaf48256c0e613f9935db61cdbd29d05d7102"
+  },
+  "protocol": {
+    "id": "audit.govern.method-distill",
+    "version": "0.1.0",
+    "sha256": "0167ca227f0b7cd8abba08f25b5033477f8e2f8c7f94d7d40f296fcdcb641c99"
+  },
+  "execution_mode": "isolated_subprocess",
+  "capabilities": [
+    "audit.govern.method-distill"
+  ],
+  "status": "verified"
+}

@@ -1,0 +1,18 @@
+{
+  "schema_version": "1.0.0",
+  "plugin": {
+    "id": "audit.report.advice-match",
+    "version": "0.1.0",
+    "sha256": "6b0b01d09a06d4e67563183bbd1da5f7bb0dafbc916588697ab456885af82791"
+  },
+  "protocol": {
+    "id": "audit.report.advice-match",
+    "version": "0.1.0",
+    "sha256": "bcfe2d57e3e3b82e363c8479d93ba1c5ad9fd34b58a09d38444f8a7556d6f5d3"
+  },
+  "execution_mode": "isolated_subprocess",
+  "capabilities": [
+    "audit.report.advice-match"
+  ],
+  "status": "verified"
+}

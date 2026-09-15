@@ -1,0 +1,14 @@
+{
+  "node_instance_id": "annual-propose-001",
+  "capability": "audit.mandate.annual-propose",
+  "input_bindings": {
+    "aligned-demand": {
+      "uri": "file:///D:/pythonpro/audit_network/docs/%E5%85%A8%E6%B5%81%E7%A8%8B%E8%BF%90%E8%A1%8C%E6%97%A5%E5%BF%97-20260912/12-%E6%9C%AC%E6%AC%A1%E8%BF%90%E8%A1%8C%E4%BA%A7%E7%89%A9/chains/plan-ai-fund-fraud-100/strategy-align-001/output-aligned-demand-efb7c446d566d88d.json",
+      "sha256": "efb7c446d566d88ddcfa73e041124624a7e802c91871eeac3246e680c13eaff4",
+      "adapter": null,
+      "port_id": "aligned-demand",
+      "source_port": "aligned-demand",
+      "source_instance": "strategy-align-001"
+    }
+  }
+}

@@ -1,0 +1,33 @@
+{
+  "id": "audit.workpaper-export",
+  "version": "0.1.0",
+  "name": "审计底稿导出（受审批输出，只读）",
+  "runtime": "python",
+  "entrypoint": "plugins.builtin.audit_workpaper_export.runtime:handle",
+  "capabilities": ["audit.workpaper.export"],
+  "inputs": {
+    "capability": "audit.workpaper.export",
+    "schema": "finding-set.schema.json",
+    "content_type": "application/json"
+  },
+  "outputs": {
+    "capability": "audit.workpaper.export",
+    "schema": "workpaper-export@1.0.0",
+    "content_type": "application/json"
+  },
+  "side_effects": "read_only",
+  "idempotency": "finding_set_sha256_and_budget",
+  "permissions": {
+    "data_read": ["audit.findings", "audit.evidence"],
+    "data_write": [],
+    "network": "none",
+    "secrets": []
+  },
+  "resources": {"cpu": 1, "memory_mb": 256, "gpu": false, "timeout_seconds": 120},
+  "data_classification": "audit_confidential",
+  "evidence": {"preserve_inputs": true, "code_hash_required": true},
+  "tests": {
+    "contract": "tests/contract/test_audit_workpaper_export_contract.py",
+    "golden": "tests/unit/test_audit_workpaper_export_runtime.py"
+  }
+}

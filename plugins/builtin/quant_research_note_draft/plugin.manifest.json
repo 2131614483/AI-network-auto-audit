@@ -1,0 +1,33 @@
+{
+  "id": "quant.research-note-draft",
+  "version": "0.1.0",
+  "name": "量化研究结论草稿（受审批输出，只读）",
+  "runtime": "python",
+  "entrypoint": "plugins.builtin.quant_research_note_draft.runtime:handle",
+  "capabilities": ["quant.research-note.draft"],
+  "inputs": {
+    "capability": "quant.research-note.draft",
+    "schema": "experiment-evaluation.schema.json",
+    "content_type": "application/json"
+  },
+  "outputs": {
+    "capability": "quant.research-note.draft",
+    "schema": "research-note-draft@1.0.0",
+    "content_type": "application/json"
+  },
+  "side_effects": "read_only",
+  "idempotency": "evaluation_sha256_and_strategy_key",
+  "permissions": {
+    "data_read": ["quant.experiment_evaluations"],
+    "data_write": [],
+    "network": "none",
+    "secrets": []
+  },
+  "resources": {"cpu": 1, "memory_mb": 256, "gpu": false, "timeout_seconds": 120},
+  "data_classification": "restricted",
+  "evidence": {"preserve_inputs": true, "code_hash_required": true},
+  "tests": {
+    "contract": "tests/contract/test_quant_research_note_draft_contract.py",
+    "golden": "tests/unit/test_quant_research_note_draft_runtime.py"
+  }
+}

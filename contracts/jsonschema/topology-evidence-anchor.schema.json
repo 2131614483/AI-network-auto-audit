@@ -1,0 +1,27 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://audit.local/contracts/topology-evidence-anchor.schema.json",
+  "title": "TopologyEvidenceAnchor",
+  "description": "Plugin Topology M9：一条证据锚点行投影——行级 SHA256 + 前驱链指针；仅 INSERT+SELECT、不可覆写/硬删。row_hash 为源表行确定性序列化（列名字典序 + JSON 归一化）的 sha256；prev_hash 为上一条锚点行完整哈希（首环为 chain_key 自身哈希）。",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "anchor_id", "chain_key", "seq", "source_table", "source_pk",
+    "row_hash", "prev_hash", "group_id", "anchor_scope", "trace_id", "created_at"
+  ],
+  "properties": {
+    "anchor_id": {"type": "string", "format": "uuid"},
+    "chain_key": {"type": "string", "pattern": "^evidence://[0-9a-f-]{36}/full$"},
+    "seq": {"type": "integer", "minimum": 1},
+    "source_table": {"type": "string", "minLength": 1, "maxLength": 64},
+    "source_pk": {"type": "string", "minLength": 1, "maxLength": 64},
+    "row_hash": {"type": "string", "pattern": "^[a-f0-9]{64}$"},
+    "prev_hash": {"type": "string", "pattern": "^[a-f0-9]{64}$"},
+    "group_id": {"type": "string", "format": "uuid"},
+    "anchor_scope": {
+      "enum": ["full", "topology", "chain", "execution", "verification", "remediation"]
+    },
+    "trace_id": {"type": "string", "format": "uuid"},
+    "created_at": {"type": "string", "format": "date-time"}
+  }
+}

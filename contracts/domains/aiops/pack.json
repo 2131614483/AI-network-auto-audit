@@ -1,0 +1,34 @@
+{
+  "schema_version": "1.0.0",
+  "domain": "aiops",
+  "name_zh": "智能运维",
+  "notes": "第二个领域包，用来证明框架不是审计专用：同一套 composer / 编译器 / 执行器，只换包就能组网。aiops 插件的 id 是两段式（aiops.alert-triage），alert-triage 与 alert-correlation 的语义段都是 alert，因此这里用 stage_by_plugin 显式定点，而不是让段匹配去猜。",
+  "discovery": {
+    "globs": ["aiops_*"]
+  },
+  "layers": {},
+  "ungrouped_stage": "a0",
+  "stages": [
+    {"key": "a1", "name_zh": "告警接入", "order": 1, "color": "#ff9f6f", "segments": ["alert"]},
+    {"key": "a2", "name_zh": "事件关联聚合", "order": 2, "color": "#ffcf6f"},
+    {"key": "a3", "name_zh": "根因定位", "order": 3, "color": "#c9e06f", "segments": ["rca"]},
+    {"key": "a4", "name_zh": "处置方案", "order": 4, "color": "#6fe0a0", "segments": ["playbook"]},
+    {"key": "a5", "name_zh": "恢复验证", "order": 5, "color": "#6fd0e0", "segments": ["recovery"]},
+    {"key": "a6", "name_zh": "复盘与工单", "order": 6, "color": "#b48ce0", "segments": ["postmortem", "ticket"]}
+  ],
+  "stage_by_plugin": {
+    "aiops.alert-triage": "a1",
+    "aiops.alert-correlation": "a2",
+    "aiops.rca-ranker": "a3",
+    "aiops.playbook-proposer": "a4",
+    "aiops.recovery-verifier": "a5",
+    "aiops.postmortem-draft": "a6",
+    "aiops.ticket-draft": "a6"
+  },
+  "trunk": [
+    ["a1", "a2"], ["a2", "a3"], ["a3", "a4"], ["a4", "a5"], ["a5", "a6"], ["a6", "a1"]
+  ],
+  "control_segments": [],
+  "prompt": "你是智能运维（AIOps）工作流规划器。你只输出一个 JSON 对象，不含任何其他文字。你必须只使用给定的能力召回清单里的 capability；不得发明插件、端口或能力。你不得执行任何动作、不得调用工具、不得读取或修改文件。数据只能引用用户明确授权的数据源。若无法满足目标，输出 plan_key 为 plan- 开头的空缺口 JSON。",
+  "source_refs": ["docs/plugin-topology-orchestration.md"]
+}

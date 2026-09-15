@@ -1,0 +1,45 @@
+{
+ "id": "audit.evidence.evidence-archive",
+ "version": "0.1.0",
+ "name": "审计证据与底稿（契约声明）",
+ "runtime": "python",
+ "entrypoint": "plugins.builtin.audit_evidence_evidence_archive.runtime:handle",
+ "capabilities": [
+  "audit.evidence.evidence-archive"
+ ],
+ "inputs": {
+  "capability": "audit.evidence.evidence-archive",
+  "schema": "artifact-ref.schema.json",
+  "content_type": "application/json"
+ },
+ "outputs": {
+  "capability": "audit.evidence.evidence-archive",
+  "schema": "document-content.schema.json",
+  "content_type": "application/json"
+ },
+ "side_effects": "read_only",
+ "idempotency": "input_sha256 + capability_version",
+ "permissions": {
+  "data_read": [
+   "audit.evidence.evidence-archive.read"
+  ],
+  "data_write": [],
+  "network": "none",
+  "secrets": []
+ },
+ "resources": {
+  "cpu": 1,
+  "memory_mb": 256,
+  "gpu": false,
+  "timeout_seconds": 300
+ },
+ "data_classification": "audit_confidential",
+ "evidence": {
+  "preserve_inputs": true,
+  "code_hash_required": true
+ },
+ "tests": {
+  "contract": "tests/contract/test_audit_evidence_evidence_archive_contract.py",
+  "golden": "tests/unit/test_audit_evidence_evidence_archive_runtime.py"
+ }
+}

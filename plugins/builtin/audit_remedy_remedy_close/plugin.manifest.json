@@ -1,0 +1,45 @@
+{
+ "id": "audit.remedy.remedy-close",
+ "version": "0.1.0",
+ "name": "整改销号管理（契约声明）",
+ "runtime": "python",
+ "entrypoint": "plugins.builtin.audit_remedy_remedy_close.runtime:handle",
+ "capabilities": [
+  "audit.remedy.remedy-close"
+ ],
+ "inputs": {
+  "capability": "audit.remedy.remedy-close",
+  "schema": "dataset-validation.schema.json",
+  "content_type": "application/json"
+ },
+ "outputs": {
+  "capability": "audit.remedy.remedy-close",
+  "schema": "workflow.schema.json",
+  "content_type": "application/json"
+ },
+ "side_effects": "read_only",
+ "idempotency": "input_sha256 + capability_version",
+ "permissions": {
+  "data_read": [
+   "audit.remedy.remedy-close.read"
+  ],
+  "data_write": [],
+  "network": "none",
+  "secrets": []
+ },
+ "resources": {
+  "cpu": 1,
+  "memory_mb": 256,
+  "gpu": false,
+  "timeout_seconds": 300
+ },
+ "data_classification": "audit_confidential",
+ "evidence": {
+  "preserve_inputs": true,
+  "code_hash_required": true
+ },
+ "tests": {
+  "contract": "tests/contract/test_audit_remedy_remedy_close_contract.py",
+  "golden": "tests/unit/test_audit_remedy_remedy_close_runtime.py"
+ }
+}

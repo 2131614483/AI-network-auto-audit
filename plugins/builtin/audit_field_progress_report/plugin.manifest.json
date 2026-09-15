@@ -1,0 +1,45 @@
+{
+ "id": "audit.field.progress-report",
+ "version": "0.1.0",
+ "name": "进度实时填报（契约声明）",
+ "runtime": "python",
+ "entrypoint": "plugins.builtin.audit_field_progress_report.runtime:handle",
+ "capabilities": [
+  "audit.field.progress-report"
+ ],
+ "inputs": {
+  "capability": "audit.field.progress-report",
+  "schema": "metric-series.schema.json",
+  "content_type": "application/json"
+ },
+ "outputs": {
+  "capability": "audit.field.progress-report",
+  "schema": "metric-series.schema.json",
+  "content_type": "application/json"
+ },
+ "side_effects": "read_only",
+ "idempotency": "input_sha256 + capability_version",
+ "permissions": {
+  "data_read": [
+   "audit.field.progress-report.read"
+  ],
+  "data_write": [],
+  "network": "none",
+  "secrets": []
+ },
+ "resources": {
+  "cpu": 1,
+  "memory_mb": 256,
+  "gpu": false,
+  "timeout_seconds": 300
+ },
+ "data_classification": "audit_confidential",
+ "evidence": {
+  "preserve_inputs": true,
+  "code_hash_required": true
+ },
+ "tests": {
+  "contract": "tests/contract/test_audit_field_progress_report_contract.py",
+  "golden": "tests/unit/test_audit_field_progress_report_runtime.py"
+ }
+}

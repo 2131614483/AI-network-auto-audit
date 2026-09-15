@@ -1,0 +1,30 @@
+{
+  "id": "knowledge.document-ingestion",
+  "version": "0.1.0",
+  "name": "知识文档摄入（本地只读）",
+  "runtime": "python",
+  "entrypoint": "plugins.builtin.knowledge_document_ingestion.runtime:handle",
+  "capabilities": ["knowledge.extract.document"],
+  "inputs": {
+    "capability": "knowledge.extract.document",
+    "schema": "artifact-ref.schema.json",
+    "content_type": "application/json"
+  },
+  "outputs": {
+    "capability": "knowledge.extract.document",
+    "schema": "document-content@1.0.0",
+    "content_type": "application/json"
+  },
+  "side_effects": "read_only",
+  "idempotency": "artifact_sha256",
+  "permissions": {
+    "data_read": ["knowledge.documents"],
+    "data_write": [],
+    "network": "none",
+    "secrets": []
+  },
+  "resources": {"cpu": 1, "memory_mb": 256, "gpu": false, "timeout_seconds": 300},
+  "data_classification": "internal",
+  "evidence": {"preserve_inputs": true, "code_hash_required": true},
+  "tests": {"contract": "tests/contract/test_plugin_runtime_binding.py", "golden": "tests/integration/test_plugin_runtime_api.py"}
+}

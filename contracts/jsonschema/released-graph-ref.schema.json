@@ -1,0 +1,28 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://audit.local/contracts/released-graph-ref.schema.json",
+  "title": "ReleasedGraphRef",
+  "description": "已发布图谱引用：不可变发布哈希、空间层级与读取预算（节点/边/跳数/时间）；血缘查询输入，内容不嵌入控制面消息。",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["contract_id", "contract_version", "artifact", "space_level", "release_sha256", "budget"],
+  "properties": {
+    "contract_id": {"const": "released-graph-ref"},
+    "contract_version": {"const": "1.0.0"},
+    "artifact": {"$ref": "artifact-ref.schema.json"},
+    "space_level": {"type": "string", "enum": ["L0", "L1", "L2", "L3", "L4"]},
+    "release_sha256": {"type": "string", "pattern": "^[A-Fa-f0-9]{64}$"},
+    "release_time": {"type": "string", "format": "date-time"},
+    "budget": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["max_nodes", "max_edges", "max_hops", "timeout_seconds"],
+      "properties": {
+        "max_nodes": {"type": "integer", "minimum": 1, "maximum": 100000},
+        "max_edges": {"type": "integer", "minimum": 1, "maximum": 500000},
+        "max_hops": {"type": "integer", "minimum": 1, "maximum": 8},
+        "timeout_seconds": {"type": "integer", "minimum": 1, "maximum": 300}
+      }
+    }
+  }
+}

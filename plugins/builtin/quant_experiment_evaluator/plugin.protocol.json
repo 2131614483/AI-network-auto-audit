@@ -1,0 +1,97 @@
+{
+  "protocol_version": "1.0.0",
+  "id": "quant.experiment-evaluator",
+  "version": "0.1.0",
+  "name": "量化实验评估",
+  "description": "把模拟回测报告（可结合基线冠军报告）转换为确定性实验评估草稿：稳健性评分、与基线的指标漂移、以及 promote/hold/reject 晋级建议与阻断项。草稿只进入研究提案，不更新生产模型、不生成订单；晋级必须经独立 Reviewer 或人工确认。",
+  "kind": "quant",
+  "domains": [
+    "quant"
+  ],
+  "lifecycle": "contract_only",
+  "compatibility": {
+    "host_protocol": ">=1.0.0 <2.0.0",
+    "adapters": [
+      "python"
+    ],
+    "fallback_behavior": "human_review"
+  },
+  "capabilities": [
+    {
+      "id": "quant.experiment.evaluate",
+      "summary": "将 backtest-report@1（可加基线 backtest-report@1）转换为 experiment-evaluation@1：确定性稳健性/漂移/晋级建议，输出草稿不更新生产模型、不生成订单。",
+      "side_effects": "read_only",
+      "idempotency": "report_sha256 + baseline_sha256",
+      "inputs": [
+        {
+          "contract_id": "backtest-report",
+          "version": "1.0.0",
+          "format": "artifact_ref",
+          "delivery": "reference",
+          "classification": "restricted",
+          "schema_ref": "backtest-report.schema.json"
+        },
+        {
+          "contract_id": "baseline-champion-report",
+          "version": "1.0.0",
+          "format": "artifact_ref",
+          "delivery": "reference",
+          "classification": "restricted",
+          "schema_ref": "backtest-report.schema.json"
+        }
+      ],
+      "outputs": [
+        {
+          "contract_id": "experiment-evaluation",
+          "version": "1.0.0",
+          "format": "json",
+          "delivery": "request_response",
+          "classification": "restricted",
+          "schema_ref": "experiment-evaluation.schema.json"
+        }
+      ]
+    }
+  ],
+  "governance": {
+    "default_data_classification": "restricted",
+    "permissions": {
+      "data_read": [
+        "quant.backtest_report",
+        "quant.backtest_report_baseline"
+      ],
+      "data_write": [],
+      "network": "none",
+      "secret_refs": []
+    },
+    "policy": {
+      "gateway_required": true,
+      "approval_required": false,
+      "evidence_required": true
+    }
+  },
+  "resources": {
+    "cpu": 1,
+    "memory_mb": 256,
+    "gpu": "none",
+    "timeout_seconds": 300
+  },
+  "observability": {
+    "trace_required": true,
+    "emits": [
+      "structured_log",
+      "artifact_ref",
+      "audit_event"
+    ],
+    "health": "declared_only"
+  },
+  "provenance": {
+    "source_refs": [
+      "docs/审计组网插件规划-v1.md#3.2",
+      "docs/审计组网插件规划-v1.md#4.2",
+      "docs/插件开发与接入标准-UPP-v1.0.md"
+    ]
+  },
+  "ui": {
+    "mode": "none"
+  }
+}

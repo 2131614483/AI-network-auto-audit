@@ -1,0 +1,18 @@
+{
+  "schema_version": "1.0.0",
+  "plugin": {
+    "id": "audit.foundation.permission-control",
+    "version": "0.1.0",
+    "sha256": "f00cc1e121d9ba687ac64ea24a11ad06dab0a2dba6231c7fc2b615f7d455bb22"
+  },
+  "protocol": {
+    "id": "audit.foundation.permission-control",
+    "version": "0.1.0",
+    "sha256": "005b2e7d14db1eac0c3bae12ccc392bb80215b206d9020aee13d304dbdf4aebd"
+  },
+  "execution_mode": "isolated_subprocess",
+  "capabilities": [
+    "audit.foundation.permission-control"
+  ],
+  "status": "verified"
+}

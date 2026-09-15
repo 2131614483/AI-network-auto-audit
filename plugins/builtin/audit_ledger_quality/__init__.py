@@ -1,0 +1,1 @@
+"""Isolated implementation for the verified read-only ledger-quality plugin."""

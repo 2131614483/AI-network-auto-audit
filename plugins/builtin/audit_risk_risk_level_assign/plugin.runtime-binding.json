@@ -1,0 +1,18 @@
+{
+  "schema_version": "1.0.0",
+  "plugin": {
+    "id": "audit.risk.risk-level-assign",
+    "version": "0.1.0",
+    "sha256": "c9154a079ece0ad3f58f9b3f83a76f903848ee841e490fb50f65535167ece89e"
+  },
+  "protocol": {
+    "id": "audit.risk.risk-level-assign",
+    "version": "0.1.0",
+    "sha256": "a910577a936b367e42df04a83cbd230ee6842856706b766698d904578a16ad6a"
+  },
+  "execution_mode": "isolated_subprocess",
+  "capabilities": [
+    "audit.risk.risk-level-assign"
+  ],
+  "status": "verified"
+}

@@ -1,0 +1,23 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://audit.local/contracts/topology-approval.schema.json",
+  "title": "TopologyApprovalRequest",
+  "description": "对调用链中 requires_approval 意图节点的人工审批/驳回载荷：必须携带幂等键，approve 置为 approved_projection，reject 置为 denied；绝不自动放行。",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["chain_key", "slot_key", "decision", "idempotency_key"],
+  "properties": {
+    "chain_key": {"type": "string", "pattern": "^chain-[a-z0-9]{16}$"},
+    "slot_key": {"type": "string", "pattern": "^[a-z][a-z0-9_]*(?:[._-][a-z0-9]+)*$"},
+    "decision": {"type": "string", "enum": ["approve", "reject"]},
+    "reason": {"type": "string", "maxLength": 500},
+    "idempotency_key": {"type": "string", "minLength": 1, "maxLength": 255},
+    "trace_id": {"type": "string", "format": "uuid"}
+  },
+  "allOf": [
+    {
+      "if": {"properties": {"decision": {"const": "reject"}}, "required": ["decision"]},
+      "then": {"required": ["reason"], "properties": {"reason": {"minLength": 1}}}
+    }
+  ]
+}

@@ -1,0 +1,165 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://audit.local/contracts/unified-plugin-protocol.schema.json",
+  "title": "UnifiedPluginProtocol",
+  "description": "跨业务、跨语言的插件控制面协议。它只声明能力和兼容边界，不含 entrypoint、命令、端点、密钥或执行授权。",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["protocol_version", "id", "version", "name", "kind", "domains", "lifecycle", "compatibility", "capabilities", "governance", "resources", "observability", "provenance", "ui"],
+  "properties": {
+    "protocol_version": {"$ref": "#/$defs/semver"},
+    "id": {"$ref": "#/$defs/plugin-id"},
+    "version": {"$ref": "#/$defs/semver"},
+    "name": {"type": "string", "minLength": 1, "maxLength": 200},
+    "description": {"type": "string", "maxLength": 4000},
+    "kind": {"type": "string", "enum": ["ingestion", "retrieval", "analysis", "graph", "quant", "aiops", "connector", "agent", "workflow", "visualization", "governance", "custom"]},
+    "domains": {"type": "array", "minItems": 1, "uniqueItems": true, "items": {"type": "string", "enum": ["knowledge", "audit", "quant", "aiops", "platform", "compliance", "custom"]}},
+    "lifecycle": {"type": "string", "enum": ["contract_only", "pending_verification", "verified", "retired"]},
+    "compatibility": {"$ref": "#/$defs/compatibility"},
+    "capabilities": {"type": "array", "minItems": 1, "uniqueItems": true, "items": {"$ref": "#/$defs/capability"}},
+    "governance": {"$ref": "#/$defs/governance"},
+    "resources": {"$ref": "#/$defs/resources"},
+    "observability": {"$ref": "#/$defs/observability"},
+    "provenance": {"$ref": "#/$defs/provenance"},
+    "ui": {"$ref": "#/$defs/ui"}
+  },
+  "$defs": {
+    "semver": {"type": "string", "pattern": "^(0|[1-9][0-9]*)\\.(0|[1-9][0-9]*)\\.(0|[1-9][0-9]*)(?:-[0-9A-Za-z.-]+)?(?:\\+[0-9A-Za-z.-]+)?$"},
+    "plugin-id": {"type": "string", "pattern": "^[a-z][a-z0-9]*(?:[._-][a-z0-9]+)+$"},
+    "capability-id": {"type": "string", "pattern": "^[a-z][a-z0-9]*(?:[._-][a-z0-9]+)+$"},
+    "classification": {"type": "string", "enum": ["public", "internal", "audit_confidential", "restricted"]},
+    "compatibility": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["host_protocol", "adapters"],
+      "properties": {
+        "host_protocol": {"type": "string", "minLength": 1, "maxLength": 120},
+        "adapters": {"type": "array", "minItems": 1, "uniqueItems": true, "items": {"type": "string", "enum": ["python", "node", "http", "mcp", "container", "wasm", "desktop"]}},
+        "optional_features": {"type": "array", "uniqueItems": true, "items": {"type": "string", "pattern": "^[a-z][a-z0-9._-]*$"}},
+        "fallback_behavior": {"type": "string", "enum": ["reject", "degrade_read_only", "human_review"]}
+      }
+    },
+    "interface-contract": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["contract_id", "version", "format", "delivery", "classification"],
+      "properties": {
+        "contract_id": {"type": "string", "pattern": "^[a-z][a-z0-9._-]*$"},
+        "version": {"$ref": "#/$defs/semver"},
+        "format": {"type": "string", "enum": ["json", "jsonl", "parquet", "artifact_ref", "graph_ref", "event", "table_ref", "text"]},
+        "delivery": {"type": "string", "enum": ["reference", "artifact_ref", "request_response", "event"]},
+        "classification": {"$ref": "#/$defs/classification"},
+        "schema_ref": {"type": "string", "maxLength": 512},
+        "cardinality": {"type": "string", "enum": ["one", "many"],
+          "description": "one = at most one producer may bind this input; many = this input aggregates several producers (a merge/collector port). Absent means one."},
+        "max_bytes": {"type": "integer", "minimum": 0, "maximum": 1073741824}
+      }
+    },
+    "capability-policy": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["approval_required", "evidence_required"],
+      "properties": {
+        "approval_required": {"type": "boolean"},
+        "evidence_required": {"type": "boolean"}
+      }
+    },
+    "capability": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "side_effects", "idempotency", "inputs", "outputs"],
+      "properties": {
+        "id": {"$ref": "#/$defs/capability-id"},
+        "summary": {"type": "string", "maxLength": 1000},
+        "side_effects": {"type": "string", "enum": ["none", "read_only", "write_data", "external_action", "financial_execution"]},
+        "idempotency": {"type": "string", "minLength": 1, "maxLength": 255},
+        "inputs": {"type": "array", "minItems": 1, "items": {"$ref": "#/$defs/interface-contract"}},
+        "outputs": {"type": "array", "minItems": 1, "items": {"$ref": "#/$defs/interface-contract"}},
+        "invokes": {"type": "array", "uniqueItems": true, "items": {"$ref": "#/$defs/plugin-id"}, "description": "该能力运行时调用的支撑能力（foundation 插件 id），用于确定性生成跨层调用边，不含执行授权。"},
+        "policy": {"$ref": "#/$defs/capability-policy"}
+      },
+      "allOf": [
+        {
+          "if": {"properties": {"side_effects": {"enum": ["external_action", "financial_execution"]}}, "required": ["side_effects"]},
+          "then": {"required": ["policy"], "properties": {"policy": {"properties": {"approval_required": {"const": true}, "evidence_required": {"const": true}}, "required": ["approval_required", "evidence_required"]}}}
+        },
+        {
+          "if": {"properties": {"side_effects": {"const": "write_data"}}, "required": ["side_effects"]},
+          "then": {"required": ["policy"], "properties": {"policy": {"properties": {"evidence_required": {"const": true}}, "required": ["evidence_required"]}}}
+        }
+      ]
+    },
+    "permissions": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["data_read", "data_write", "network", "secret_refs"],
+      "properties": {
+        "data_read": {"type": "array", "uniqueItems": true, "items": {"type": "string", "pattern": "^[a-z][a-z0-9._-]*$"}},
+        "data_write": {"type": "array", "uniqueItems": true, "items": {"type": "string", "pattern": "^[a-z][a-z0-9._-]*$"}},
+        "network": {"oneOf": [{"const": "none"}, {"type": "array", "minItems": 1, "uniqueItems": true, "items": {"type": "string", "pattern": "^[A-Za-z0-9.-]+(?::[0-9]{1,5})?$"}}]},
+        "secret_refs": {"type": "array", "uniqueItems": true, "items": {"type": "string", "pattern": "^[a-z][a-z0-9._/-]*$"}}
+      }
+    },
+    "governance": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["default_data_classification", "permissions", "policy"],
+      "properties": {
+        "default_data_classification": {"$ref": "#/$defs/classification"},
+        "permissions": {"$ref": "#/$defs/permissions"},
+        "policy": {"type": "object", "additionalProperties": false, "required": ["gateway_required", "approval_required", "evidence_required"], "properties": {"gateway_required": {"const": true}, "approval_required": {"type": "boolean"}, "evidence_required": {"type": "boolean"}}}
+      }
+    },
+    "resources": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["cpu", "memory_mb", "gpu", "timeout_seconds"],
+      "properties": {
+        "cpu": {"type": "number", "exclusiveMinimum": 0},
+        "memory_mb": {"type": "integer", "minimum": 16},
+        "gpu": {"type": "string", "enum": ["none", "optional", "required"]},
+        "timeout_seconds": {"type": "integer", "minimum": 1, "maximum": 86400}
+      }
+    },
+    "observability": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["trace_required", "emits", "health"],
+      "properties": {
+        "trace_required": {"const": true},
+        "emits": {"type": "array", "minItems": 1, "uniqueItems": true, "items": {"type": "string", "enum": ["structured_log", "metric", "artifact_ref", "audit_event"]}},
+        "health": {"type": "string", "enum": ["declared_only", "pull", "push"]}
+      }
+    },
+    "provenance": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["source_refs"],
+      "properties": {
+        "source_refs": {"type": "array", "minItems": 1, "uniqueItems": true, "items": {"type": "string", "minLength": 1, "maxLength": 2048}},
+        "derived_from": {"$ref": "#/$defs/derivation"}
+      }
+    },
+    "derivation": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["plugin_id", "version", "descriptor_sha256"],
+      "properties": {
+        "plugin_id": {"$ref": "#/$defs/plugin-id"},
+        "version": {"$ref": "#/$defs/semver"},
+        "descriptor_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+        "overrides": {"type": "array", "uniqueItems": true, "items": {"type": "string", "minLength": 1, "maxLength": 200}}
+      }
+    },
+    "ui": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["mode"],
+      "properties": {
+        "mode": {"type": "string", "enum": ["none", "declarative"]},
+        "contribution_schema": {"type": "string", "const": "ui-contribution.schema.json"}
+      },
+      "allOf": [{"if": {"properties": {"mode": {"const": "declarative"}}, "required": ["mode"]}, "then": {"required": ["contribution_schema"]}}]
+    }
+  }
+}

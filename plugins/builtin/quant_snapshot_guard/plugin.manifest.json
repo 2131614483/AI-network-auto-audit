@@ -1,0 +1,33 @@
+{
+  "id": "quant.snapshot-guard",
+  "version": "0.1.0",
+  "name": "量化市场快照校验闸门（本地只读）",
+  "runtime": "python",
+  "entrypoint": "plugins.builtin.quant_snapshot_guard.runtime:handle",
+  "capabilities": ["quant.dataset.validate"],
+  "inputs": {
+    "capability": "quant.dataset.validate",
+    "schema": "market-snapshot-ref.schema.json",
+    "content_type": "application/json"
+  },
+  "outputs": {
+    "capability": "quant.dataset.validate",
+    "schema": "dataset-validation@1.0.0",
+    "content_type": "application/json"
+  },
+  "side_effects": "read_only",
+  "idempotency": "snapshot_sha256 + reference_time + max_freshness_hours",
+  "permissions": {
+    "data_read": ["quant.backtests"],
+    "data_write": [],
+    "network": "none",
+    "secrets": []
+  },
+  "resources": {"cpu": 1, "memory_mb": 512, "gpu": false, "timeout_seconds": 300},
+  "data_classification": "restricted",
+  "evidence": {"preserve_inputs": true, "code_hash_required": true},
+  "tests": {
+    "contract": "tests/contract/test_quant_snapshot_guard_contract.py",
+    "golden": "tests/unit/test_quant_snapshot_guard_runtime.py"
+  }
+}

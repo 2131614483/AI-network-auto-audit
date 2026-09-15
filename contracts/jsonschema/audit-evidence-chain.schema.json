@@ -1,0 +1,85 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://audit-network.local/schemas/audit-evidence-chain.schema.json",
+  "title": "AuditEvidenceChain",
+  "description": "Evidence-chain read (lineage) and governed finding-confirmation contract for the A1 audit module.",
+  "type": "object",
+  "definitions": {
+    "uuid": { "type": "string", "format": "uuid" }
+  },
+  "properties": {
+    "kind": {
+      "const": "audit_evidence_chain",
+      "description": "Discriminator: lineage snapshot or written confirmation."
+    },
+    "engagement_id": { "$ref": "#/definitions/uuid" },
+    "engagement": {
+      "type": "object",
+      "properties": {
+        "id": { "$ref": "#/definitions/uuid" },
+        "name": { "type": "string" },
+        "status": { "type": "string" },
+        "created_at": { "type": "string", "format": "date-time" }
+      },
+      "required": ["id", "name", "status"],
+      "additionalProperties": true
+    },
+    "evidence": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "id": { "$ref": "#/definitions/uuid" },
+          "evidence_type": { "type": "string" },
+          "artifact_id": { "$ref": "#/definitions/uuid" },
+          "metadata": { "type": "object" }
+        },
+        "required": ["id", "evidence_type"],
+        "additionalProperties": true
+      }
+    },
+    "anomalies": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "id": { "$ref": "#/definitions/uuid" },
+          "source_ref": { "type": "string" },
+          "rule_key": { "type": "string" },
+          "score": { "type": "number" },
+          "status": { "type": "string" }
+        },
+        "required": ["id", "source_ref", "rule_key", "status"],
+        "additionalProperties": true
+      }
+    },
+    "findings": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "id": { "$ref": "#/definitions/uuid" },
+          "title": { "type": "string" },
+          "severity": { "type": "string" },
+          "status": { "type": "string" },
+          "claims": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "claim_id": { "$ref": "#/definitions/uuid" },
+                "reviewer_label": { "type": "string" }
+              },
+              "required": ["claim_id", "reviewer_label"],
+              "additionalProperties": true
+            }
+          }
+        },
+        "required": ["id", "title", "severity", "status"],
+        "additionalProperties": true
+      }
+    }
+  },
+  "required": ["kind", "engagement_id", "engagement"],
+  "additionalProperties": true
+}

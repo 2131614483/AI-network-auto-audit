@@ -1,0 +1,18 @@
+{
+  "schema_version": "1.0.0",
+  "plugin": {
+    "id": "audit.evidence.e-signature",
+    "version": "0.1.0",
+    "sha256": "b3eb347271130f04202d7f0c90e0813fef5eda2e17720224f5bc0e350683e1a6"
+  },
+  "protocol": {
+    "id": "audit.evidence.e-signature",
+    "version": "0.1.0",
+    "sha256": "1dfeb1dea0134cc53930ebdb30119736b8a101e34d56f04ae50a0e87f730a256"
+  },
+  "execution_mode": "isolated_subprocess",
+  "capabilities": [
+    "audit.evidence.e-signature"
+  ],
+  "status": "verified"
+}

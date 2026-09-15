@@ -1,0 +1,35 @@
+{
+  "contract_id": "finding-draft",
+  "contract_version": "1.0.0",
+  "anomaly_set_sha256": "a1b2c3d4e5f67890a1b2c3d4e5f67890a1b2c3d4e5f67890a1b2c3d4e5f67890",
+  "draft_id": "a1b2c3d4e5f67890",
+  "period": "2026-13",
+  "rule_pack_sha256": "2222222222222222222222222222222222222222222222222222222222222222",
+  "findings": [
+    {
+      "finding_id": "a1b2c3d4e5f67890",
+      "title": "非法规则发现",
+      "severity": "critical",
+      "rule_key": "fabricated_rule",
+      "status": "confirmed",
+      "row_refs": ["1"],
+      "claims": [
+        {
+          "claim_id": "a1b2c3d4e5f67890",
+          "statement": "非法依据。",
+          "basis": "garbage",
+          "confidence": 2.0,
+          "severity": "critical"
+        }
+      ],
+      "counter_hypotheses": []
+    }
+  ],
+  "summary": {
+    "covered_candidates": 1,
+    "findings": 1,
+    "claims": 1,
+    "evidence_refs": 0,
+    "truncated": false
+  }
+}

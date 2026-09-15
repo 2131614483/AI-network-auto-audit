@@ -1,0 +1,16 @@
+{
+  "contract_id": "document-content",
+  "contract_version": "1.0.0",
+  "artifact": {
+    "artifact_id": "a1b2c3d4-e5f6-4a7b-8c9d-0e1f2a3b4c5d",
+    "tenant_id": "0a1b2c3d-4e5f-4a6b-8c7d-9e0f1a2b3c4d",
+    "uri": "http://external.example.com/leaked.json",
+    "media_type": "application/json",
+    "sha256": "short",
+    "size_bytes": -1,
+    "classification": "internal"
+  },
+  "language": "klingon",
+  "max_entities": 0,
+  "max_relations": 100000
+}

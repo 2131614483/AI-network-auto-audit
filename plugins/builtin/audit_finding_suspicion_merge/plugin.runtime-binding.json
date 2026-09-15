@@ -1,0 +1,18 @@
+{
+  "schema_version": "1.0.0",
+  "plugin": {
+    "id": "audit.finding.suspicion-merge",
+    "version": "0.1.0",
+    "sha256": "270d54b7f1ef9823dcc622e1863c57df60ec28b920ab17784cc29eaacce12652"
+  },
+  "protocol": {
+    "id": "audit.finding.suspicion-merge",
+    "version": "0.1.0",
+    "sha256": "3f6f17eae248daca8de27ba6a000900b9829bda3d6283c2be02228d0885a25d8"
+  },
+  "execution_mode": "isolated_subprocess",
+  "capabilities": [
+    "audit.finding.suspicion-merge"
+  ],
+  "status": "verified"
+}

@@ -1,0 +1,18 @@
+{
+  "schema_version": "1.0.0",
+  "plugin": {
+    "id": "audit.field.extension-approve",
+    "version": "0.1.0",
+    "sha256": "7858f51dc8110ed9ef79258f0c12e40a860b709febad6a2101f89de65cb9544e"
+  },
+  "protocol": {
+    "id": "audit.field.extension-approve",
+    "version": "0.1.0",
+    "sha256": "fa3e1f734a8731dcec70f1e1625b99120d642c200ae6744fccb88755fbf73f52"
+  },
+  "execution_mode": "isolated_subprocess",
+  "capabilities": [
+    "audit.field.extension-approve"
+  ],
+  "status": "verified"
+}

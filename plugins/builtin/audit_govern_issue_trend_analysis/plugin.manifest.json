@@ -1,0 +1,45 @@
+{
+ "id": "audit.govern.issue-trend-analysis",
+ "version": "0.1.0",
+ "name": "问题趋势分析（契约声明）",
+ "runtime": "python",
+ "entrypoint": "plugins.builtin.audit_govern_issue_trend_analysis.runtime:handle",
+ "capabilities": [
+  "audit.govern.issue-trend-analysis"
+ ],
+ "inputs": {
+  "capability": "audit.govern.issue-trend-analysis",
+  "schema": "finding-draft.schema.json",
+  "content_type": "application/json"
+ },
+ "outputs": {
+  "capability": "audit.govern.issue-trend-analysis",
+  "schema": "metric-series.schema.json",
+  "content_type": "application/json"
+ },
+ "side_effects": "read_only",
+ "idempotency": "input_sha256 + capability_version",
+ "permissions": {
+  "data_read": [
+   "audit.govern.issue-trend-analysis.read"
+  ],
+  "data_write": [],
+  "network": "none",
+  "secrets": []
+ },
+ "resources": {
+  "cpu": 1,
+  "memory_mb": 256,
+  "gpu": false,
+  "timeout_seconds": 300
+ },
+ "data_classification": "audit_confidential",
+ "evidence": {
+  "preserve_inputs": true,
+  "code_hash_required": true
+ },
+ "tests": {
+  "contract": "tests/contract/test_audit_govern_issue_trend_analysis_contract.py",
+  "golden": "tests/unit/test_audit_govern_issue_trend_analysis_runtime.py"
+ }
+}

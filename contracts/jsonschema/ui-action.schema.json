@@ -1,0 +1,20 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://audit.local/contracts/ui-action.schema.json",
+  "title": "UIAction",
+  "description": "GUI 只能发起 capability + 类型化参数，最终仍由 Policy Gateway 裁决。",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["id", "capability", "label_key", "argument_schema", "placement"],
+  "properties": {
+    "id": {"type": "string", "pattern": "^[a-z][a-z0-9._-]*$"},
+    "capability": {"type": "string", "pattern": "^[a-z][a-z0-9]*(?:[._-][a-z0-9]+)+$"},
+    "label_key": {"type": "string", "minLength": 1},
+    "icon": {"type": "string", "maxLength": 100},
+    "argument_schema": {"type": "object", "required": ["type"], "properties": {"type": {"type": "string"}}, "additionalProperties": true},
+    "placement": {"type": "array", "minItems": 1, "uniqueItems": true, "items": {"type": "string", "enum": ["table.toolbar", "table.row", "detail.header", "detail.footer", "dashboard.card"]}},
+    "confirm": {"type": "boolean"},
+    "risk_hint": {"type": "string", "enum": ["low", "medium", "high", "critical"]},
+    "enabled_when": {"type": "object", "additionalProperties": true}
+  }
+}

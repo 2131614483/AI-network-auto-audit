@@ -1,0 +1,38 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://audit.local/contracts/graph-snapshot.schema.json",
+  "title": "GraphSnapshot",
+  "description": "活图轻量投影：按知识空间节点类型分组的节点文本索引，仅供重复/类型冲突检测，不携带节点 ID、边或属性。由图谱治理服务的只读快照接口生成，任何一方不得凭此快照直写活图。",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["contract_id", "space_level", "nodes_by_type"],
+  "properties": {
+    "contract_id": {"const": "graph-snapshot"},
+    "contract_version": {"const": "1.0.0"},
+    "space_level": {"type": "string", "enum": ["L0", "L1", "L2", "L3", "L4"]},
+    "nodes_by_type": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["organization", "document", "person"],
+      "properties": {
+        "organization": {"$ref": "#/$defs/text-node-list"},
+        "document": {"$ref": "#/$defs/text-node-list"},
+        "person": {"$ref": "#/$defs/text-node-list"},
+        "generic": {"$ref": "#/$defs/text-node-list"}
+      }
+    }
+  },
+  "$defs": {
+    "text-node-list": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["text"],
+        "properties": {
+          "text": {"type": "string", "minLength": 1, "maxLength": 512}
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,77 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://audit.local/contracts/plugin-manifest.schema.json",
+  "title": "PluginManifest",
+  "description": "插件安装、能力发现、权限审查和 UI 注册的稳定声明。",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["id", "version", "runtime", "entrypoint", "capabilities", "side_effects", "idempotency", "permissions", "resources"],
+  "properties": {
+    "id": {"type": "string", "pattern": "^[a-z][a-z0-9]*(?:[._-][a-z0-9]+)+$"},
+    "version": {"type": "string", "pattern": "^(0|[1-9][0-9]*)\\.(0|[1-9][0-9]*)\\.(0|[1-9][0-9]*)(?:-[0-9A-Za-z.-]+)?(?:\\+[0-9A-Za-z.-]+)?$"},
+    "name": {"type": "string", "maxLength": 200},
+    "runtime": {"type": "string", "enum": ["python", "node", "container", "remote", "web"]},
+    "entrypoint": {"type": "string", "minLength": 1, "maxLength": 512},
+    "capabilities": {"type": "array", "minItems": 1, "uniqueItems": true, "items": {"type": "string", "pattern": "^[a-z][a-z0-9]*(?:[._-][a-z0-9]+)+$"}},
+    "inputs": {"oneOf": [{"$ref": "#/$defs/schema-binding"}, {"type": "array", "items": {"$ref": "#/$defs/schema-binding"}}]},
+    "outputs": {"oneOf": [{"$ref": "#/$defs/schema-binding"}, {"type": "array", "items": {"$ref": "#/$defs/schema-binding"}}]},
+    "side_effects": {"type": "string", "enum": ["none", "read_only", "write_data", "external_mutation", "financial_execution"]},
+    "idempotency": {"type": "string", "minLength": 1, "maxLength": 255},
+    "permissions": {
+      "type": "object", "additionalProperties": false,
+      "required": ["data_read", "data_write", "network"],
+      "properties": {
+        "data_read": {"type": "array", "uniqueItems": true, "items": {"type": "string"}},
+        "data_write": {"type": "array", "uniqueItems": true, "items": {"type": "string"}},
+        "network": {
+          "description": "兼容草案中的 network: none；需要联网时使用域名白名单数组。",
+          "oneOf": [
+            {"type": "string", "enum": ["none", "unrestricted"]},
+            {"type": "array", "uniqueItems": true, "items": {"type": "string", "minLength": 1}}
+          ]
+        },
+        "secrets": {"type": "array", "uniqueItems": true, "items": {"type": "string"}}
+      }
+    },
+    "resources": {
+      "type": "object", "additionalProperties": false,
+      "required": ["cpu", "memory_mb", "gpu", "timeout_seconds"],
+      "properties": {
+        "cpu": {"type": "number", "exclusiveMinimum": 0},
+        "memory_mb": {"type": "integer", "minimum": 16},
+        "gpu": {"type": "boolean"},
+        "timeout_seconds": {"type": "integer", "minimum": 1, "maximum": 86400}
+      }
+    },
+    "retry": {
+      "type": "object", "additionalProperties": false,
+      "properties": {
+        "max_attempts": {"type": "integer", "minimum": 1, "maximum": 20},
+        "backoff": {"type": "string", "enum": ["fixed", "exponential", "none"]}
+      }
+    },
+    "data_classification": {"type": "string", "enum": ["public", "internal", "audit_confidential", "restricted"]},
+    "evidence": {
+      "type": "object", "additionalProperties": false,
+      "properties": {"preserve_inputs": {"type": "boolean"}, "code_hash_required": {"type": "boolean"}}
+    },
+    "tests": {
+      "type": "object", "additionalProperties": false,
+      "properties": {"contract": {"type": "string"}, "golden": {"type": "string"}}
+    },
+    "ui": {"$ref": "ui-contribution.schema.json"},
+    "signature": {"type": "string", "minLength": 1},
+    "package_sha256": {"type": "string", "pattern": "^[A-Fa-f0-9]{64}$"}
+  },
+  "$defs": {
+    "schema-binding": {
+      "type": "object", "additionalProperties": false,
+      "required": ["schema"],
+      "properties": {
+        "capability": {"type": "string"},
+        "schema": {"type": "string", "minLength": 1},
+        "content_type": {"type": "string"}
+      }
+    }
+  }
+}

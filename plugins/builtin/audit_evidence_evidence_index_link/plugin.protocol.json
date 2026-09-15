@@ -1,0 +1,98 @@
+{
+ "protocol_version": "1.0.0",
+ "id": "audit.evidence.evidence-index-link",
+ "version": "0.1.0",
+ "name": "证据索引关联",
+ "description": "建立底稿与对应证据的索引关联关系；上游对接底稿与证据，实现双向穿透查询。",
+ "kind": "analysis",
+ "domains": [
+  "audit",
+  "compliance"
+ ],
+ "lifecycle": "verified",
+ "compatibility": {
+  "host_protocol": ">=1.0.0 <2.0.0",
+  "adapters": [
+   "python"
+  ],
+  "fallback_behavior": "human_review"
+ },
+ "capabilities": [
+  {
+   "id": "audit.evidence.evidence-index-link",
+   "summary": "建立底稿与对应证据的索引关联关系；上游对接底稿与证据，实现双向穿透查询。",
+   "side_effects": "read_only",
+   "idempotency": "input_sha256 + capability_version",
+   "inputs": [
+    {
+     "contract_id": "workpaper-draft",
+     "version": "1.0.0",
+     "format": "artifact_ref",
+     "delivery": "reference",
+     "classification": "audit_confidential",
+     "schema_ref": "workpaper-export.schema.json",
+     "max_bytes": 268435456
+    },
+    {
+     "contract_id": "photo-evidence",
+     "version": "1.0.0",
+     "format": "artifact_ref",
+     "delivery": "reference",
+     "classification": "audit_confidential",
+     "schema_ref": "artifact-ref.schema.json",
+     "max_bytes": 268435456
+    }
+   ],
+   "outputs": [
+    {
+     "contract_id": "evidence-index",
+     "version": "1.0.0",
+     "format": "artifact_ref",
+     "delivery": "reference",
+     "classification": "audit_confidential",
+     "schema_ref": "evidence-lineage.schema.json",
+     "max_bytes": 268435456
+    }
+   ]
+  }
+ ],
+ "governance": {
+  "default_data_classification": "audit_confidential",
+  "permissions": {
+   "data_read": [],
+   "data_write": [],
+   "network": "none",
+   "secret_refs": []
+  },
+  "policy": {
+   "gateway_required": true,
+   "approval_required": false,
+   "evidence_required": true
+  }
+ },
+ "resources": {
+  "cpu": 1,
+  "memory_mb": 256,
+  "gpu": "none",
+  "timeout_seconds": 300
+ },
+ "observability": {
+  "trace_required": true,
+  "emits": [
+   "structured_log",
+   "artifact_ref",
+   "audit_event"
+  ],
+  "health": "declared_only"
+ },
+ "provenance": {
+  "source_refs": [
+   "docs/audit-plugin-network-100.md",
+   "docs/插件开发与接入标准-UPP-v1.0.md",
+   "plugins/builtin/audit_evidence_evidence_index_link/runtime.py"
+  ]
+ },
+ "ui": {
+  "mode": "none"
+ }
+}

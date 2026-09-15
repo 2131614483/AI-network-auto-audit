@@ -1,0 +1,326 @@
+{
+  "schema_version": "1.0.0",
+  "domain": "audit",
+  "reviewed_by": "ai-assisted (unreviewed by a human)",
+  "note": "角色判定结果。accepted=true 的条目参与分类；rejected 保留供人工复核 —— 模型判不出来的节点必须留在 rejected 里，不得为了让统计好看而当作已判定。",
+  "roles": {
+    "audit.evidence-lineage": {
+      "role": "transform",
+      "facets": [
+        "service"
+      ],
+      "confidence": 0.62,
+      "reason": "该插件消费 released-graph-ref 图谱引用，只读查询并产出 evidence-lineage 血缘对象，属于消费对象生成新对象的分析型节点，且未声明 invokes 故不算可复用 service。",
+      "accepted": true
+    },
+    "audit.evidence.evidence-archive": {
+      "role": "transform",
+      "facets": [
+        "service"
+      ],
+      "confidence": 0.82,
+      "reason": "消费现场取证结果并按类型与审计程序分类归集，产出新的归档证据对象，属于对象到新对象的变换归集而非判定或终端产出。",
+      "accepted": true
+    },
+    "audit.evidence.workpaper-borrow-approve": {
+      "role": "scheduler",
+      "facets": [
+        "decision"
+      ],
+      "confidence": 0.9,
+      "reason": "该插件管理底稿借阅/复制申请与审批流转，核心是流程派单与审批调度而非产出数据对象。",
+      "accepted": true
+    },
+    "audit.evidence.workpaper-encrypt-store": {
+      "role": "sink",
+      "facets": [
+        "transform"
+      ],
+      "confidence": 0.72,
+      "reason": "该插件对正式底稿做加密归档，属于业务链条的终点长期存档产物，输出仅为加密状态且无下游消费是设计如此。",
+      "accepted": true
+    },
+    "audit.evidence.workpaper-template-update": {
+      "role": "transform",
+      "facets": [
+        "service"
+      ],
+      "confidence": 0.82,
+      "reason": "消费 workpaper-draft 并产出新的 template-update-set，属于将输入对象变换为更新模板集合，而非校验、决策或调度。",
+      "accepted": true
+    },
+    "audit.evidence.workpaper-version-diff": {
+      "role": "transform",
+      "facets": [
+        "service"
+      ],
+      "confidence": 0.82,
+      "reason": "消费底稿对象并产出新的版本差异报告对象，属于分析/变换类能力，而非校验判定或排期流转。",
+      "accepted": true
+    },
+    "audit.field.asset-check": {
+      "role": "validator",
+      "facets": [
+        "transform"
+      ],
+      "confidence": 0.62,
+      "reason": "该插件将资产台账与实物盘点结果进行比对核验并产出盘点结论，属于消费完整对象给出判定/核验报告的校验类角色。",
+      "accepted": true
+    },
+    "audit.field.audit-log": {
+      "role": "sink",
+      "facets": [
+        "transform"
+      ],
+      "confidence": 0.72,
+      "reason": "自动记录审计操作并产出 audit-log-set，属业务链条终点的留痕产物且无下游调用，符合 sink 定位。",
+      "accepted": true
+    },
+    "audit.field.interview-record": {
+      "role": "transform",
+      "facets": [
+        "ingress"
+      ],
+      "confidence": 0.72,
+      "reason": "该插件消费访谈输入对象并调用NLP处理后产出新的纪要对象interview-note，属于消费并产出新对象的变换/分析节点。",
+      "accepted": true
+    },
+    "audit.field.inventory-count": {
+      "role": "transform",
+      "facets": [
+        "decision",
+        "service"
+      ],
+      "confidence": 0.6,
+      "reason": "该插件消费存货输入并产出监盘结果对象（含计划与盘盈盘亏记录），是审计链条上游的加工环节而非终端产出，故为变换/分析。",
+      "accepted": true
+    },
+    "audit.field.meeting-minutes": {
+      "role": "transform",
+      "facets": [
+        "sink"
+      ],
+      "confidence": 0.82,
+      "reason": "消费会议录音输入并调用 NLP 服务提炼生成会议纪要新对象，属于变换/分析型节点。",
+      "accepted": true
+    },
+    "audit.field.progress-report": {
+      "role": "ingress",
+      "facets": [
+        "transform"
+      ],
+      "confidence": 0.62,
+      "reason": "该插件是人工每日填报项目进度与工时的采集入口，将外部人工输入引入审计/AIOps 链路，属数据接入环节。",
+      "accepted": true
+    },
+    "audit.field.site-checkin-track": {
+      "role": "transform",
+      "facets": [
+        "ingress"
+      ],
+      "confidence": 0.62,
+      "reason": "消费上游排班/签到输入契约并产出新的 checkin-log 对象供审计日志消费，属对象转换处理而非校验或终端。",
+      "accepted": true
+    },
+    "audit.field.voucher-drilldown": {
+      "role": "transform",
+      "facets": [
+        "service"
+      ],
+      "confidence": 0.85,
+      "reason": "消费 clean-finance-set 并产出 voucher-chain，将报表数据穿透为凭证链，属于变换/分析。",
+      "accepted": true
+    },
+    "audit.finding-draft": {
+      "role": "transform",
+      "facets": [
+        "service"
+      ],
+      "confidence": 0.85,
+      "reason": "该插件消费 anomaly-candidates 与 investigation-plan-draft，确定性地产出新的结构化对象 finding-draft（Claim+EvidenceRef），自身不作裁决也不确认结论，符合消费并产出新对象的变换/分析定位。",
+      "accepted": true
+    },
+    "audit.foundation.biz-standardize": {
+      "role": "adapter",
+      "facets": [
+        "service"
+      ],
+      "confidence": 0.78,
+      "reason": "输入 raw-biz-set 被归一为标准口径的 standard-biz-set，属外壳/归一；同时被多个插件调用具备可复用服务面",
+      "accepted": true
+    },
+    "audit.foundation.fulltext-search": {
+      "role": "service",
+      "facets": [
+        "transform"
+      ],
+      "confidence": 0.9,
+      "reason": "全文检索引擎作为可复用检索能力被底稿、证据、问题核查类插件调用，属于被其他插件调用的通用服务",
+      "accepted": true
+    },
+    "audit.foundation.metadata-manage": {
+      "role": "service",
+      "facets": [
+        "adapter"
+      ],
+      "confidence": 0.93,
+      "reason": "该插件提供统一的元数据字典/指标定义能力，被其他插件调用而自身不调用他人，属可复用服务。",
+      "accepted": true
+    },
+    "audit.govern.case-library-update": {
+      "role": "sink",
+      "facets": [
+        "transform"
+      ],
+      "confidence": 0.65,
+      "reason": "该插件把上游审计成果沉淀为案例条目入库，是治理链条的终点产物且无下游声明，符合终端产出特征。",
+      "accepted": true
+    },
+    "audit.govern.effect-evaluate": {
+      "role": "sink",
+      "facets": [
+        "decision",
+        "transform"
+      ],
+      "confidence": 0.72,
+      "reason": "该插件消费整改台账并产出面向管理层的成效评估报告，是业务链条的终点产物且无下游，符合终端产出定位。",
+      "accepted": true
+    },
+    "audit.govern.method-distill": {
+      "role": "transform",
+      "facets": [
+        "sink",
+        "service"
+      ],
+      "confidence": 0.72,
+      "reason": "消费完整的项目复盘对象并沉淀产出新的方法库对象，属于分析加工而非校验判定或排期流转；虽处链条末端但有反向赋能下游，不宜判为纯 sink。",
+      "accepted": true
+    },
+    "audit.govern.project-quality-score": {
+      "role": "decision",
+      "facets": [
+        "transform"
+      ],
+      "confidence": 0.86,
+      "reason": "该插件消费全流程数据并输出质量评分，属于将对象量化为结论/分级的判定节点。",
+      "accepted": true
+    },
+    "audit.govern.rule-iteration": {
+      "role": "transform",
+      "facets": [
+        "decision"
+      ],
+      "confidence": 0.78,
+      "reason": "消费趋势报告并产出更新后的规则包，属于对数据对象进行分析改写而非仅做判定或校验。",
+      "accepted": true
+    },
+    "audit.mandate.notice-generate": {
+      "role": "transform",
+      "facets": [
+        "sink"
+      ],
+      "confidence": 0.68,
+      "reason": "消费 project-snapshot 并借助 NLP 生成新的审计通知书对象，属于消费并产出新对象的变换类节点。",
+      "accepted": true
+    },
+    "audit.plan.annual-plan-build": {
+      "role": "transform",
+      "facets": [
+        "decision",
+        "sink"
+      ],
+      "confidence": 0.7,
+      "reason": "消费上游 priority-order 并整合生成新的 annual-plan 数据对象（非校验报告、非终端产物），属变换/分析类。",
+      "accepted": true
+    },
+    "audit.plan.effort-budget": {
+      "role": "transform",
+      "facets": [
+        "service"
+      ],
+      "confidence": 0.85,
+      "reason": "消费上游 schedule-plan 对象，编制工时预算与成本测算并产出新的 effort-budget 对象供下游进度管控，属消费并产出新对象的变换/分析。",
+      "accepted": true
+    },
+    "audit.plan.resource-conflict-detect": {
+      "role": "decision",
+      "facets": [
+        "transform"
+      ],
+      "confidence": 0.82,
+      "reason": "消费排班计划与项目快照，判定人员跨项目冲突并输出预警结论，属于把对象转成结论/分级的判断环节。",
+      "accepted": true
+    },
+    "audit.remedy.remedy-overdue-alert": {
+      "role": "decision",
+      "facets": [
+        "sink"
+      ],
+      "confidence": 0.62,
+      "reason": "消费整改进度对象并判定是否超期、产出预警结论，符合把对象变成结论/分级的判断角色；预警经消息通知发出，兼具终端产出面。",
+      "accepted": true
+    },
+    "audit.remedy.remedy-publish": {
+      "role": "sink",
+      "facets": [
+        "transform"
+      ],
+      "confidence": 0.85,
+      "reason": "输入整改台账、产出对外公示的整改结果，属业务链条终点产物且无下游，符合终端产出定位。",
+      "accepted": true
+    },
+    "audit.report-draft": {
+      "role": "sink",
+      "facets": [
+        "transform"
+      ],
+      "confidence": 0.82,
+      "reason": "消费已确认的 finding-set 并经固定模板生成 report-draft，是业务链条终点产物且声明无下游调用，符合受审批的终端输出契约。",
+      "accepted": true
+    },
+    "audit.report.advice-match": {
+      "role": "transform",
+      "facets": [
+        "decision"
+      ],
+      "confidence": 0.72,
+      "reason": "消费最终问题清单并映射产出建议集合，属于分析/变换类节点，非校验或终端产出",
+      "accepted": true
+    },
+    "audit.report.issue-desc-write": {
+      "role": "transform",
+      "facets": [],
+      "confidence": 0.78,
+      "reason": "消费上游 final-issue-set 并调用 NLP 生成新的 issue-desc 对象，属于消费并产出新对象的变换/分析角色，非终点的校验判定或排期流转。",
+      "accepted": true
+    },
+    "audit.report.notice-mask-publish": {
+      "role": "sink",
+      "facets": [
+        "transform"
+      ],
+      "confidence": 0.72,
+      "reason": "消费 report-approved 并调用脱敏后产出 published-notice 发布至公示节点，属业务链条终点产物且无下游设计如此。",
+      "accepted": true
+    },
+    "audit.risk.risk-heatmap-draw": {
+      "role": "sink",
+      "facets": [
+        "transform"
+      ],
+      "confidence": 0.65,
+      "reason": "产出风险热图为业务链条终点的可视化产物，无下游插件消费该对象。",
+      "accepted": true
+    },
+    "audit.workpaper-export": {
+      "role": "sink",
+      "facets": [
+        "transform"
+      ],
+      "confidence": 0.82,
+      "reason": "该插件消费已确认 Finding 集并产出可追溯底稿工件，是业务链条的终点产物且无下游，符合终端产出角色。",
+      "accepted": true
+    }
+  },
+  "rejected": {}
+}

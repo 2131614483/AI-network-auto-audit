@@ -1,0 +1,109 @@
+{
+  "protocol_version": "1.0.0",
+  "id": "aiops.postmortem-draft",
+  "version": "0.1.0",
+  "name": "AIOps 复盘草稿",
+  "description": "基于已确认 incident-proposal 事件与可选恢复核验账本生成确定性、可追溯复盘草稿的受审批输出契约；草稿永不自动发布，实际发布必须人工审批，不覆盖历史复盘。",
+  "kind": "analysis",
+  "domains": [
+    "aiops",
+    "compliance"
+  ],
+  "lifecycle": "contract_only",
+  "compatibility": {
+    "host_protocol": ">=1.0.0 <2.0.0",
+    "adapters": [
+      "python",
+      "node",
+      "http",
+      "mcp",
+      "container"
+    ],
+    "optional_features": [
+      "evidence-chain-v1"
+    ],
+    "fallback_behavior": "human_review"
+  },
+  "capabilities": [
+    {
+      "id": "aiops.postmortem.draft",
+      "summary": "对不可变已确认 incident-proposal 集合与可选 recovery-verification 账本生成确定性、可追溯的复盘草稿；草稿永不自动发布，发布需要人工审批。",
+      "side_effects": "read_only",
+      "idempotency": "incident_sha256_and_verification_sha256",
+      "inputs": [
+        {
+          "contract_id": "incident-proposal",
+          "version": "1.0.0",
+          "format": "json",
+          "delivery": "artifact_ref",
+          "classification": "internal",
+          "schema_ref": "incident-proposal.schema.json"
+        },
+        {
+          "contract_id": "recovery-verification",
+          "version": "1.0.0",
+          "format": "json",
+          "delivery": "artifact_ref",
+          "classification": "internal",
+          "schema_ref": "recovery-verification.schema.json"
+        }
+      ],
+      "outputs": [
+        {
+          "contract_id": "postmortem-draft",
+          "version": "1.0.0",
+          "format": "json",
+          "delivery": "artifact_ref",
+          "classification": "internal",
+          "schema_ref": "postmortem-draft.schema.json"
+        }
+      ],
+      "policy": {
+        "approval_required": true,
+        "evidence_required": true
+      }
+    }
+  ],
+  "governance": {
+    "default_data_classification": "internal",
+    "permissions": {
+      "data_read": [
+        "aiops.incident_proposals",
+        "aiops.recovery_verifications"
+      ],
+      "data_write": [],
+      "network": "none",
+      "secret_refs": []
+    },
+    "policy": {
+      "gateway_required": true,
+      "approval_required": true,
+      "evidence_required": true
+    }
+  },
+  "resources": {
+    "cpu": 1,
+    "memory_mb": 256,
+    "gpu": "none",
+    "timeout_seconds": 120
+  },
+  "observability": {
+    "trace_required": true,
+    "emits": [
+      "structured_log",
+      "metric",
+      "audit_event"
+    ],
+    "health": "declared_only"
+  },
+  "provenance": {
+    "source_refs": [
+      "docs/plugin-protocol.md",
+      "docs/审计组网插件规划-v1.md#r3"
+    ]
+  },
+  "ui": {
+    "mode": "declarative",
+    "contribution_schema": "ui-contribution.schema.json"
+  }
+}

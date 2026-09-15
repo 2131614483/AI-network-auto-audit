@@ -1,0 +1,191 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://audit.local/prototypes/audit-report-render-bundle.schema.json",
+  "title": "AuditReportRenderBundle",
+  "description": "不可变审计报告展示快照；用于离线导入和渲染，不是运行时拓扑发布载荷。",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["contract_id", "contract_version", "report", "sources", "graph", "evidence_index", "integrity"],
+  "properties": {
+    "contract_id": {"const": "audit-report-render-bundle"},
+    "contract_version": {"const": "1.0.0"},
+    "report": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "title", "markdown_ref", "report_date", "verdict"],
+      "properties": {
+        "id": {"type": "string", "pattern": "^[a-z][a-z0-9-]{2,80}$"},
+        "title": {"type": "string", "minLength": 1},
+        "markdown_ref": {"type": "string", "minLength": 1},
+        "report_date": {"type": "string", "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}$"},
+        "verdict": {"type": "string", "minLength": 1}
+      }
+    },
+    "sources": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["id", "path", "bytes", "sha256"],
+        "properties": {
+          "id": {"type": "string", "pattern": "^S[0-9]{3}$"},
+          "path": {"type": "string", "pattern": "^[^:]+$"},
+          "bytes": {"type": "integer", "minimum": 0},
+          "sha256": {"type": "string", "pattern": "^[a-f0-9]{64}$"}
+        }
+      }
+    },
+    "graph": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["direction", "layers", "nodes", "edges"],
+      "properties": {
+        "direction": {"const": "LR"},
+        "layers": {"type": "array", "minItems": 2, "items": {"$ref": "#/$defs/layer"}},
+        "nodes": {"type": "array", "minItems": 2, "items": {"$ref": "#/$defs/node"}},
+        "edges": {"type": "array", "minItems": 1, "items": {"$ref": "#/$defs/edge"}}
+      }
+    },
+    "evidence_index": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["artifact_ref", "sha256", "findings", "noise_exclusions"],
+      "properties": {
+        "artifact_ref": {"type": "string", "minLength": 1},
+        "sha256": {"type": "string", "pattern": "^[a-f0-9]{64}$"},
+        "findings": {"type": "array", "items": {"$ref": "#/$defs/finding"}},
+        "noise_exclusions": {"type": "array", "items": {"$ref": "#/$defs/noise"}}
+      }
+    },
+    "presentation": {
+      "type": "object",
+      "description": "可选的离线展示快照；保留既有 DAG 页面所需的卡片、KPI 与动画数据。",
+      "additionalProperties": false,
+      "required": ["renderer", "legacy_dag"],
+      "properties": {
+        "renderer": {"const": "legacy-dag@1.0.0"},
+        "legacy_dag": {"$ref": "#/$defs/legacyDag"}
+      }
+    },
+    "integrity": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["markdown_sha256", "source_inventory_sha256", "content_sha256", "generator_version"],
+      "properties": {
+        "markdown_sha256": {"type": "string", "pattern": "^[a-f0-9]{64}$"},
+        "source_inventory_sha256": {"type": "string", "pattern": "^[a-f0-9]{64}$"},
+        "content_sha256": {"type": "string", "pattern": "^[a-f0-9]{64}$"},
+        "generator_version": {"const": "0.1.0"},
+        "render_spec_sha256": {"type": "string", "pattern": "^[a-f0-9]{64}$"}
+      }
+    }
+  },
+  "$defs": {
+    "layer": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "order", "label"],
+      "properties": {
+        "id": {"type": "string", "pattern": "^[A-Za-z][A-Za-z0-9_-]{0,15}$"},
+        "order": {"type": "integer", "minimum": 0},
+        "label": {"type": "string", "minLength": 1}
+      }
+    },
+    "node": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "kind", "layer", "label"],
+      "properties": {
+        "id": {"type": "string", "pattern": "^[A-Za-z][A-Za-z0-9_-]{1,80}$"},
+        "kind": {"type": "string", "enum": ["source_domain", "procedure", "evidence_pool", "finding_aggregate", "impact", "noise_exclusion", "conclusion"]},
+        "layer": {"type": "string", "pattern": "^[A-Za-z][A-Za-z0-9_-]{0,15}$"},
+        "label": {"type": "string", "minLength": 1},
+        "source_ids": {"type": "array", "items": {"type": "string", "pattern": "^S[0-9]{3}$"}}
+      }
+    },
+    "edge": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "from", "to", "kind"],
+      "properties": {
+        "id": {"type": "string", "pattern": "^E[0-9]{3}$"},
+        "from": {"type": "string", "minLength": 1},
+        "to": {"type": "string", "minLength": 1},
+        "kind": {"type": "string", "enum": ["evidence", "finding", "exclusion"]},
+        "label": {"type": "string"}
+      }
+    },
+    "finding": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "tier", "group", "issue", "amount", "status", "evidence"],
+      "properties": {
+        "id": {"type": "string", "pattern": "^[A-Z][A-Za-z0-9_-]{1,79}$"},
+        "tier": {"type": "string", "minLength": 1},
+        "group": {"type": "string"},
+        "issue": {"type": "string"},
+        "amount": {"type": "string"},
+        "status": {"const": "hit"},
+        "evidence": {"type": "array", "items": {"type": "string"}}
+      }
+    },
+    "noise": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "status", "description"],
+      "properties": {
+        "id": {"type": "string", "pattern": "^N[0-9]{2}$"},
+        "status": {"const": "excluded"},
+        "description": {"type": "string"}
+      }
+    },
+    "legacyDag": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["title", "sub", "plan", "dataset", "files", "rows", "sha", "source", "foot", "layers", "nodes", "edges", "stats", "generated"],
+      "properties": {
+        "title": {"type": "string", "minLength": 1},
+        "sub": {"type": "string"},
+        "plan": {"type": "string", "minLength": 1},
+        "dataset": {"type": "string"},
+        "files": {"type": "string"},
+        "rows": {"type": "string"},
+        "sha": {"type": "string"},
+        "source": {"type": "string"},
+        "foot": {"type": "string"},
+        "generated": {"type": "string", "minLength": 1},
+        "layers": {"type": "array", "minItems": 2, "items": {"type": "string", "minLength": 1}},
+        "nodes": {
+          "type": "array",
+          "minItems": 2,
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["id", "layer", "name"],
+            "properties": {
+              "id": {"type": "string", "minLength": 1}, "layer": {"type": "integer", "minimum": 0},
+              "name": {"type": "string"}, "cap": {"type": "string"}, "finding": {"type": "string"},
+              "virtual": {"type": "boolean"}, "kpis": {"type": "array"}, "rows": {"type": "array"},
+              "note": {"type": "string"}, "kind": {"type": "string"}
+            }
+          }
+        },
+        "edges": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["from", "to", "label"],
+            "properties": {
+              "from": {"type": "string", "minLength": 1}, "to": {"type": "string", "minLength": 1},
+              "label": {"type": "string"}, "virtual": {"type": "boolean"}
+            }
+          }
+        },
+        "stats": {"type": "array"}
+      }
+    }
+  }
+}

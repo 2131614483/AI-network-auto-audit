@@ -1,0 +1,18 @@
+{
+  "schema_version": "1.0.0",
+  "plugin": {
+    "id": "audit.field.progress-report",
+    "version": "0.1.0",
+    "sha256": "a39be2d2e126ef9565bdaad106dadbbfafec9764382f55fa911784899d9d3d7a"
+  },
+  "protocol": {
+    "id": "audit.field.progress-report",
+    "version": "0.1.0",
+    "sha256": "1fc678b56b18df0586302015181466fa50a3c758fdd5370fade01b7c7b047709"
+  },
+  "execution_mode": "isolated_subprocess",
+  "capabilities": [
+    "audit.field.progress-report"
+  ],
+  "status": "verified"
+}

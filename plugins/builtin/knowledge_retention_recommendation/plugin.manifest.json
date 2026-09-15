@@ -1,0 +1,33 @@
+{
+  "id": "knowledge.retention-recommendation",
+  "version": "0.1.0",
+  "name": "知识保留建议（受审批输出，只读）",
+  "runtime": "python",
+  "entrypoint": "plugins.builtin.knowledge_retention_recommendation.runtime:handle",
+  "capabilities": ["knowledge.retention.recommend"],
+  "inputs": {
+    "capability": "knowledge.retention.recommend",
+    "schema": "document-content.schema.json",
+    "content_type": "application/json"
+  },
+  "outputs": {
+    "capability": "knowledge.retention.recommend",
+    "schema": "retention-recommendation@1.0.0",
+    "content_type": "application/json"
+  },
+  "side_effects": "read_only",
+  "idempotency": "document_sha256_and_retention_metadata",
+  "permissions": {
+    "data_read": ["knowledge.documents"],
+    "data_write": [],
+    "network": "none",
+    "secrets": []
+  },
+  "resources": {"cpu": 1, "memory_mb": 256, "gpu": false, "timeout_seconds": 120},
+  "data_classification": "internal",
+  "evidence": {"preserve_inputs": true, "code_hash_required": true},
+  "tests": {
+    "contract": "tests/contract/test_knowledge_retention_recommendation_contract.py",
+    "golden": "tests/unit/test_knowledge_retention_recommendation_runtime.py"
+  }
+}

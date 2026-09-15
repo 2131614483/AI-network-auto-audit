@@ -1,0 +1,54 @@
+{
+  "contract_id": "graph-proposal-draft",
+  "contract_version": "1.0.0",
+  "candidate_set_sha256": "a1b2c3d4e5f67890a1b2c3d4e5f67890a1b2c3d4e5f67890a1b2c3d4e5f67890",
+  "space_level": "L1",
+  "draft_id": "9f7c5a1e2b6d8f03",
+  "entity_proposals": [
+    {
+      "op": "add_entity",
+      "candidate_id": "organization::审计局",
+      "name": "审计局",
+      "entity_type": "organization",
+      "source_ref": "document:a1b2c3d4:span:审计局",
+      "confidence": 0.9,
+      "target_space": "L1",
+      "status": "duplicate",
+      "reason": "entity already present in the target space"
+    },
+    {
+      "op": "add_entity",
+      "candidate_id": "document::《审计指引》",
+      "name": "《审计指引》",
+      "entity_type": "document",
+      "confidence": 0.75,
+      "target_space": "L1",
+      "status": "proposed"
+    }
+  ],
+  "relation_proposals": [
+    {
+      "op": "add_relation",
+      "candidate_id": "cites:document::《审计指引》->document::《审计指引》",
+      "source_id": "organization::审计局",
+      "target_id": "document::《审计指引》",
+      "relation_type": "cites",
+      "idempotent_key": "d4e2f1a83b7c4096e5d2f1a8b3c4d5e6f7a8b9c0d1e2f3a4",
+      "span": "审计局依据《审计指引》",
+      "confidence": 0.7,
+      "target_space": "L1",
+      "status": "proposed"
+    }
+  ],
+  "conflicts": [],
+  "summary": {
+    "candidate_entities": 2,
+    "candidate_relations": 1,
+    "entities_proposed": 0,
+    "relations_proposed": 1,
+    "duplicates": 0,
+    "conflicts": 0,
+    "blocked_relations": 0,
+    "truncated": false
+  }
+}

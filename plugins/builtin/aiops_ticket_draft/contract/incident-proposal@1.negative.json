@@ -1,0 +1,19 @@
+{
+  "contract_id": "incident-proposal",
+  "contract_version": "1.0.0",
+  "proposal_id": "9a1b2c3d4e5f6789",
+  "alert_fingerprint": "a1b2c3d4e5f67890a1b2c3d4e5f67890a1b2c3d4e5f67890a1b2c3d4e5f67890",
+  "status": "confirmed",
+  "triage": {
+    "grouping_key": "affected_system=BCSA_big_01",
+    "severity": "explosive",
+    "affected_system": "BCSA_big_01/equipment-12",
+    "summary": "温度传感器越限，自动重启 playbook 已触发",
+    "review_reason": "自动化处置"
+  },
+  "constraints": {
+    "no_execution": false,
+    "no_playbook": false,
+    "requires_human_approval": false
+  }
+}

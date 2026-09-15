@@ -1,0 +1,18 @@
+{
+  "schema_version": "1.0.0",
+  "plugin": {
+    "id": "audit.mandate.demand-collect",
+    "version": "0.1.0",
+    "sha256": "4af883e8fe36549bbfd21f126cf98e73111c4cef10a1f2b9a0deb3dd596e3a8c"
+  },
+  "protocol": {
+    "id": "audit.mandate.demand-collect",
+    "version": "0.1.0",
+    "sha256": "3e3f512372de9593ec395c7004dd911d18eddde067ef7e03eb554877f6b3eecf"
+  },
+  "execution_mode": "isolated_subprocess",
+  "capabilities": [
+    "audit.mandate.demand-collect"
+  ],
+  "status": "verified"
+}

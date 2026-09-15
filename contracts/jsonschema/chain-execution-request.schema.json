@@ -1,0 +1,25 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://audit.local/contracts/chain-execution-request.schema.json",
+  "title": "ChainExecutionRequest",
+  "description": "整链执行请求载荷（M4/M5）：mode 为 simulated（纯 DB 内状态投影，不启动子进程）或 isolated（受限只读子进程，仅白名单已验证内置插件，依赖服务端 ISO 门）；必须携带幂等键；isolated 必须说明演练用途 reason；任意其他模式拒绝。",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["chain_key", "mode", "idempotency_key"],
+  "properties": {
+    "chain_key": {"type": "string", "pattern": "^chain-[a-z0-9]{16}$"},
+    "mode": {"enum": ["simulated", "isolated"]},
+    "reason": {"type": "string", "maxLength": 500},
+    "idempotency_key": {"type": "string", "minLength": 1, "maxLength": 255},
+    "trace_id": {"type": "string", "format": "uuid"}
+  },
+  "allOf": [
+    {
+      "if": {"properties": {"mode": {"const": "isolated"}}, "required": ["mode"]},
+      "then": {
+        "required": ["reason"],
+        "properties": {"reason": {"minLength": 1}}
+      }
+    }
+  ]
+}

@@ -1,0 +1,89 @@
+{
+ "protocol_version": "1.0.0",
+ "id": "audit.risk.industry-risk-benchmark",
+ "version": "0.1.0",
+ "name": "行业风险对标",
+ "description": "对标同行业风险事件、高发问题识别潜在风险；调用外部对标数据，输出至风险矩阵插件。",
+ "kind": "analysis",
+ "domains": [
+  "audit",
+  "compliance"
+ ],
+ "lifecycle": "verified",
+ "compatibility": {
+  "host_protocol": ">=1.0.0 <2.0.0",
+  "adapters": [
+   "python"
+  ],
+  "fallback_behavior": "human_review"
+ },
+ "capabilities": [
+  {
+   "id": "audit.risk.industry-risk-benchmark",
+   "summary": "对标同行业风险事件、高发问题识别潜在风险；调用外部对标数据，输出至风险矩阵插件。",
+   "side_effects": "read_only",
+   "idempotency": "input_sha256 + capability_version",
+   "inputs": [
+    {
+     "contract_id": "industry-benchmark",
+     "version": "1.0.0",
+     "format": "artifact_ref",
+     "delivery": "reference",
+     "classification": "audit_confidential",
+     "schema_ref": "document-content.schema.json",
+     "max_bytes": 268435456
+    }
+   ],
+   "outputs": [
+    {
+     "contract_id": "industry-risk-set",
+     "version": "1.0.0",
+     "format": "artifact_ref",
+     "delivery": "reference",
+     "classification": "audit_confidential",
+     "schema_ref": "anomaly-candidates.schema.json",
+     "max_bytes": 268435456
+    }
+   ]
+  }
+ ],
+ "governance": {
+  "default_data_classification": "audit_confidential",
+  "permissions": {
+   "data_read": [],
+   "data_write": [],
+   "network": "none",
+   "secret_refs": []
+  },
+  "policy": {
+   "gateway_required": true,
+   "approval_required": false,
+   "evidence_required": true
+  }
+ },
+ "resources": {
+  "cpu": 1,
+  "memory_mb": 256,
+  "gpu": "none",
+  "timeout_seconds": 300
+ },
+ "observability": {
+  "trace_required": true,
+  "emits": [
+   "structured_log",
+   "artifact_ref",
+   "audit_event"
+  ],
+  "health": "declared_only"
+ },
+ "provenance": {
+  "source_refs": [
+   "docs/audit-plugin-network-100.md",
+   "docs/插件开发与接入标准-UPP-v1.0.md",
+   "plugins/builtin/audit_risk_industry_risk_benchmark/runtime.py"
+  ]
+ },
+ "ui": {
+  "mode": "none"
+ }
+}

@@ -1,0 +1,14 @@
+{
+  "node_instance_id": "evidence-photo-001",
+  "capability": "audit.field.evidence-photo",
+  "input_bindings": {
+    "photo-input": {
+      "uri": "file:///D:/pythonpro/audit_network/docs/%E5%85%A8%E6%B5%81%E7%A8%8B%E8%BF%90%E8%A1%8C%E6%97%A5%E5%BF%97-20260912/12-%E6%9C%AC%E6%AC%A1%E8%BF%90%E8%A1%8C%E4%BA%A7%E7%89%A9/inputs/photos.json",
+      "sha256": "a7720a2c3f2d09cb05929ce4105268f2775d87f9a05d0861396b2028ad5ade6f",
+      "adapter": null,
+      "port_id": "photo-input",
+      "source_port": "photo-input",
+      "source_instance": "seed"
+    }
+  }
+}

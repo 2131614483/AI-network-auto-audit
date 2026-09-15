@@ -1,0 +1,18 @@
+{
+  "schema_version": "1.0.0",
+  "plugin": {
+    "id": "audit.finding.issue-type-judge",
+    "version": "0.1.0",
+    "sha256": "f735ffe774a7950f7f802fe797d493b50c21e8011e651893444428f34e041eff"
+  },
+  "protocol": {
+    "id": "audit.finding.issue-type-judge",
+    "version": "0.1.0",
+    "sha256": "81b4af532e354208a7490f1a3e1697184eb41345e6d065f2204061d2cbe16d52"
+  },
+  "execution_mode": "isolated_subprocess",
+  "capabilities": [
+    "audit.finding.issue-type-judge"
+  ],
+  "status": "verified"
+}

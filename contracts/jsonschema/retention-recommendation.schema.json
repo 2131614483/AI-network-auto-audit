@@ -1,0 +1,78 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://audit.local/contracts/retention-recommendation.schema.json",
+  "title": "RetentionRecommendation",
+  "description": "归档/回收建议草稿（knowledge.retention-recommendation 输出）：基于不可变 document-content@1 引用与保留元数据，确定性地提出 retain/archive/delete_candidate 建议。建议绝不删除证据；实际归档或删除必须经策略裁决、人工审批与独立治理身份执行。",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["contract_id", "contract_version", "recommendation_id", "status", "document_ref", "recommendation", "rationale", "summary", "signature", "constraints", "provenance"],
+  "properties": {
+    "contract_id": {"const": "retention-recommendation"},
+    "contract_version": {"const": "1.0.0"},
+    "recommendation_id": {"type": "string", "pattern": "^[A-Fa-f0-9]{16}$"},
+    "status": {"const": "proposed"},
+    "document_ref": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["artifact_id", "uri", "sha256", "media_type"],
+      "properties": {
+        "artifact_id": {"type": "string", "minLength": 1, "maxLength": 255},
+        "uri": {"type": "string", "minLength": 1, "maxLength": 2048},
+        "sha256": {"type": "string", "pattern": "^[A-Fa-f0-9]{64}$"},
+        "media_type": {"type": "string", "minLength": 1, "maxLength": 128}
+      }
+    },
+    "recommendation": {"type": "string", "enum": ["retain", "archive", "delete_candidate"]},
+    "rationale": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["matched_rules", "last_access_days", "ref_count", "classification"],
+      "properties": {
+        "matched_rules": {"type": "array", "minItems": 1, "items": {"type": "string", "minLength": 1, "maxLength": 128}},
+        "last_access_days": {"type": "integer", "minimum": 0},
+        "ref_count": {"type": "integer", "minimum": 0},
+        "classification": {"type": "string", "minLength": 1, "maxLength": 64},
+        "detail": {"type": "string", "minLength": 1, "maxLength": 512}
+      }
+    },
+    "summary": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["retain", "archive", "delete_candidate"],
+      "properties": {
+        "retain": {"type": "integer", "minimum": 0},
+        "archive": {"type": "integer", "minimum": 0},
+        "delete_candidate": {"type": "integer", "minimum": 0}
+      }
+    },
+    "signature": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["recommended_by", "reviewed"],
+      "properties": {
+        "recommended_by": {"const": "knowledge.retention-recommendation@0.1.0"},
+        "reviewed": {"const": false}
+      }
+    },
+    "constraints": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["no_delete", "evidence_immutable", "requires_human_approval"],
+      "properties": {
+        "no_delete": {"const": true},
+        "evidence_immutable": {"const": true},
+        "requires_human_approval": {"const": true}
+      }
+    },
+    "provenance": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["source_sha256", "plugin", "recommend_time"],
+      "properties": {
+        "source_sha256": {"type": "string", "pattern": "^[A-Fa-f0-9]{64}$"},
+        "plugin": {"const": "knowledge.retention-recommendation@0.1.0"},
+        "recommend_time": {"type": "string"}
+      }
+    }
+  }
+}

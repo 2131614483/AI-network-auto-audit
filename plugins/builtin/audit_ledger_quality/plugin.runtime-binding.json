@@ -1,0 +1,8 @@
+{
+  "schema_version": "1.0.0",
+  "plugin": {"id": "audit.ledger-quality", "version": "0.1.0", "sha256": "98a8b9e48993458398e26351508e73b26779e45609f432a2477ea252e7484a1a"},
+  "protocol": {"id": "audit.ledger-quality", "version": "0.1.0", "sha256": "b6fa13720b2bd0ab9fbf086ee1e204ee63ef845a32b008d0f3857e74fc932bf5"},
+  "execution_mode": "isolated_subprocess",
+  "capabilities": ["audit.ledger.validate"],
+  "status": "verified"
+}

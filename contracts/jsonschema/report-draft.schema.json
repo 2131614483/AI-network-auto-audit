@@ -1,0 +1,113 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://audit.local/contracts/report-draft.schema.json",
+  "title": "ReportDraft",
+  "description": "受审批输出的可追溯审计报告草稿：基于已确认 Finding 集合与固定模板版本生成确定性报告草稿；签发仍由人完成。",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["contract_id", "contract_version", "report_id", "report_kind", "status", "engagement_id", "engagement_name", "template_version", "body", "conclusion", "signature", "summary", "constraints", "provenance"],
+  "properties": {
+    "contract_id": {"const": "report-draft"},
+    "contract_version": {"const": "1.0.0"},
+    "report_id": {"type": "string", "pattern": "^[A-Fa-f0-9]{16}$"},
+    "report_kind": {"const": "report"},
+    "status": {"const": "draft"},
+    "engagement_id": {"type": "string", "format": "uuid"},
+    "engagement_name": {"type": "string", "minLength": 1, "maxLength": 255},
+    "template_version": {"type": "string", "pattern": "^(0|[1-9][0-9]*)\\.(0|[1-9][0-9]*)\\.(0|[1-9][0-9]*)(?:-[0-9A-Za-z.-]+)?(?:\\+[0-9A-Za-z.-]+)?$"},
+    "body": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["cover", "executive_summary", "findings"],
+      "properties": {
+        "cover": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["engagement_id", "engagement_name", "template_version", "finding_count", "severity_summary"],
+          "properties": {
+            "engagement_id": {"type": "string", "format": "uuid"},
+            "engagement_name": {"type": "string", "minLength": 1, "maxLength": 255},
+            "template_version": {"type": "string"},
+            "finding_count": {"type": "integer", "minimum": 0},
+            "severity_summary": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": ["high", "medium", "low"],
+              "properties": {
+                "high": {"type": "integer", "minimum": 0},
+                "medium": {"type": "integer", "minimum": 0},
+                "low": {"type": "integer", "minimum": 0}
+              }
+            }
+          }
+        },
+        "executive_summary": {"type": "string", "minLength": 1},
+        "findings": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["section_id", "finding_id", "title", "severity", "claim_id", "claim", "reviewer_label", "evidence_refs", "confirmed_at"],
+            "properties": {
+              "section_id": {"type": "string", "pattern": "^[A-Fa-f0-9]{16}$"},
+              "finding_id": {"type": "string", "format": "uuid"},
+              "title": {"type": "string", "minLength": 1, "maxLength": 512},
+              "severity": {"type": "string", "enum": ["low", "medium", "high"]},
+              "claim_id": {"type": "string", "format": "uuid"},
+              "claim": {"type": "string", "minLength": 1, "maxLength": 2048},
+              "reviewer_label": {"type": "string", "minLength": 1, "maxLength": 255},
+              "evidence_refs": {"type": "array", "items": {"type": "string"}},
+              "confirmed_at": {"type": "string"}
+            }
+          }
+        }
+      }
+    },
+    "conclusion": {"type": "string", "minLength": 1},
+    "signature": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["draft_by", "signed", "issuer"],
+      "properties": {
+        "draft_by": {"const": "audit.report-draft@0.1.0"},
+        "signed": {"const": false},
+        "issuer": {"type": "string", "pattern": "^[a-z][a-z0-9]*(?:[._-][a-z0-9]+)*$"}
+      }
+    },
+    "summary": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["findings", "high", "medium", "low", "evidence_refs", "truncated"],
+      "properties": {
+        "findings": {"type": "integer", "minimum": 0},
+        "high": {"type": "integer", "minimum": 0},
+        "medium": {"type": "integer", "minimum": 0},
+        "low": {"type": "integer", "minimum": 0},
+        "evidence_refs": {"type": "integer", "minimum": 0},
+        "truncated": {"type": "boolean"}
+      }
+    },
+    "constraints": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["no_overwrite", "requires_human_approval", "immutable_source", "human_issuance_required"],
+      "properties": {
+        "no_overwrite": {"const": true},
+        "requires_human_approval": {"const": true},
+        "immutable_source": {"const": true},
+        "human_issuance_required": {"const": true}
+      }
+    },
+    "provenance": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["source_sha256", "template_version", "plugin", "draft_time"],
+      "properties": {
+        "source_sha256": {"type": "string", "pattern": "^[A-Fa-f0-9]{64}$"},
+        "template_version": {"type": "string"},
+        "plugin": {"const": "audit.report-draft@0.1.0"},
+        "draft_time": {"type": "string"}
+      }
+    }
+  }
+}

@@ -1,0 +1,18 @@
+{
+  "schema_version": "1.0.0",
+  "plugin": {
+    "id": "audit.mandate.material-submit",
+    "version": "0.1.0",
+    "sha256": "76f0fe7cac42c3bce9895c88c92e651708d29fc56af46572646c24d438aa485e"
+  },
+  "protocol": {
+    "id": "audit.mandate.material-submit",
+    "version": "0.1.0",
+    "sha256": "a1ca83b05c42e48f1f0187d615d3b8f44c8b2f53a1f48701f57dd982fbf73221"
+  },
+  "execution_mode": "isolated_subprocess",
+  "capabilities": [
+    "audit.mandate.material-submit"
+  ],
+  "status": "verified"
+}

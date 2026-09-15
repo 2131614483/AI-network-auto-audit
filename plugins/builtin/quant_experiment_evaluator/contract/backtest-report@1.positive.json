@@ -1,0 +1,28 @@
+{
+  "contract_id": "backtest-report",
+  "contract_version": "1.0.0",
+  "backtest_id": "bt-2026-03-momentum-v2",
+  "strategy_key": "momentum",
+  "strategy_version": "2.1.0",
+  "code_sha256": "a1b2c3d4e5f67890a1b2c3d4e5f67890a1b2c3d4e5f67890a1b2c3d4e5f67890",
+  "snapshot_sha256": "a1b2c3d4e5f67890a1b2c3d4e5f67890a1b2c3d4e5f67890a1b2c3d4e5f67890",
+  "reference_time": "2026-03-31T00:00:00Z",
+  "point_in_time_gate": "2026-03-31T00:00:00Z",
+  "parameters": {"lookback": 20, "top_n": 10},
+  "metrics": {
+    "simulated_only": true,
+    "total_return": 0.23,
+    "annualized_return": 0.19,
+    "volatility": 0.11,
+    "sharpe": 1.7,
+    "max_drawdown": -0.08,
+    "win_rate": 0.62,
+    "n_periods": 24
+  },
+  "period_returns": [0.02, 0.01, -0.005, 0.03, 0.015, 0.0, 0.025, -0.01, 0.02, 0.01, 0.005, 0.03],
+  "summary": {
+    "simulated": true,
+    "source_refs": ["factor-pack:abc123", "snapshot:snap-2026-03"],
+    "truncated": false
+  }
+}

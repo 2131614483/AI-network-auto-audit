@@ -1,0 +1,18 @@
+{
+  "schema_version": "1.0.0",
+  "plugin": {
+    "id": "audit.evidence.evidence-archive",
+    "version": "0.1.0",
+    "sha256": "62bba10b9a24f12f11b2dc49e910f296d80cfae58b0d9c484d983cd26cce3aeb"
+  },
+  "protocol": {
+    "id": "audit.evidence.evidence-archive",
+    "version": "0.1.0",
+    "sha256": "586c38fd6bcb1ae06d46eee8cd12023174811d738eeedb7bf10575870ef965d0"
+  },
+  "execution_mode": "isolated_subprocess",
+  "capabilities": [
+    "audit.evidence.evidence-archive"
+  ],
+  "status": "verified"
+}

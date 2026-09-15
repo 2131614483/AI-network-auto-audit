@@ -1,0 +1,17 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://audit.local/contracts/journal-artifact-ref.schema.json",
+  "title": "JournalArtifactRef",
+  "description": "已校验总账日记账 CSV 工件引用：不可变哈希、期间、列映射版本与离群阈值；内容不嵌入控制面消息。",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["contract_id", "contract_version", "artifact", "schema_mapping_version", "period"],
+  "properties": {
+    "contract_id": {"const": "journal-artifact-ref"},
+    "contract_version": {"const": "1.0.0"},
+    "artifact": {"$ref": "artifact-ref.schema.json"},
+    "schema_mapping_version": {"type": "string", "pattern": "^(0|[1-9][0-9]*)\\.(0|[1-9][0-9]*)\\.(0|[1-9][0-9]*)$"},
+    "period": {"type": "string", "pattern": "^[0-9]{4}-(0[1-9]|1[0-2])$"},
+    "zscore_threshold": {"type": "number", "minimum": 1, "maximum": 10}
+  }
+}

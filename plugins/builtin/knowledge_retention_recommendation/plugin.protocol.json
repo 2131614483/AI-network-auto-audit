@@ -1,0 +1,100 @@
+{
+  "protocol_version": "1.0.0",
+  "id": "knowledge.retention-recommendation",
+  "version": "0.1.0",
+  "name": "知识保留建议",
+  "description": "基于已摄入不可变 document-content 引用与保留元数据提出归档/回收建议的受审批输出契约；建议绝不删除证据，实际归档或删除必须经策略裁决、人工审批与独立治理身份执行。",
+  "kind": "analysis",
+  "domains": [
+    "knowledge",
+    "compliance"
+  ],
+  "lifecycle": "contract_only",
+  "compatibility": {
+    "host_protocol": ">=1.0.0 <2.0.0",
+    "adapters": [
+      "python",
+      "node",
+      "http",
+      "mcp",
+      "container"
+    ],
+    "optional_features": [
+      "evidence-chain-v1"
+    ],
+    "fallback_behavior": "human_review"
+  },
+  "capabilities": [
+    {
+      "id": "knowledge.retention.recommend",
+      "summary": "对不可变 document-content 工件与保留元数据确定性地提出 retain/archive/delete_candidate 建议；建议不删除证据，实际归档或删除由独立治理身份在人工审批后执行。",
+      "side_effects": "read_only",
+      "idempotency": "document_sha256_and_retention_metadata",
+      "inputs": [
+        {
+          "contract_id": "document-content",
+          "version": "1.0.0",
+          "format": "json",
+          "delivery": "artifact_ref",
+          "classification": "internal",
+          "schema_ref": "document-content.schema.json"
+        }
+      ],
+      "outputs": [
+        {
+          "contract_id": "retention-recommendation",
+          "version": "1.0.0",
+          "format": "json",
+          "delivery": "artifact_ref",
+          "classification": "internal",
+          "schema_ref": "retention-recommendation.schema.json"
+        }
+      ],
+      "policy": {
+        "approval_required": true,
+        "evidence_required": true
+      }
+    }
+  ],
+  "governance": {
+    "default_data_classification": "internal",
+    "permissions": {
+      "data_read": [
+        "knowledge.documents"
+      ],
+      "data_write": [],
+      "network": "none",
+      "secret_refs": []
+    },
+    "policy": {
+      "gateway_required": true,
+      "approval_required": true,
+      "evidence_required": true
+    }
+  },
+  "resources": {
+    "cpu": 1,
+    "memory_mb": 256,
+    "gpu": "none",
+    "timeout_seconds": 120
+  },
+  "observability": {
+    "trace_required": true,
+    "emits": [
+      "structured_log",
+      "metric",
+      "audit_event"
+    ],
+    "health": "declared_only"
+  },
+  "provenance": {
+    "source_refs": [
+      "docs/plugin-protocol.md",
+      "docs/审计组网插件规划-v1.md#r3"
+    ]
+  },
+  "ui": {
+    "mode": "declarative",
+    "contribution_schema": "ui-contribution.schema.json"
+  }
+}

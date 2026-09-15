@@ -1,0 +1,31 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://audit.local/contracts/audit-evidence-index.schema.json",
+  "title": "AuditEvidenceIndex",
+  "description": "审计证据索引：已收集证据引用的轻量投影，供审计调查计划插件识别待补证据与反证所需材料。索引只读引用不携带证据正文；修改或归档证据由审计域服务完成。",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["contract_id", "contract_version", "evidence"],
+  "properties": {
+    "contract_id": {"const": "audit-evidence-index"},
+    "contract_version": {"const": "1.0.0"},
+    "period": {"type": "string", "pattern": "^[0-9]{4}-(0[1-9]|1[0-2])$"},
+    "evidence": {
+      "type": "array",
+      "maxItems": 10000,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["evidence_id", "evidence_type", "source_ref"],
+        "properties": {
+          "evidence_id": {"type": "string", "minLength": 1, "maxLength": 512},
+          "evidence_type": {"type": "string", "minLength": 1, "maxLength": 256},
+          "source_ref": {"type": "string", "minLength": 1, "maxLength": 2048},
+          "period": {"type": "string", "pattern": "^[0-9]{4}-(0[1-9]|1[0-2])$"},
+          "sha256": {"type": "string", "pattern": "^[A-Fa-f0-9]{64}$"},
+          "metadata": {"type": "object", "additionalProperties": true}
+        }
+      }
+    }
+  }
+}

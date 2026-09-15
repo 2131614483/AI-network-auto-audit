@@ -1,0 +1,33 @@
+{
+  "id": "aiops.recovery-verifier",
+  "version": "0.1.0",
+  "name": "AIOps 恢复核验（不可变核验账本，本地只读）",
+  "runtime": "python",
+  "entrypoint": "plugins.builtin.aiops_recovery_verifier.runtime:handle",
+  "capabilities": ["aiops.recovery.verify"],
+  "inputs": {
+    "capability": "aiops.recovery.verify",
+    "schema": "metric-series.schema.json",
+    "content_type": "application/json"
+  },
+  "outputs": {
+    "capability": "aiops.recovery.verify",
+    "schema": "recovery-verification@1.0.0",
+    "content_type": "application/json"
+  },
+  "side_effects": "read_only",
+  "idempotency": "baseline_sha256 + observed_sha256 + proposal_sha256 + availability_target + threshold_ratio",
+  "permissions": {
+    "data_read": ["aiops.metric_series", "aiops.remediation_proposal"],
+    "data_write": [],
+    "network": "none",
+    "secrets": []
+  },
+  "resources": {"cpu": 1, "memory_mb": 256, "gpu": false, "timeout_seconds": 300},
+  "data_classification": "internal",
+  "evidence": {"preserve_inputs": true, "code_hash_required": true},
+  "tests": {
+    "contract": "tests/contract/test_aiops_recovery_verifier_contract.py",
+    "golden": "tests/unit/test_aiops_recovery_verifier_runtime.py"
+  }
+}

@@ -1,0 +1,33 @@
+{
+  "id": "quant.simulated-backtest",
+  "version": "0.1.0",
+  "name": "量化模拟回测（点时模拟投影，非交易）",
+  "runtime": "python",
+  "entrypoint": "plugins.builtin.quant_simulated_backtest.runtime:handle",
+  "capabilities": ["quant.backtest.simulate"],
+  "inputs": {
+    "capability": "quant.backtest.simulate",
+    "schema": "market-snapshot-ref.schema.json",
+    "content_type": "application/json"
+  },
+  "outputs": {
+    "capability": "quant.backtest.simulate",
+    "schema": "backtest-report@1.0.0",
+    "content_type": "application/json"
+  },
+  "side_effects": "read_only",
+  "idempotency": "strategy_hash_and_snapshot_hash",
+  "permissions": {
+    "data_read": ["quant.market_snapshot"],
+    "data_write": [],
+    "network": "none",
+    "secrets": []
+  },
+  "resources": {"cpu": 2, "memory_mb": 512, "gpu": false, "timeout_seconds": 1800},
+  "data_classification": "restricted",
+  "evidence": {"preserve_inputs": true, "code_hash_required": true},
+  "tests": {
+    "contract": "tests/contract/test_quant_simulated_backtest_contract.py",
+    "golden": "tests/contract/test_quant_simulated_backtest_contract.py"
+  }
+}

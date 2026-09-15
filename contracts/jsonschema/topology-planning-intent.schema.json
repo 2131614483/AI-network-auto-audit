@@ -1,0 +1,65 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://audit.local/contracts/topology-planning-intent.schema.json",
+  "title": "TopologyPlanningIntentRequest",
+  "description": "插件拓扑 M10 图谱驱动组网规划请求：把中文业务意图经确定性图谱匹配（pg_trgm + 有界图遍历）解析为能力需求并生成 plan_only 计划。请求根必须携带意图文本（1–512 字符）、预算（max_matches 1–16、expand_hops 0–1）、幂等键与原因；禁止任何执行语义。响应结构见 $defs/planningIntentResult（追加式 planning_intents 证据行的投影）。",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["intent", "budget", "idempotency_key", "reason"],
+  "properties": {
+    "intent": {"type": "string", "minLength": 1, "maxLength": 512},
+    "budget": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["max_matches", "expand_hops"],
+      "properties": {
+        "max_matches": {"type": "integer", "minimum": 1, "maximum": 16},
+        "expand_hops": {"type": "integer", "minimum": 0, "maximum": 1}
+      }
+    },
+    "idempotency_key": {"type": "string", "minLength": 1, "maxLength": 255},
+    "reason": {"type": "string", "minLength": 1, "maxLength": 500},
+    "trace_id": {"type": "string", "format": "uuid"}
+  },
+  "$defs": {
+    "matchedNode": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["node_key", "space_key", "label", "score", "match_kind", "match_source"],
+      "properties": {
+        "node_key": {"type": "string"},
+        "space_key": {"type": "string"},
+        "label": {"type": "string"},
+        "score": {"type": "number", "minimum": 0, "maximum": 1},
+        "match_kind": {"type": "string", "enum": ["direct", "alias", "expanded"]},
+        "match_source": {"type": "string", "enum": ["trigram", "bridge", "depends_on"]}
+      }
+    },
+    "planningIntentResult": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["intent_id", "intent_text", "matched_nodes", "capability_requirements", "plan_key", "mode", "plan_checksum", "reused_plan", "node_count", "edge_count", "created_at", "trace_id", "idempotent"],
+      "properties": {
+        "intent_id": {"type": "string", "format": "uuid"},
+        "intent_text": {"type": "string", "minLength": 1, "maxLength": 512},
+        "matched_nodes": {"type": "array", "minItems": 1, "maxItems": 32, "items": {"$ref": "#/$defs/matchedNode"}},
+        "capability_requirements": {
+          "type": "array",
+          "minItems": 1,
+          "maxItems": 32,
+          "uniqueItems": true,
+          "items": {"type": "string", "pattern": "^[a-z][a-z0-9]*(?:[._-][a-z0-9]+)+$"}
+        },
+        "plan_key": {"type": "string", "pattern": "^plan-[a-z0-9]{16}$"},
+        "mode": {"const": "plan_only"},
+        "plan_checksum": {"type": "string", "pattern": "^[A-Fa-f0-9]{64}$"},
+        "reused_plan": {"type": "boolean"},
+        "node_count": {"type": "integer", "minimum": 1, "maximum": 32},
+        "edge_count": {"type": "integer", "minimum": 0, "maximum": 32},
+        "created_at": {"type": "string"},
+        "trace_id": {"type": "string", "format": "uuid"},
+        "idempotent": {"type": "boolean"}
+      }
+    }
+  }
+}

@@ -1,0 +1,36 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://audit.local/contracts/finding-set.schema.json",
+  "title": "FindingSet",
+  "description": "已确认审计 Finding 的只读输入集：由审计证据链在策略裁决后物化，供受审批输出插件导出底稿。所有 Finding 状态必须为 confirmed，携带 claim_id 与 reviewer_label；输入本身不可变，导出永不覆盖历史报告。",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["contract_id", "contract_version", "engagement_id", "engagement_name", "findings"],
+  "properties": {
+    "contract_id": {"const": "finding-set"},
+    "contract_version": {"const": "1.0.0"},
+    "engagement_id": {"type": "string", "format": "uuid"},
+    "engagement_name": {"type": "string", "minLength": 1, "maxLength": 255},
+    "findings": {
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 500,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["finding_id", "title", "severity", "status", "claim_id", "claim", "reviewer_label", "evidence_refs", "confirmed_at"],
+        "properties": {
+          "finding_id": {"type": "string", "format": "uuid"},
+          "title": {"type": "string", "minLength": 1, "maxLength": 512},
+          "severity": {"type": "string", "enum": ["low", "medium", "high"]},
+          "status": {"const": "confirmed"},
+          "claim_id": {"type": "string", "format": "uuid"},
+          "claim": {"type": "string", "minLength": 1, "maxLength": 2048},
+          "reviewer_label": {"type": "string", "minLength": 1, "maxLength": 255},
+          "evidence_refs": {"type": "array", "maxItems": 64, "items": {"type": "string", "minLength": 1, "maxLength": 2048}},
+          "confirmed_at": {"type": "string", "minLength": 10, "maxLength": 64}
+        }
+      }
+    }
+  }
+}

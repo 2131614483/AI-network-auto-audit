@@ -1,0 +1,53 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://audit.local/contracts/audit-quality-candidates.schema.json",
+  "title": "AuditQualityCandidates",
+  "description": "总账质量校验输出：带规则 ID、行定位、严重度、证据 Ref 与原因码的候选集合。候选不构成 Finding，确认由独立 Reviewer 或人工完成。",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["contract_id", "contract_version", "ledger_sha256", "schema_mapping_version", "period", "rule_pack_sha256", "summary", "candidates"],
+  "properties": {
+    "contract_id": {"const": "audit-quality-candidates"},
+    "contract_version": {"const": "1.0.0"},
+    "ledger_sha256": {"type": "string", "pattern": "^[A-Fa-f0-9]{64}$"},
+    "schema_mapping_version": {"type": "string", "pattern": "^(0|[1-9][0-9]*)\\.(0|[1-9][0-9]*)\\.(0|[1-9][0-9]*)$"},
+    "period": {"type": "string", "pattern": "^[0-9]{4}-(0[1-9]|1[0-2])$"},
+    "rule_pack_sha256": {"type": "string", "pattern": "^[A-Fa-f0-9]{64}$"},
+    "rules": {"type": "array", "uniqueItems": true, "items": {"type": "string"}},
+    "summary": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["total_rows", "candidate_count"],
+      "properties": {
+        "total_rows": {"type": "integer", "minimum": 0},
+        "candidate_count": {"type": "integer", "minimum": 0},
+        "duplicate_rows": {"type": "integer", "minimum": 0},
+        "unbalanced_entries": {"type": "integer", "minimum": 0},
+        "out_of_period_rows": {"type": "integer", "minimum": 0},
+        "missing_header_columns": {"type": "array", "uniqueItems": true, "items": {"type": "string"}},
+        "truncated": {"type": "boolean"}
+      }
+    },
+    "candidates": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["rule_id", "rule_key", "severity", "row_ref", "evidence", "reason_code"],
+        "properties": {
+          "rule_id": {"type": "string", "minLength": 1, "maxLength": 255},
+          "rule_key": {
+            "type": "string",
+            "enum": ["missing_header", "missing_or_invalid_amount", "duplicate_row", "out_of_period", "unbalanced_entry", "large_amount"]
+          },
+          "severity": {"type": "string", "enum": ["low", "medium", "high"]},
+          "row_ref": {"type": "string", "minLength": 1, "maxLength": 512},
+          "source_ref": {"type": "string", "minLength": 1, "maxLength": 2048},
+          "reason_code": {"type": "string", "minLength": 1, "maxLength": 255},
+          "score": {"type": "number", "minimum": 0, "maximum": 1},
+          "evidence": {"type": "object", "additionalProperties": true}
+        }
+      }
+    }
+  }
+}

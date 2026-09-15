@@ -1,0 +1,18 @@
+{
+  "schema_version": "1.0.0",
+  "plugin": {
+    "id": "audit.foundation.data-encrypt",
+    "version": "0.1.0",
+    "sha256": "527e9aff2aa81b86e16b8dc961a7acd3bfa4813bd8be99026001098f6f8c46ac"
+  },
+  "protocol": {
+    "id": "audit.foundation.data-encrypt",
+    "version": "0.1.0",
+    "sha256": "22b13a4a85f159a95ad876ef4d9ff043f4dd447c33417500f3f1be8484e3fcda"
+  },
+  "execution_mode": "isolated_subprocess",
+  "capabilities": [
+    "audit.foundation.data-encrypt"
+  ],
+  "status": "verified"
+}

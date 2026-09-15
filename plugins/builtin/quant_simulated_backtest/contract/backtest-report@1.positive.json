@@ -1,0 +1,44 @@
+{
+  "contract_id": "backtest-report",
+  "contract_version": "1.0.0",
+  "backtest_id": "bt-bcsa-20260905-01",
+  "strategy_key": "momentum-reversion",
+  "strategy_version": "0.3.1",
+  "code_sha256": "ab12cd34ef567890ab12cd34ef567890ab12cd34ef567890ab12cd34ef567890",
+  "snapshot_sha256": "ab12cd34ef567890ab12cd34ef567890ab12cd34ef567890ab12cd34ef567890",
+  "reference_time": "2026-09-05T16:00:00+08:00",
+  "point_in_time_gate": "2026-09-05T15:59:00+08:00",
+  "parameters": {
+    "lookback_days": 20,
+    "top_n": 10
+  },
+  "metrics": {
+    "simulated_only": true,
+    "total_return": 0.184,
+    "annualized_return": 0.226,
+    "volatility": 0.152,
+    "sharpe": 1.48,
+    "max_drawdown": -0.081,
+    "win_rate": 0.573,
+    "n_periods": 1260
+  },
+  "period_returns": [
+    0.012,
+    -0.004,
+    0.009,
+    0.001,
+    -0.003,
+    0.015,
+    0.007,
+    0.0,
+    -0.011,
+    0.004
+  ],
+  "summary": {
+    "simulated": true,
+    "source_refs": [
+      "file:///G:/数据/07-量化数据集/snapshot/20260905_1559_market.csv"
+    ],
+    "truncated": false
+  }
+}

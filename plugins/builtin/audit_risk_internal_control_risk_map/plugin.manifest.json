@@ -1,0 +1,45 @@
+{
+ "id": "audit.risk.internal-control-risk-map",
+ "version": "0.1.0",
+ "name": "内控流程风险测绘（契约声明）",
+ "runtime": "python",
+ "entrypoint": "plugins.builtin.audit_risk_internal_control_risk_map.runtime:handle",
+ "capabilities": [
+  "audit.risk.internal-control-risk-map"
+ ],
+ "inputs": {
+  "capability": "audit.risk.internal-control-risk-map",
+  "schema": "document-content.schema.json",
+  "content_type": "application/json"
+ },
+ "outputs": {
+  "capability": "audit.risk.internal-control-risk-map",
+  "schema": "anomaly-candidates.schema.json",
+  "content_type": "application/json"
+ },
+ "side_effects": "read_only",
+ "idempotency": "input_sha256 + capability_version",
+ "permissions": {
+  "data_read": [
+   "audit.risk.internal-control-risk-map.read"
+  ],
+  "data_write": [],
+  "network": "none",
+  "secrets": []
+ },
+ "resources": {
+  "cpu": 1,
+  "memory_mb": 256,
+  "gpu": false,
+  "timeout_seconds": 300
+ },
+ "data_classification": "audit_confidential",
+ "evidence": {
+  "preserve_inputs": true,
+  "code_hash_required": true
+ },
+ "tests": {
+  "contract": "tests/contract/test_audit_risk_internal_control_risk_map_contract.py",
+  "golden": "tests/unit/test_audit_risk_internal_control_risk_map_runtime.py"
+ }
+}

@@ -1,0 +1,28 @@
+{
+  "schema_version": "1.0.0",
+  "domain": "knowledge",
+  "name_zh": "知识库",
+  "notes": "知识域：文档摄入 / 实体关系 / 图谱提案 / 留存推荐。id 两段式，segment 差异大，显式定点。",
+  "discovery": {
+    "globs": ["knowledge_*"]
+  },
+  "layers": {},
+  "ungrouped_stage": "k0",
+  "stages": [
+    {"key": "k1", "name_zh": "知识摄入", "order": 1, "color": "#6fd0e8", "segments": ["document-ingestion"]},
+    {"key": "k2", "name_zh": "实体与关系", "order": 2, "color": "#7fe0c4", "segments": ["entity-relation"]},
+    {"key": "k3", "name_zh": "图谱提案", "order": 3, "color": "#a6e06f", "segments": ["graph"]},
+    {"key": "k4", "name_zh": "留存运营", "order": 4, "color": "#e0c46f", "segments": ["retention"]}
+  ],
+  "stage_by_plugin": {
+    "knowledge.document-ingestion": "k1",
+    "knowledge.entity-relation-candidate": "k2",
+    "knowledge.graph-proposal-builder": "k3",
+    "knowledge.retention-recommendation": "k4"
+  },
+  "trunk": [
+    ["k1", "k2"], ["k2", "k3"], ["k3", "k4"], ["k4", "k1"]
+  ],
+  "control_segments": [],
+  "source_refs": ["docs/phase2-knowledge-library-plan.md"]
+}

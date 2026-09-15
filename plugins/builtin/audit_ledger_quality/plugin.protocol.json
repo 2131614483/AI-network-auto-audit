@@ -1,0 +1,48 @@
+{
+  "protocol_version": "1.0.0",
+  "id": "audit.ledger-quality",
+  "version": "0.1.0",
+  "name": "审计总账质量校验",
+  "description": "对已校验的总账 CSV 工件引用运行确定性质量规则，产出带证据定位的候选集合；不写 Finding，不接触领域表。",
+  "kind": "analysis",
+  "domains": ["audit"],
+  "lifecycle": "contract_only",
+  "compatibility": {"host_protocol": ">=1.0.0 <2.0.0", "adapters": ["python"], "fallback_behavior": "human_review"},
+  "capabilities": [
+    {
+      "id": "audit.ledger.validate",
+      "summary": "校验总账快照的借貸平衡、重复行、期间归属与字段映射，输出 audit-quality-candidates@1 候选。",
+      "side_effects": "read_only",
+      "idempotency": "ledger_sha256 + schema_mapping_version + rule_pack_sha256",
+      "inputs": [
+        {
+          "contract_id": "ledger-artifact-ref",
+          "version": "1.0.0",
+          "format": "artifact_ref",
+          "delivery": "reference",
+          "classification": "audit_confidential",
+          "schema_ref": "ledger-artifact-ref.schema.json"
+        }
+      ],
+      "outputs": [
+        {
+          "contract_id": "audit-quality-candidates",
+          "version": "1.0.0",
+          "format": "json",
+          "delivery": "request_response",
+          "classification": "audit_confidential",
+          "schema_ref": "audit-quality-candidates.schema.json"
+        }
+      ]
+    }
+  ],
+  "governance": {
+    "default_data_classification": "audit_confidential",
+    "permissions": {"data_read": ["audit.ledger.snapshot"], "data_write": [], "network": "none", "secret_refs": []},
+    "policy": {"gateway_required": true, "approval_required": false, "evidence_required": true}
+  },
+  "resources": {"cpu": 1, "memory_mb": 256, "gpu": "none", "timeout_seconds": 300},
+  "observability": {"trace_required": true, "emits": ["structured_log", "artifact_ref", "audit_event"], "health": "declared_only"},
+  "provenance": {"source_refs": ["docs/审计组网插件规划-v1.md#3.1", "docs/审计组网插件规划-v1.md#8", "docs/插件开发与接入标准-UPP-v1.0.md"]},
+  "ui": {"mode": "none"}
+}

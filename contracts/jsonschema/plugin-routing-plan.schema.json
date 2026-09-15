@@ -1,0 +1,92 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://audit.local/contracts/plugin-routing-plan.schema.json",
+  "title": "PluginRoutingPlan",
+  "description": "插件拓扑调度器的不可执行计划输出。计划必须由后续的 Policy 与 Workflow 模块再次裁决后才能变成运行。",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["plan_id", "intent", "mode", "planner_version", "catalog_release", "candidate_clusters", "nodes", "edges", "budget", "requires_approval", "unresolved_capabilities", "created_at", "trace_id"],
+  "properties": {
+    "plan_id": {"type": "string", "pattern": "^[a-z][a-z0-9]*(?:[._-][a-z0-9]+)*$", "maxLength": 160},
+    "intent": {"type": "string", "minLength": 1, "maxLength": 2000},
+    "mode": {"const": "plan_only"},
+    "planner_version": {"type": "string", "pattern": "^(0|[1-9][0-9]*)\\.(0|[1-9][0-9]*)\\.(0|[1-9][0-9]*)(?:-[0-9A-Za-z.-]+)?$"},
+    "catalog_release": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["release_id", "version", "checksum_sha256"],
+      "properties": {
+        "release_id": {"type": "string"},
+        "version": {"type": "string"},
+        "checksum_sha256": {"type": "string", "pattern": "^[A-Fa-f0-9]{64}$"}
+      }
+    },
+    "candidate_clusters": {"type": "array", "minItems": 1, "uniqueItems": true, "items": {"type": "string", "pattern": "^[a-z][a-z0-9]*(?:[._-][a-z0-9]+)*$"}},
+    "nodes": {
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 32,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["key", "kind", "capability"],
+        "properties": {
+          "key": {"type": "string", "pattern": "^[a-z][a-z0-9_-]*$", "maxLength": 80},
+          "kind": {"type": "string", "enum": ["blueprint", "decision", "gap"]},
+          "blueprint_id": {"type": "string", "pattern": "^[a-z][a-z0-9]*(?:[._-][a-z0-9]+)*$"},
+          "capability": {"type": "string", "pattern": "^[a-z][a-z0-9]*(?:[._-][a-z0-9]+)+$"},
+          "reason": {"type": "string", "maxLength": 1000}
+        }
+      }
+    },
+    "edges": {
+      "type": "array",
+      "maxItems": 64,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["source", "target", "relation"],
+        "properties": {
+          "source": {"type": "string", "pattern": "^[a-z][a-z0-9_-]*$"},
+          "target": {"type": "string", "pattern": "^[a-z][a-z0-9_-]*$"},
+          "relation": {"type": "string", "enum": ["depends_on", "data_flow", "fallback", "bridge"]},
+          "condition_ref": {"type": "string", "maxLength": 180}
+        }
+      }
+    },
+    "budget": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["max_candidates", "max_chain_length", "max_latency_ms"],
+      "properties": {
+        "max_candidates": {"type": "integer", "minimum": 1, "maximum": 100},
+        "max_chain_length": {"type": "integer", "minimum": 1, "maximum": 32},
+        "max_latency_ms": {"type": "integer", "minimum": 1, "maximum": 120000}
+      }
+    },
+    "requires_approval": {"type": "boolean"},
+    "unresolved_capabilities": {
+      "type": "array",
+      "uniqueItems": true,
+      "items": {"type": "string", "pattern": "^[a-z][a-z0-9]*(?:[._-][a-z0-9]+)+$"}
+    },
+    "alternatives": {
+      "type": "array",
+      "maxItems": 8,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["replaces_node", "blueprint_id", "reason"],
+        "properties": {
+          "replaces_node": {"type": "string"},
+          "blueprint_id": {"type": "string"},
+          "reason": {"type": "string", "maxLength": 1000}
+        }
+      }
+    },
+    "policy_context_ref": {"type": "string", "maxLength": 180},
+    "health_snapshot_ref": {"type": "string", "maxLength": 180},
+    "created_at": {"type": "string", "format": "date-time"},
+    "trace_id": {"type": "string", "format": "uuid"}
+  }
+}

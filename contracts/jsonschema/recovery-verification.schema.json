@@ -1,0 +1,97 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://audit.local/contracts/recovery-verification.schema.json",
+  "title": "RecoveryVerification",
+  "description": "AIOps 恢复核验账本（aiops.recovery-verifier 输出）：对基线与观测指标序列做确定性对比、SLO/业务探针核验，给出 recovered / not_recovered / insufficient_data 结论。核验结果只写入不可变核验账本，不执行修复、不解除熔断、不创建 ChangeRequest。",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["contract_id", "contract_version", "verification_id", "baseline_sha256", "observed_sha256", "status", "reference_time", "summary", "comparison", "slo", "constraints"],
+  "properties": {
+    "contract_id": {"const": "recovery-verification"},
+    "contract_version": {"const": "1.0.0"},
+    "verification_id": {"type": "string", "pattern": "^[A-Fa-f0-9]{16}$"},
+    "baseline_sha256": {"type": "string", "pattern": "^[A-Fa-f0-9]{64}$"},
+    "observed_sha256": {"type": "string", "pattern": "^[A-Fa-f0-9]{64}$"},
+    "proposal_sha256": {"type": "string", "pattern": "^[A-Fa-f0-9]{64}$"},
+    "status": {"type": "string", "enum": ["recovered", "not_recovered", "insufficient_data"]},
+    "reference_time": {"type": "string", "format": "date-time"},
+    "summary": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["baseline_points", "observed_points", "probes_checked", "probes_passed", "verdict", "truncated"],
+      "properties": {
+        "baseline_points": {"type": "integer", "minimum": 0},
+        "observed_points": {"type": "integer", "minimum": 0},
+        "probes_checked": {"type": "integer", "minimum": 0},
+        "probes_passed": {"type": "integer", "minimum": 0},
+        "verdict": {"type": "string", "enum": ["recovered", "not_recovered", "insufficient_data"]},
+        "truncated": {"type": "boolean"}
+      }
+    },
+    "comparison": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["baseline_mean", "observed_mean", "relative_delta", "threshold_ratio", "within_threshold", "metrics"],
+      "properties": {
+        "baseline_mean": {"type": "number"},
+        "observed_mean": {"type": "number"},
+        "relative_delta": {"type": "number"},
+        "threshold_ratio": {"type": "number", "minimum": 0},
+        "within_threshold": {"type": "boolean"},
+        "metrics": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["metric", "baseline", "observed", "delta", "within_threshold"],
+            "properties": {
+              "metric": {"type": "string", "minLength": 1, "maxLength": 128},
+              "baseline": {"type": "number"},
+              "observed": {"type": "number"},
+              "delta": {"type": "number"},
+              "within_threshold": {"type": "boolean"}
+            }
+          }
+        }
+      }
+    },
+    "slo": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["availability_target", "observed_availability", "error_budget_remaining", "met", "probes"],
+      "properties": {
+        "availability_target": {"type": "number", "minimum": 0, "maximum": 1},
+        "observed_availability": {"type": "number", "minimum": 0, "maximum": 1},
+        "error_budget_remaining": {"type": "number", "minimum": 0, "maximum": 1},
+        "met": {"type": "boolean"},
+        "probes": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["probe", "value", "expected", "passed", "basis"],
+            "properties": {
+              "probe": {"type": "string", "minLength": 1, "maxLength": 128},
+              "value": {"type": "number"},
+              "expected": {"type": "number"},
+              "passed": {"type": "boolean"},
+              "basis": {"type": "string", "minLength": 1, "maxLength": 512}
+            }
+          }
+        }
+      }
+    },
+    "evidence_refs": {"type": "array", "maxItems": 64, "items": {"type": "string", "minLength": 1, "maxLength": 2048}},
+    "constraints": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["no_execution", "no_circuit_breaker_change", "no_change_request", "ledger_immutable"],
+      "properties": {
+        "no_execution": {"const": true},
+        "no_circuit_breaker_change": {"const": true},
+        "no_change_request": {"const": true},
+        "ledger_immutable": {"const": true}
+      }
+    }
+  }
+}

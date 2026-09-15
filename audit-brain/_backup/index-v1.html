@@ -1,0 +1,766 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>审计插件大脑 · 100 插件循环网络组网图</title>
+<style>
+  :root {
+    --bg: #070b12;
+    --panel: #0d1520;
+    --panel-2: #111c2b;
+    --border: #1d2c3d;
+    --text: #e8eef5;
+    --muted: #8ba0b5;
+    --faint: #5a7084;
+    --blue: #6fa8dc;
+    --green: #52e08a;
+    --amber: #e0a458;
+    --red: #d96c6c;
+    --purple: #b48ce0;
+    --mono: "Cascadia Mono", Consolas, "SFMono-Regular", Menlo, monospace;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: "Microsoft YaHei", "PingFang SC", "Noto Sans CJK SC", system-ui, sans-serif;
+    font-size: 14px;
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+  }
+  .wrap { max-width: 1280px; margin: 0 auto; padding: 0 20px 80px; }
+
+  header { padding: 44px 0 18px; border-bottom: 1px solid var(--border); }
+  .kicker { font-size: 12px; letter-spacing: .14em; color: var(--purple); margin-bottom: 10px; }
+  h1 { font-size: 28px; font-weight: 700; }
+  h1 .accent { color: var(--green); }
+  .sub { color: var(--muted); margin-top: 8px; max-width: 860px; }
+  .meta { margin-top: 12px; font-size: 12px; color: var(--faint); font-family: var(--mono); }
+
+  .metrics { display: grid; grid-template-columns: repeat(6, 1fr); gap: 10px; margin: 20px 0 4px; }
+  .metric { background: var(--panel); border: 1px solid var(--border); border-radius: 6px; padding: 10px 14px; }
+  .metric .num { font-size: 24px; font-weight: 700; font-family: var(--mono); line-height: 1.2; }
+  .metric .lbl { font-size: 11.5px; color: var(--muted); margin-top: 2px; }
+  .metric.n-purple .num { color: var(--purple); }
+  .metric.n-green .num { color: var(--green); }
+  .metric.n-blue .num { color: var(--blue); }
+  .metric.n-amber .num { color: var(--amber); }
+
+  section { margin-top: 40px; }
+  .sec-head { display: flex; align-items: baseline; gap: 12px; margin-bottom: 12px; flex-wrap: wrap; }
+  .sec-head h2 { font-size: 19px; font-weight: 600; }
+  .sec-head .tag { font-size: 12px; color: var(--faint); font-family: var(--mono); }
+  .note { font-size: 12.5px; color: var(--muted); margin: 8px 0 12px; }
+  .note b { color: var(--text); font-weight: 600; }
+
+  /* ===== 无限画布 ===== */
+  .flow-wrap { background: var(--panel); border: 1px solid var(--border); border-radius: 8px; padding: 10px 10px 8px; }
+  .flow-toolbar { display: flex; align-items: center; gap: 10px; padding: 2px 4px 8px; flex-wrap: wrap; }
+  .ft-hint { font-size: 11.5px; color: var(--faint); flex: 1; min-width: 180px; }
+  .ft-zoom { font-family: var(--mono); font-size: 12px; color: var(--blue); min-width: 44px; text-align: right; }
+  .ft-btn {
+    background: var(--panel-2); color: var(--muted); border: 1px solid var(--border);
+    border-radius: 4px; font-size: 11.5px; padding: 3px 10px; cursor: pointer; font-family: inherit;
+  }
+  .ft-btn:hover { color: var(--text); border-color: var(--blue); }
+  .canvas-viewport {
+    position: relative; height: 620px; overflow: hidden;
+    background: #05080e;
+    cursor: grab; touch-action: none; user-select: none;
+    border-radius: 6px;
+  }
+  .canvas-viewport.panning { cursor: grabbing; }
+  .canvas-layer {
+    position: absolute; left: 0; top: 0; width: 4000px; height: 2200px;
+    transform-origin: 0 0;
+    will-change: transform;
+  }
+  .canvas-grid {
+    position: absolute; left: 0; top: 0; width: 4000px; height: 2200px;
+    background-image: radial-gradient(circle, #1c2a3a 1px, transparent 1px);
+    background-size: 28px 28px;
+    background-position: -1px -1px;
+  }
+  .canvas-lines { position: absolute; left: 0; top: 0; width: 4000px; height: 2200px; overflow: visible; z-index: 1; pointer-events: none; }
+  .canvas-nodes { position: absolute; left: 0; top: 0; width: 0; height: 0; z-index: 2; }
+
+  /* 分层条带标签 */
+  .band {
+    position: absolute; left: 0; width: 4000px; padding: 6px 12px;
+    font-size: 11px; letter-spacing: .12em; color: var(--muted);
+    background: rgba(13,21,32,.55); border-top: 1px solid var(--border); border-bottom: 1px solid var(--border);
+    font-family: var(--mono);
+  }
+
+  /* 阶段泳道 */
+  .lane {
+    position: absolute; border: 1px solid var(--border); border-radius: 6px;
+    background: rgba(17,28,43,.35);
+  }
+  .lane-head {
+    font-size: 11px; font-weight: 700; color: var(--blue); letter-spacing: .04em;
+    padding: 4px 8px; border-bottom: 1px solid var(--border);
+    display: flex; justify-content: space-between; align-items: center;
+  }
+  .lane-head .lc { font-family: var(--mono); color: var(--faint); font-size: 10px; }
+  .lane-body { position: relative; }
+
+  /* 节点卡片 */
+  .ab-node {
+    position: absolute; width: 122px;
+    background: var(--panel-2);
+    border: 1px solid var(--border);
+    border-left: 3px solid var(--blue);
+    border-radius: 4px;
+    padding: 4px 6px;
+    cursor: move;
+    transition: box-shadow .15s;
+    touch-action: none;
+  }
+  .ab-node:hover { border-color: var(--blue); box-shadow: 0 4px 14px rgba(0,0,0,.45); }
+  .ab-node.dragging { box-shadow: 0 8px 26px rgba(0,0,0,.55); z-index: 5; }
+  .ab-node.hl { border-color: var(--green); }
+  .ab-node .nm { font-size: 10.5px; font-weight: 600; line-height: 1.3; }
+  .ab-node .tag { font-size: 9px; color: var(--faint); font-family: var(--mono); margin-top: 1px; }
+  .ab-node .ctrlb {
+    position: absolute; top: 2px; right: 3px;
+    font-size: 8.5px; color: var(--red); font-weight: 700; font-family: var(--mono);
+    opacity: 0; transition: opacity .15s;
+  }
+  .ab-node.ctrl .ctrlb { opacity: 1; }
+  .ab-node.ctrl { border-left-color: var(--red); }
+
+  .ab-node.l-base { border-left-color: var(--purple); }
+  .ab-node.l-gov { border-left-color: var(--amber); }
+  .ab-node.l-base.ctrl { border-left-color: var(--red); }
+  .pen-ctrl .ab-node .ctrlb { opacity: .75; }
+
+  /* 图层开关 */
+  .legend { display: flex; gap: 14px; flex-wrap: wrap; margin: 10px 2px 2px; font-size: 12px; color: var(--muted); align-items: center; }
+  .lg-item { display: inline-flex; align-items: center; gap: 6px; cursor: pointer; user-select: none; }
+  .lg-item .sw { display: inline-block; width: 16px; height: 3px; border-radius: 2px; }
+  .lg-item .chk { width: 13px; height: 13px; border: 1px solid var(--faint); border-radius: 3px; background: var(--panel-2); position: relative; }
+  .lg-item.on .chk::after { content: ""; position: absolute; left: 3px; top: 3px; width: 5px; height: 5px; border-radius: 1px; background: var(--green); }
+  .lg-item .sw.dot { width: 10px; height: 10px; border-radius: 50%; }
+
+  footer { margin-top: 48px; padding-top: 16px; border-top: 1px solid var(--border); font-size: 12px; color: var(--faint); }
+  footer p { margin-bottom: 4px; }
+
+  @media (max-width: 900px) {
+    .metrics { grid-template-columns: repeat(3, 1fr); }
+  }
+  @media (max-width: 640px) {
+    header { padding-top: 26px; }
+    h1 { font-size: 21px; }
+    .metrics { grid-template-columns: repeat(2, 1fr); }
+    .canvas-viewport { height: 500px; }
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header>
+    <div class="kicker">AUDIT BRAIN NETWORK · 方案展示</div>
+    <h1>审计插件大脑 <span class="accent">·</span> 100 插件循环网络组网</h1>
+    <p class="sub">按「数据支撑层（18）→ 核心业务循环层（76，8 阶段主干循环）→ 治理优化层（6）」三层架构组建的插件大脑：⟹ 主干正向流转、→ 阶段内联动、⇢ 跨层能力调用、⇠ 反向闭环迭代、⊣ 管控全流程穿透。</p>
+    <div class="meta">方案来源：用户提供的 100 插件循环网络设计 · 独立展示页，未改动项目代码</div>
+  </header>
+
+  <div class="metrics">
+    <div class="metric n-green"><div class="num">100</div><div class="lbl">插件总数</div></div>
+    <div class="metric n-blue"><div class="num">18</div><div class="lbl">数据支撑层（公共能力）</div></div>
+    <div class="metric n-purple"><div class="num">76</div><div class="lbl">核心业务循环层（8 阶段）</div></div>
+    <div class="metric n-amber"><div class="num">6</div><div class="lbl">治理优化层（闭环迭代）</div></div>
+    <div class="metric n-green"><div class="num">5</div><div class="lbl">管控穿透节点（⊣ 全程）</div></div>
+    <div class="metric n-blue"><div class="num">8</div><div class="lbl">业务阶段（主循环链）</div></div>
+  </div>
+
+  <section id="flow">
+    <div class="sec-head"><h2>插件大脑组网图</h2><span class="tag">VIEW 01 · 无限画布 · 四类箭头体系</span></div>
+    <p class="note">拖拽空白平移 · 滚轮缩放 · 拖动节点重新排布 · 连线自动跟随。图例即图层开关：默认显示<b>主干流转</b>与<b>阶段内联动</b>；点击可打开<b>跨层调用</b>（业务 ⇢ 支撑）、<b>反向迭代</b>（治理 ⇠ 业务阶段）、<b>管控穿透</b>（⊣ 全程覆盖）。</p>
+    <div class="flow-wrap">
+      <div class="flow-toolbar">
+        <span class="ft-hint" id="hintBar">100 节点 · 三层架构 · 8 阶段主循环</span>
+        <span class="ft-zoom" id="zoomLabel">100%</span>
+        <button type="button" class="ft-btn" id="btnFit">适应视图</button>
+        <button type="button" class="ft-btn" id="btnReset">重置布局</button>
+      </div>
+      <div class="canvas-viewport" id="canvasViewport">
+        <div class="canvas-layer" id="canvasLayer">
+          <div class="canvas-grid" id="canvasGrid"></div>
+          <svg class="canvas-lines" id="canvasLines" aria-hidden="true"></svg>
+          <div class="canvas-nodes" id="canvasNodes"></div>
+        </div>
+      </div>
+    </div>
+    <div class="legend">
+      <span class="lg-item on" data-layer="trunk"><span class="sw" style="background:var(--green)"></span><span class="chk"></span>主干正向流转 ⟹</span>
+      <span class="lg-item on" data-layer="stage"><span class="sw" style="background:#8ba0b5"></span><span class="chk"></span>阶段内联动 →</span>
+      <span class="lg-item" data-layer="cross"><span class="sw" style="background:var(--blue);border-top:1px dashed var(--blue)"></span><span class="chk"></span>跨层能力调用 ⇢</span>
+      <span class="lg-item" data-layer="feed"><span class="sw" style="background:var(--amber);border-top:1px dashed var(--amber)"></span><span class="chk"></span>反向闭环迭代 ⇠</span>
+      <span class="lg-item" data-layer="ctrl"><span class="sw dot" style="background:var(--red)"></span><span class="chk"></span>管控穿透 ⊣</span>
+    </div>
+  </section>
+
+  <footer>
+    <p>组网数据：100 插件、8 阶段主循环、三层架构、四类箭头关系均按方案文本录入；「跨层调用」「反向迭代」按方案列出的代表性调用绘制，未逐条穷举全部调用关系。</p>
+    <p>管控穿透以 5 个管控节点（权限管控 / 数据脱敏 / 数据加密存储 / 工作流引擎 / 审计日志）的角标与全节点高亮表达，避免 500 条连线的视觉爆炸。</p>
+  </footer>
+
+</div>
+
+<script>
+(function () {
+  "use strict";
+
+  /* ===== 数据：100 节点（按方案文本录入） ===== */
+  var NODES = [
+    /* 数据支撑层 18 */
+    { id: "b01", n: "多源数据采集", L: "base" },
+    { id: "b02", n: "财务数据清洗", L: "base" },
+    { id: "b03", n: "业务数据标准化", L: "base" },
+    { id: "b04", n: "主数据映射", L: "base" },
+    { id: "b05", n: "数据血缘追踪", L: "base" },
+    { id: "b06", n: "元数据管理", L: "base" },
+    { id: "b07", n: "数据质量校验", L: "base" },
+    { id: "b08", n: "标签体系管理", L: "base" },
+    { id: "b09", n: "统一指标计算", L: "base" },
+    { id: "b10", n: "全文检索引擎", L: "base" },
+    { id: "b11", n: "OCR 识别", L: "base" },
+    { id: "b12", n: "自然语言处理", L: "base" },
+    { id: "b13", n: "规则引擎配置", L: "base" },
+    { id: "b14", n: "可视化分析", L: "base" },
+    { id: "b15", n: "数据脱敏", L: "base", ctrl: true },
+    { id: "b16", n: "数据加密存储", L: "base", ctrl: true },
+    { id: "b17", n: "工作流引擎", L: "base", ctrl: true },
+    { id: "b18", n: "权限管控", L: "base", ctrl: true },
+    /* 阶段1 立项与准备 10 */
+    { id: "s1-01", n: "审计需求征集", L: "biz", st: 1 },
+    { id: "s1-02", n: "战略目标对齐", L: "biz", st: 1 },
+    { id: "s1-03", n: "年度立项申报", L: "biz", st: 1 },
+    { id: "s1-04", n: "立项评审打分", L: "biz", st: 1 },
+    { id: "s1-05", n: "项目库管理", L: "biz", st: 1 },
+    { id: "s1-06", n: "项目优先级排序", L: "biz", st: 1 },
+    { id: "s1-07", n: "审计通知书生成", L: "biz", st: 1 },
+    { id: "s1-08", n: "被审单位资料报送", L: "biz", st: 1 },
+    { id: "s1-09", n: "前置资料预检", L: "biz", st: 1 },
+    { id: "s1-10", n: "项目组建与分工", L: "biz", st: 1 },
+    /* 阶段2 风险识别与评估 11 */
+    { id: "s2-01", n: "宏观政策风险扫描", L: "biz", st: 2 },
+    { id: "s2-02", n: "行业风险对标", L: "biz", st: 2 },
+    { id: "s2-03", n: "内控流程风险测绘", L: "biz", st: 2 },
+    { id: "s2-04", n: "财务异常指标预警", L: "biz", st: 2 },
+    { id: "s2-05", n: "业务流程断点识别", L: "biz", st: 2 },
+    { id: "s2-06", n: "舞弊风险特征匹配", L: "biz", st: 2 },
+    { id: "s2-07", n: "风险矩阵生成", L: "biz", st: 2 },
+    { id: "s2-08", n: "风险等级赋值", L: "biz", st: 2 },
+    { id: "s2-09", n: "高风险领域定位", L: "biz", st: 2 },
+    { id: "s2-10", n: "风险热图绘制", L: "biz", st: 2 },
+    { id: "s2-11", n: "风险应对建议生成", L: "biz", st: 2 },
+    /* 阶段3 计划与资源调度 9 */
+    { id: "s3-01", n: "年度审计计划编制", L: "biz", st: 3 },
+    { id: "s3-02", n: "项目审计方案编制", L: "biz", st: 3 },
+    { id: "s3-03", n: "审计程序模板匹配", L: "biz", st: 3 },
+    { id: "s3-04", n: "审计抽样", L: "biz", st: 3 },
+    { id: "s3-05", n: "样本量自动计算", L: "biz", st: 3 },
+    { id: "s3-06", n: "审计人员排班", L: "biz", st: 3 },
+    { id: "s3-07", n: "工时预算管理", L: "biz", st: 3 },
+    { id: "s3-08", n: "资源冲突检测", L: "biz", st: 3 },
+    { id: "s3-09", n: "计划版本管控", L: "biz", st: 3 },
+    /* 阶段4 现场审计实施 14 */
+    { id: "s4-01", n: "现场签到与轨迹", L: "biz", st: 4 },
+    { id: "s4-02", n: "审计底稿编制", L: "biz", st: 4 },
+    { id: "s4-03", n: "凭证穿透查询", L: "biz", st: 4 },
+    { id: "s4-04", n: "往来款函证", L: "biz", st: 4 },
+    { id: "s4-05", n: "存货监盘", L: "biz", st: 4 },
+    { id: "s4-06", n: "固定资产盘点", L: "biz", st: 4 },
+    { id: "s4-07", n: "访谈记录管理", L: "biz", st: 4 },
+    { id: "s4-08", n: "会议纪要自动整理", L: "biz", st: 4 },
+    { id: "s4-09", n: "跨部门数据协查", L: "biz", st: 4 },
+    { id: "s4-10", n: "疑点实时标记", L: "biz", st: 4 },
+    { id: "s4-11", n: "现场取证拍照上传", L: "biz", st: 4 },
+    { id: "s4-12", n: "审计日志自动记录", L: "biz", st: 4, ctrl: true },
+    { id: "s4-13", n: "进度实时填报", L: "biz", st: 4 },
+    { id: "s4-14", n: "延期申请审批", L: "biz", st: 4 },
+    /* 阶段5 证据与底稿管理 10 */
+    { id: "s5-01", n: "证据分类归档", L: "biz", st: 5 },
+    { id: "s5-02", n: "证据真实性校验", L: "biz", st: 5 },
+    { id: "s5-03", n: "底稿勾稽关系校验", L: "biz", st: 5 },
+    { id: "s5-04", n: "底稿三级复核", L: "biz", st: 5 },
+    { id: "s5-05", n: "底稿版本对比", L: "biz", st: 5 },
+    { id: "s5-06", n: "证据索引关联", L: "biz", st: 5 },
+    { id: "s5-07", n: "底稿模板更新", L: "biz", st: 5 },
+    { id: "s5-08", n: "电子签章", L: "biz", st: 5 },
+    { id: "s5-09", n: "底稿借阅审批", L: "biz", st: 5 },
+    { id: "s5-10", n: "底稿加密存储", L: "biz", st: 5 },
+    /* 阶段6 问题核查与定性 8 */
+    { id: "s6-01", n: "审计疑点汇总", L: "biz", st: 6 },
+    { id: "s6-02", n: "问题性质判定", L: "biz", st: 6 },
+    { id: "s6-03", n: "违规条款匹配", L: "biz", st: 6 },
+    { id: "s6-04", n: "问题金额计算", L: "biz", st: 6 },
+    { id: "s6-05", n: "责任主体认定", L: "biz", st: 6 },
+    { id: "s6-06", n: "问题分级分类", L: "biz", st: 6 },
+    { id: "s6-07", n: "被审单位意见反馈", L: "biz", st: 6 },
+    { id: "s6-08", n: "问题定性复核", L: "biz", st: 6 },
+    /* 阶段7 报告与成果输出 7 */
+    { id: "s7-01", n: "报告框架自动生成", L: "biz", st: 7 },
+    { id: "s7-02", n: "问题描述自动撰写", L: "biz", st: 7 },
+    { id: "s7-03", n: "审计建议匹配", L: "biz", st: 7 },
+    { id: "s7-04", n: "报告数据校验", L: "biz", st: 7 },
+    { id: "s7-05", n: "报告多级审核", L: "biz", st: 7 },
+    { id: "s7-06", n: "审计成果提炼", L: "biz", st: 7 },
+    { id: "s7-07", n: "公告信息脱敏发布", L: "biz", st: 7 },
+    /* 阶段8 整改跟踪与闭环 7 */
+    { id: "s8-01", n: "整改任务派单", L: "biz", st: 8 },
+    { id: "s8-02", n: "整改方案审核", L: "biz", st: 8 },
+    { id: "s8-03", n: "整改进度跟踪", L: "biz", st: 8 },
+    { id: "s8-04", n: "整改成效验证", L: "biz", st: 8 },
+    { id: "s8-05", n: "逾期整改预警", L: "biz", st: 8 },
+    { id: "s8-06", n: "整改销号管理", L: "biz", st: 8 },
+    { id: "s8-07", n: "整改结果公示", L: "biz", st: 8 },
+    /* 治理优化层 6 */
+    { id: "g1", n: "审计项目质量评分", L: "gov" },
+    { id: "g2", n: "审计成效量化评估", L: "gov" },
+    { id: "g3", n: "典型案例库更新", L: "gov" },
+    { id: "g4", n: "问题趋势分析", L: "gov" },
+    { id: "g5", n: "规则库迭代优化", L: "gov" },
+    { id: "g6", n: "审计方法沉淀", L: "gov" }
+  ];
+  /* ===== 边数据 ===== */
+  /* 阶段内联动（同阶段插件上下游） */
+  var E_STAGE = [
+    ["s1-01", "s1-02"], ["s1-02", "s1-03"], ["s1-03", "s1-04"],
+    ["s1-04", "s1-05"], ["s1-06", "s1-05"], ["s1-05", "s1-10"],
+    ["s1-04", "s1-07"], ["s1-07", "s1-08"], ["s1-08", "s1-09"],
+    ["s2-01", "s2-07"], ["s2-02", "s2-07"], ["s2-03", "s2-07"],
+    ["s2-04", "s2-07"], ["s2-05", "s2-07"], ["s2-06", "s2-07"],
+    ["s2-07", "s2-08"], ["s2-08", "s2-09"], ["s2-09", "s2-10"], ["s2-09", "s2-11"],
+    ["s3-01", "s3-02"], ["s3-02", "s3-03"], ["s3-03", "s3-04"],
+    ["s3-04", "s3-05"], ["s3-05", "s3-06"], ["s3-06", "s3-07"],
+    ["s3-06", "s3-08"], ["s3-07", "s3-09"],
+    ["s4-01", "s4-02"], ["s4-03", "s4-02"], ["s4-04", "s4-02"],
+    ["s4-05", "s4-02"], ["s4-06", "s4-02"], ["s4-07", "s4-08"],
+    ["s4-08", "s4-02"], ["s4-09", "s4-11"], ["s4-11", "s4-02"],
+    ["s4-10", "s4-13"], ["s4-13", "s4-14"],
+    ["s5-01", "s5-02"], ["s5-02", "s5-06"], ["s5-02", "s5-03"],
+    ["s5-03", "s5-05"], ["s5-03", "s5-04"], ["s5-04", "s5-08"],
+    ["s5-08", "s5-10"], ["s5-10", "s5-09"],
+    ["s6-01", "s6-02"], ["s6-02", "s6-03"], ["s6-03", "s6-04"],
+    ["s6-04", "s6-06"], ["s6-06", "s6-05"], ["s6-05", "s6-07"], ["s6-07", "s6-08"],
+    ["s7-01", "s7-02"], ["s7-02", "s7-03"], ["s7-03", "s7-04"],
+    ["s7-04", "s7-05"], ["s7-05", "s7-06"], ["s7-06", "s7-07"],
+    ["s8-01", "s8-02"], ["s8-02", "s8-03"], ["s8-03", "s8-05"],
+    ["s8-03", "s8-04"], ["s8-04", "s8-06"], ["s8-06", "s8-07"]
+  ];
+  /* 主干流转（阶段级）：s1→…→s8→治理→回流 s1 */
+  var E_TRUNK = [
+    ["s1", "s2"], ["s2", "s3"], ["s3", "s4"], ["s4", "s5"],
+    ["s5", "s6"], ["s6", "s7"], ["s7", "s8"], ["s8", "gov"], ["gov", "s1"]
+  ];
+  /* 跨层能力调用（业务/治理 ⇢ 支撑）；含跨阶段直连 */
+  var E_CROSS = [
+    ["s1-06", "b09"], ["s1-07", "b12"], ["s1-09", "b07"],
+    ["s2-01", "b13"], ["s2-02", "b13"], ["s2-03", "b03"],
+    ["s2-04", "b09"], ["s2-05", "b03"], ["s2-06", "b13"],
+    ["s2-10", "b14"], ["s2-11", "b12"],
+    ["s3-09", "b17"],
+    ["s4-03", "b01"], ["s4-04", "b17"], ["s4-07", "b12"],
+    ["s4-08", "b12"], ["s4-09", "b17"], ["s4-11", "b11"],
+    ["s5-01", "b08"], ["s5-02", "b05"], ["s5-03", "b13"],
+    ["s5-04", "b17"], ["s5-09", "b18"], ["s5-10", "b16"],
+    ["s6-02", "b13"], ["s6-03", "b13"], ["s6-04", "b02"],
+    ["s6-05", "b04"], ["s6-07", "b17"],
+    ["s7-02", "b12"], ["s7-03", "b12"], ["s7-04", "b07"],
+    ["s7-05", "b17"], ["s7-07", "b15"],
+    ["s8-01", "b17"], ["s8-02", "b17"], ["s8-07", "b15"],
+    ["g1", "b14"], ["g2", "b09"], ["g3", "b08"], ["g4", "b14"],
+    /* 跨阶段直连 */
+    ["s8-04", "s5-02"], ["s6-08", "s4-12"], ["s2-11", "s3-02"]
+  ];
+  /* 反向闭环迭代（治理 ⇠ 业务阶段泳道） */
+  var E_FEED = [
+    ["g5", "s2"], ["g5", "s6"], ["g5", "s5"],
+    ["g4", "s1"], ["g4", "s3"],
+    ["g3", "s2"], ["g3", "s7"],
+    ["g6", "s3"], ["g6", "s4"],
+    ["g1", "s1"], ["g2", "s3"]
+  ];
+
+  var STAGE_NAME = {
+    1: "立项与准备", 2: "风险识别与评估", 3: "计划与资源调度",
+    4: "现场审计实施", 5: "证据与底稿管理", 6: "问题核查与定性",
+    7: "报告与成果输出", 8: "整改跟踪与闭环"
+  };
+
+  /* ===== 画布状态 ===== */
+  var view = { tx: 60, ty: 30, scale: 1 };
+  var nodePos = {};
+  var dragNode = null, dragOff = null;
+  var layers = { trunk: true, stage: true, cross: false, feed: false, ctrl: false };
+  var laneBox = {};
+
+  function nodeById(id) {
+    for (var i = 0; i < NODES.length; i++) if (NODES[i].id === id) return NODES[i];
+    return null;
+  }
+
+  /* ===== 布局：治理层顶部、业务层 8 泳道、支撑层底部 ===== */
+  var GOV_X0 = 40, GOV_Y = 36, GOV_DX = 140;
+  var LANE_Y = 150, LANE_W = 264, LANE_DX = 290, LANE_X0 = 40;
+  var NODE_W = 122, NODE_H = 40, COL_DX = 130, ROW_DY = 62;
+  var BASE_Y0, BASE_DX = 140, BASE_ROWS = 9, BASE_ROW_H = 62;
+
+  function layoutNodes() {
+    laneBox = {};
+    nodePos = {};
+    NODES.forEach(function (nd) {
+      if (nd.L === "gov") {
+        var gi = NODES.indexOf(nd) - 94; /* g1..g6 */
+        nodePos[nd.id] = { x: GOV_X0 + gi * GOV_DX, y: GOV_Y };
+      } else if (nd.L === "base") {
+        if (!BASE_Y0) BASE_Y0 = LANE_Y + maxLaneH() + 90;
+        var bi = NODES.indexOf(nd);
+        nodePos[nd.id] = { x: 40 + (bi % BASE_ROWS) * BASE_DX, y: BASE_Y0 + Math.floor(bi / BASE_ROWS) * BASE_ROW_H };
+      } else {
+        var st = nd.st, items = NODES.filter(function (x) { return x.L === "biz" && x.st === st; });
+        var idx = items.indexOf(nd);
+        var rows = Math.ceil(items.length / 2);
+        var col = Math.floor(idx / rows), row = idx % rows;
+        nodePos[nd.id] = { x: LANE_X0 + (st - 1) * LANE_DX + 8 + col * COL_DX, y: LANE_Y + 34 + row * ROW_DY };
+      }
+    });
+    /* 泳道盒（供主干/反哺箭头取端点） */
+    for (var s = 1; s <= 8; s++) {
+      var items = NODES.filter(function (x) { return x.L === "biz" && x.st === s; });
+      var rows = Math.ceil(items.length / 2);
+      laneBox["s" + s] = {
+        x: LANE_X0 + (s - 1) * LANE_DX, y: LANE_Y,
+        w: LANE_W, h: 34 + rows * ROW_DY + 8
+      };
+    }
+    laneBox.gov = { x: GOV_X0 - 10, y: GOV_Y - 10, w: GOV_X0 + 5 * GOV_DX + NODE_W + 20, h: NODE_H + 20 };
+  }
+
+  function maxLaneH() {
+    var m = 0;
+    for (var s = 1; s <= 8; s++) {
+      var n = NODES.filter(function (x) { return x.L === "biz" && x.st === s; }).length;
+      var h = 34 + Math.ceil(n / 2) * ROW_DY + 8;
+      if (h > m) m = h;
+    }
+    return m;
+  }
+
+  function el(tag, cls, html) {
+    var n = document.createElement(tag);
+    if (cls) n.className = cls;
+    if (html !== undefined) n.innerHTML = html;
+    return n;
+  }
+
+  /* ===== 渲染 ===== */
+  function render() {
+    var nodesEl = document.getElementById("canvasNodes");
+    nodesEl.innerHTML = "";
+    /* 分层条带 */
+    var bands = [
+      { y: GOV_Y - 24, t: "治理优化层 · 6 个 · 承接全流程输出，反向赋能前序阶段（⇠ 闭环迭代）" },
+      { y: LANE_Y - 24, t: "核心业务循环层 · 76 个 · 8 阶段主干循环（⟹ 正向流转）" },
+      { y: BASE_Y0 - 24, t: "数据支撑层 · 18 个 · 公共能力底座（⇢ 被上层按需调用；红边 ⊣ 管控穿透）" }
+    ];
+    bands.forEach(function (b) {
+      var band = el("div", "band");
+      band.style.top = b.y + "px";
+      band.textContent = b.t;
+      nodesEl.appendChild(band);
+    });
+    /* 阶段泳道 */
+    for (var s = 1; s <= 8; s++) {
+      var box = laneBox["s" + s];
+      var lane = el("div", "lane");
+      lane.style.left = box.x + "px"; lane.style.top = box.y + "px";
+      lane.style.width = box.w + "px"; lane.style.height = box.h + "px";
+      lane.dataset.lane = "s" + s;
+      lane.innerHTML = '<div class="lane-head"><span>阶段 ' + ("0" + s) + " · " + STAGE_NAME[s] + '</span><span class="lc">' + NODES.filter(function (x) { return x.L === "biz" && x.st === s; }).length + " 个</span></div>";
+      nodesEl.appendChild(lane);
+    }
+    /* 治理层泳道盒 */
+    var gb = laneBox.gov;
+    var gl = el("div", "lane");
+    gl.style.left = gb.x + "px"; gl.style.top = gb.y + "px";
+    gl.style.width = gb.w + "px"; gl.style.height = gb.h + "px";
+    gl.innerHTML = '<div class="lane-head"><span>治理优化层</span><span class="lc">6 个</span></div>';
+    nodesEl.appendChild(gl);
+    /* 节点 */
+    NODES.forEach(function (nd) {
+      var card = el("div", "ab-node l-" + nd.L + (nd.ctrl ? " ctrl" : ""));
+      card.dataset.id = nd.id;
+      var stTxt = nd.L === "biz" ? "阶段" + nd.st : (nd.L === "gov" ? "治理层" : "支撑层");
+      card.innerHTML = '<div class="nm"></div><div class="tag">' + stTxt + '</div><span class="ctrlb">⊣</span>';
+      card.querySelector(".nm").textContent = nd.n;
+      card.title = nd.n + " · " + stTxt + (nd.ctrl ? " · 管控穿透（⊣ 全程生效）" : "");
+      var p = nodePos[nd.id];
+      card.style.left = p.x + "px"; card.style.top = p.y + "px";
+      nodesEl.appendChild(card);
+    });
+  }
+
+  function applyView() {
+    var layer = document.getElementById("canvasLayer");
+    layer.style.transform = "translate(" + view.tx + "px," + view.ty + "px) scale(" + view.scale + ")";
+    document.getElementById("zoomLabel").textContent = Math.round(view.scale * 100) + "%";
+  }
+
+  function layerPoints() {
+    var layer = document.getElementById("canvasLayer");
+    var lr = layer.getBoundingClientRect();
+    var s = view.scale;
+    var out = {};
+    NODES.forEach(function (nd) {
+      var card = document.querySelector('#canvasNodes .ab-node[data-id="' + nd.id + '"]');
+      if (!card) return;
+      var r = card.getBoundingClientRect();
+      out[nd.id] = {
+        l: (r.left - lr.left) / s, t: (r.top - lr.top) / s,
+        r: (r.right - lr.left) / s, b: (r.bottom - lr.top) / s,
+        cx: (r.left - lr.left) / s + r.width / 2 / s,
+        cy: (r.top - lr.top) / s + r.height / 2 / s
+      };
+    });
+    return out;
+  }
+
+  function laneMid(laneKey, pts) {
+    var b = laneBox[laneKey];
+    return { x: b.x + b.w / 2, y: b.y + b.h / 2 };
+  }
+
+  function drawLines() {
+    var svg = document.getElementById("canvasLines");
+    var pts = layerPoints();
+    var parts = [
+      '<defs><marker id="aGreen" viewBox="0 0 10 10" refX="8.5" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse"><path d="M 0 0 L 10 5 L 0 10 z" fill="#52e08a"/></marker><marker id="aGray" viewBox="0 0 10 10" refX="8.5" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M 0 0 L 10 5 L 0 10 z" fill="#8ba0b5"/></marker><marker id="aBlue" viewBox="0 0 10 10" refX="8.5" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M 0 0 L 10 5 L 0 10 z" fill="#6fa8dc"/></marker><marker id="aAmber" viewBox="0 0 10 10" refX="8.5" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M 0 0 L 10 5 L 0 10 z" fill="#e0a458"/></marker></defs>'
+    ];
+    /* 主干流转（泳道间） */
+    if (layers.trunk) {
+      for (var i = 0; i < E_TRUNK.length; i++) {
+        var e = E_TRUNK[i], a = e[0], b = e[1];
+        var pa, pb;
+        if (a === "gov" || b === "gov") {
+          pa = a === "gov" ? laneMid("gov", pts) : laneMid(a, pts);
+          pb = b === "gov" ? laneMid("gov", pts) : laneMid(b, pts);
+        } else {
+          var ba = laneBox[a], bb = laneBox[b];
+          pa = { x: ba.x + ba.w + 6, y: ba.y + 40 };
+          pb = { x: bb.x - 6, y: bb.y + 40 };
+        }
+        var dx = Math.max(50, (pb.x - pa.x) / 2);
+        parts.push('<path class="ln trunk" data-rel="t' + i + '" d="M ' + pa.x + " " + pa.y + " C " + (pa.x + dx) + " " + pa.y + ", " + (pb.x - dx) + " " + pb.y + ", " + pb.x + " " + pb.y + '" fill="none" stroke="#52e08a" stroke-width="2.4" marker-end="url(#aGreen)" />');
+        if (a === "s8" && b === "gov") {
+          parts.push('<text x="' + ((pa.x + pb.x) / 2) + '" y="' + ((pa.y + pb.y) / 2 - 6) + '" text-anchor="middle" font-size="10" fill="#9fe8bd" style="paint-order:stroke;stroke:#05080e;stroke-width:3" font-family="Cascadia Mono,Consolas,monospace">整改 ⟹ 治理</text>');
+        }
+        if (a === "gov" && b === "s1") {
+          parts.push('<text x="' + ((pa.x + pb.x) / 2) + '" y="' + ((pa.y + pb.y) / 2 - 6) + '" text-anchor="middle" font-size="10" fill="#9fe8bd" style="paint-order:stroke;stroke:#05080e;stroke-width:3" font-family="Cascadia Mono,Consolas,monospace">闭环回流 ⟹ 立项准备</text>');
+        }
+        if (a !== "gov" && b !== "gov" && a !== "s8") {
+          parts.push('<text x="' + ((pa.x + pb.x) / 2) + '" y="' + ((pa.y + pb.y) / 2 - 6) + '" text-anchor="middle" font-size="9.5" fill="#7fbf9b" style="paint-order:stroke;stroke:#05080e;stroke-width:3" font-family="Cascadia Mono,Consolas,monospace">' + STAGE_NAME[parseInt(a.slice(1), 10)] + " ⟹</text>");
+        }
+      }
+    }
+    /* 阶段内联动 */
+    if (layers.stage) {
+      E_STAGE.forEach(function (e) {
+        var p1 = pts[e[0]], p2 = pts[e[1]];
+        if (!p1 || !p2) return;
+        if (p2.l < p1.r) {
+          /* 同列相邻：竖直连线 */
+          var up = p1.cy < p2.cy;
+          var ya = up ? p1.b : p2.b, yb = up ? p2.t : p1.t;
+          var xa = up ? p1.cx : p2.cx, xb = up ? p2.cx : p1.cx;
+          parts.push('<path class="ln stage" data-rel="' + e[0] + ">" + e[1] + '" d="M ' + xa + " " + ya + " L " + xb + " " + yb + '" fill="none" stroke="#8ba0b5" stroke-width="1.2" marker-end="url(#aGray)" />');
+        } else {
+          var dx = Math.max(26, (p2.cx - p1.cx) / 2);
+          parts.push('<path class="ln stage" data-rel="' + e[0] + ">" + e[1] + '" d="M ' + p1.r + " " + p1.cy + " C " + (p1.r + dx) + " " + p1.cy + ", " + (p2.l - dx) + " " + p2.cy + ", " + p2.l + " " + p2.cy + '" fill="none" stroke="#8ba0b5" stroke-width="1.2" marker-end="url(#aGray)" />');
+        }
+      });
+    }
+    /* 跨层调用（业务/治理 ⇢ 支撑） */
+    if (layers.cross) {
+      E_CROSS.forEach(function (e) {
+        var p1 = pts[e[0]], p2 = pts[e[1]];
+        if (!p1 || !p2) return;
+        parts.push('<path class="ln cross" data-rel="' + e[0] + ">" + e[1] + '" d="M ' + p1.cx + " " + p1.b + " L " + p2.cx + " " + p2.t + '" fill="none" stroke="#6fa8dc" stroke-width="1.1" stroke-dasharray="4 3" opacity="0.75" marker-end="url(#aBlue)" />');
+      });
+    }
+    /* 反向迭代（治理 ⇠ 业务泳道） */
+    if (layers.feed) {
+      E_FEED.forEach(function (e) {
+        var p1 = pts[e[0]];
+        var b = laneBox[e[1]];
+        if (!p1) return;
+        var tx = b.x + b.w / 2, ty = b.y - 4;
+        var dx = Math.max(30, (tx - p1.cx) / 2);
+        parts.push('<path class="ln feed" data-rel="feed:' + e[1] + '" d="M ' + p1.cx + " " + p1.b + " C " + p1.cx + " " + (p1.b + 30) + ", " + tx + " " + (ty - 30) + ", " + tx + " " + ty + '" fill="none" stroke="#e0a458" stroke-width="1.3" stroke-dasharray="5 4" opacity="0.8" marker-end="url(#aAmber)" />');
+      });
+    }
+    svg.innerHTML = parts.join("");
+  }
+
+  /* ===== 交互 ===== */
+  function bindCanvas() {
+    var vp = document.getElementById("canvasViewport");
+    var nodesEl = document.getElementById("canvasNodes");
+    var panning = false, panStart = null;
+
+    vp.addEventListener("pointerdown", function (e) {
+      if (e.target.closest(".ab-node") || e.target.closest(".lane")) return;
+      panning = true;
+      panStart = { x: e.clientX, y: e.clientY, tx: view.tx, ty: view.ty };
+      vp.classList.add("panning");
+      vp.setPointerCapture(e.pointerId);
+      e.preventDefault();
+    });
+    vp.addEventListener("pointermove", function (e) {
+      if (panning && panStart) {
+        view.tx = panStart.tx + (e.clientX - panStart.x);
+        view.ty = panStart.ty + (e.clientY - panStart.y);
+        applyView();
+      }
+    });
+    function endPan() { panning = false; panStart = null; vp.classList.remove("panning"); }
+    vp.addEventListener("pointerup", endPan);
+    vp.addEventListener("pointercancel", endPan);
+
+    vp.addEventListener("wheel", function (e) {
+      e.preventDefault();
+      var rect = vp.getBoundingClientRect();
+      var mx = e.clientX - rect.left, my = e.clientY - rect.top;
+      var ns = Math.min(2.5, Math.max(0.15, view.scale * Math.exp(-e.deltaY * 0.0012)));
+      var k = ns / view.scale;
+      view.tx = mx - (mx - view.tx) * k;
+      view.ty = my - (my - view.ty) * k;
+      view.scale = ns;
+      applyView();
+    }, { passive: false });
+
+    nodesEl.addEventListener("pointerdown", function (e) {
+      var card = e.target.closest(".ab-node");
+      if (!card) return;
+      e.stopPropagation();
+      card.setPointerCapture(e.pointerId);
+      var cRect = card.getBoundingClientRect();
+      dragNode = card.dataset.id;
+      dragOff = { x: (e.clientX - cRect.left) / view.scale, y: (e.clientY - cRect.top) / view.scale };
+      card.classList.add("dragging");
+      e.preventDefault();
+    });
+    nodesEl.addEventListener("pointermove", function (e) {
+      if (!dragNode) return;
+      var p = nodePos[dragNode];
+      p.x = (e.clientX - view.tx) / view.scale - dragOff.x;
+      p.y = (e.clientY - view.ty) / view.scale - dragOff.y;
+      var card = document.querySelector('.ab-node.dragging');
+      if (card) { card.style.left = p.x + "px"; card.style.top = p.y + "px"; }
+      drawLines();
+    });
+    nodesEl.addEventListener("pointerup", endNodeDrag);
+    nodesEl.addEventListener("pointercancel", endNodeDrag);
+
+    document.getElementById("btnFit").addEventListener("click", fitView);
+    document.getElementById("btnReset").addEventListener("click", function () {
+      layoutNodes();
+      render();
+      view = { tx: 60, ty: 30, scale: 1 };
+      applyView();
+      drawLines();
+    });
+  }
+
+  function endNodeDrag() {
+    if (!dragNode) return;
+    var c = document.querySelector(".ab-node.dragging");
+    if (c) c.classList.remove("dragging");
+    dragNode = null; dragOff = null;
+  }
+
+  function fitView() {
+    var vp = document.getElementById("canvasViewport");
+    var vw = vp.clientWidth, vh = vp.clientHeight;
+    var minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
+    NODES.forEach(function (nd) {
+      var p = nodePos[nd.id];
+      minX = Math.min(minX, p.x); minY = Math.min(minY, p.y);
+      maxX = Math.max(maxX, p.x); maxY = Math.max(maxY, p.y);
+    });
+    var bw = maxX - minX + NODE_W + 60, bh = maxY - minY + NODE_H + 60;
+    view.scale = Math.min(1, Math.max(0.12, Math.min(vw / bw, vh / bh)));
+    view.tx = (vw - bw * view.scale) / 2 - minX * view.scale;
+    view.ty = (vh - bh * view.scale) / 2 - minY * view.scale;
+    applyView();
+  }
+
+  /* 图层开关 */
+  function bindLegend() {
+    document.querySelectorAll(".lg-item").forEach(function (item) {
+      item.addEventListener("click", function () {
+        var k = item.dataset.layer;
+        layers[k] = !layers[k];
+        item.classList.toggle("on", layers[k]);
+        var nodesEl = document.getElementById("canvasNodes");
+        if (k === "ctrl") nodesEl.classList.toggle("pen-ctrl", layers.ctrl);
+        drawLines();
+      });
+    });
+  }
+
+  /* hover：高亮关联边；hover 管控节点 → 全节点高亮 */
+  function bindHover() {
+    var svg = document.getElementById("canvasLines");
+    document.querySelectorAll(".ab-node").forEach(function (card) {
+      card.addEventListener("pointerenter", function () {
+        var id = card.dataset.id;
+        var nd = nodeById(id);
+        var rel = {};
+        E_STAGE.forEach(function (e) { if (e[0] === id || e[1] === id) rel[e[0] + ">" + e[1]] = 1; });
+        E_CROSS.forEach(function (e) { if (e[0] === id || e[1] === id) rel[e[0] + ">" + e[1]] = 1; });
+        E_FEED.forEach(function (e) { if (e[0] === id) rel["feed:" + e[1]] = 1; });
+        document.querySelectorAll(".ab-node").forEach(function (c) {
+          c.classList.remove("hl");
+          if (nd && nd.ctrl && layers.ctrl) c.classList.add("hl");
+        });
+        svg.querySelectorAll(".ln").forEach(function (p) {
+          var on = rel[p.dataset.rel];
+          if (nd && nd.ctrl && layers.ctrl) on = true;
+          p.style.opacity = on ? "1" : "0.08";
+        });
+        if (nd && nd.ctrl && layers.ctrl) {
+          document.getElementById("hintBar").textContent = "⊣ " + nd.n + " 穿透覆盖全部 100 节点";
+        } else {
+          document.getElementById("hintBar").textContent = nd ? nd.n + " · " + (nd.L === "biz" ? "阶段" + nd.st : (nd.L === "gov" ? "治理层" : "支撑层")) : "";
+        }
+      });
+      card.addEventListener("pointerleave", function () {
+        document.querySelectorAll(".ab-node").forEach(function (c) { c.classList.remove("hl"); });
+        svg.querySelectorAll(".ln").forEach(function (p) { p.style.opacity = "1"; });
+        document.getElementById("hintBar").textContent = "100 节点 · 三层架构 · 8 阶段主循环";
+      });
+    });
+  }
+
+  /* ===== 启动 ===== */
+  layoutNodes();
+  render();
+  applyView();
+  bindCanvas();
+  bindLegend();
+  bindHover();
+  fitView();
+  drawLines();
+  window.addEventListener("resize", drawLines);
+})();
+</script>
+</body>
+</html>
+

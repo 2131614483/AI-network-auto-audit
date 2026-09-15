@@ -1,0 +1,96 @@
+{
+  "protocol_version": "1.0.0",
+  "id": "audit.evidence-lineage",
+  "version": "0.1.0",
+  "name": "审计证据血缘",
+  "description": "声明 Evidence、Claim、Finding 间只读血缘查询的跨业务图谱契约。",
+  "kind": "graph",
+  "domains": [
+    "audit",
+    "knowledge",
+    "compliance"
+  ],
+  "lifecycle": "contract_only",
+  "compatibility": {
+    "host_protocol": ">=1.0.0 <2.0.0",
+    "adapters": [
+      "python",
+      "http",
+      "mcp"
+    ],
+    "optional_features": [
+      "graph-budget-v1"
+    ],
+    "fallback_behavior": "reject"
+  },
+  "capabilities": [
+    {
+      "id": "audit.evidence.lineage",
+      "summary": "从已发布图谱引用返回带预算限制的证据链。",
+      "side_effects": "read_only",
+      "idempotency": "graph_release_and_query_hash",
+      "inputs": [
+        {
+          "contract_id": "released-graph-ref",
+          "version": "1.0.0",
+          "format": "graph_ref",
+          "delivery": "reference",
+          "classification": "audit_confidential",
+          "schema_ref": "released-graph-ref.schema.json"
+        }
+      ],
+      "outputs": [
+        {
+          "contract_id": "evidence-lineage",
+          "version": "1.0.0",
+          "format": "json",
+          "delivery": "artifact_ref",
+          "classification": "audit_confidential",
+          "schema_ref": "evidence-lineage.schema.json"
+        }
+      ]
+    }
+  ],
+  "governance": {
+    "default_data_classification": "audit_confidential",
+    "permissions": {
+      "data_read": [
+        "audit.evidence",
+        "graph.released"
+      ],
+      "data_write": [],
+      "network": "none",
+      "secret_refs": []
+    },
+    "policy": {
+      "gateway_required": true,
+      "approval_required": false,
+      "evidence_required": true
+    }
+  },
+  "resources": {
+    "cpu": 1,
+    "memory_mb": 256,
+    "gpu": "none",
+    "timeout_seconds": 120
+  },
+  "observability": {
+    "trace_required": true,
+    "emits": [
+      "structured_log",
+      "metric",
+      "audit_event"
+    ],
+    "health": "declared_only"
+  },
+  "provenance": {
+    "source_refs": [
+      "docs/plugin-protocol.md",
+      "docs/plugin-topology-orchestration.md#2"
+    ]
+  },
+  "ui": {
+    "mode": "declarative",
+    "contribution_schema": "ui-contribution.schema.json"
+  }
+}

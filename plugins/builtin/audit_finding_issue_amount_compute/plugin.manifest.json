@@ -1,0 +1,45 @@
+{
+ "id": "audit.finding.issue-amount-compute",
+ "version": "0.1.0",
+ "name": "问题金额计算（契约声明）",
+ "runtime": "python",
+ "entrypoint": "plugins.builtin.audit_finding_issue_amount_compute.runtime:handle",
+ "capabilities": [
+  "audit.finding.issue-amount-compute"
+ ],
+ "inputs": {
+  "capability": "audit.finding.issue-amount-compute",
+  "schema": "finding-draft.schema.json",
+  "content_type": "application/json"
+ },
+ "outputs": {
+  "capability": "audit.finding.issue-amount-compute",
+  "schema": "finding-draft.schema.json",
+  "content_type": "application/json"
+ },
+ "side_effects": "read_only",
+ "idempotency": "input_sha256 + capability_version",
+ "permissions": {
+  "data_read": [
+   "audit.finding.issue-amount-compute.read"
+  ],
+  "data_write": [],
+  "network": "none",
+  "secrets": []
+ },
+ "resources": {
+  "cpu": 1,
+  "memory_mb": 256,
+  "gpu": false,
+  "timeout_seconds": 300
+ },
+ "data_classification": "audit_confidential",
+ "evidence": {
+  "preserve_inputs": true,
+  "code_hash_required": true
+ },
+ "tests": {
+  "contract": "tests/contract/test_audit_finding_issue_amount_compute_contract.py",
+  "golden": "tests/unit/test_audit_finding_issue_amount_compute_runtime.py"
+ }
+}

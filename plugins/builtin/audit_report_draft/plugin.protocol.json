@@ -1,0 +1,101 @@
+{
+  "protocol_version": "1.0.0",
+  "id": "audit.report-draft",
+  "version": "0.1.0",
+  "name": "审计报告草稿",
+  "description": "基于已确认审计 Finding 与固定模板版本生成可追溯报告草稿的受审批输出契约；报告签发仍由人完成，不覆盖历史报告。",
+  "kind": "analysis",
+  "domains": [
+    "audit",
+    "compliance"
+  ],
+  "lifecycle": "contract_only",
+  "compatibility": {
+    "host_protocol": ">=1.0.0 <2.0.0",
+    "adapters": [
+      "python",
+      "node",
+      "http",
+      "mcp",
+      "container"
+    ],
+    "optional_features": [
+      "evidence-chain-v1"
+    ],
+    "fallback_behavior": "human_review"
+  },
+  "capabilities": [
+    {
+      "id": "audit.report.draft",
+      "summary": "对不可变已确认 Finding 集合按模板版本生成确定性、可追溯的报告草稿；签发由人完成，永不覆盖历史报告。",
+      "side_effects": "read_only",
+      "idempotency": "finding_set_sha256_and_template_version",
+      "inputs": [
+        {
+          "contract_id": "finding-set",
+          "version": "1.0.0",
+          "format": "json",
+          "delivery": "artifact_ref",
+          "classification": "audit_confidential",
+          "schema_ref": "finding-set.schema.json"
+        }
+      ],
+      "outputs": [
+        {
+          "contract_id": "report-draft",
+          "version": "1.0.0",
+          "format": "json",
+          "delivery": "artifact_ref",
+          "classification": "audit_confidential",
+          "schema_ref": "report-draft.schema.json"
+        }
+      ],
+      "policy": {
+        "approval_required": true,
+        "evidence_required": true
+      }
+    }
+  ],
+  "governance": {
+    "default_data_classification": "audit_confidential",
+    "permissions": {
+      "data_read": [
+        "audit.findings",
+        "audit.evidence"
+      ],
+      "data_write": [],
+      "network": "none",
+      "secret_refs": []
+    },
+    "policy": {
+      "gateway_required": true,
+      "approval_required": true,
+      "evidence_required": true
+    }
+  },
+  "resources": {
+    "cpu": 1,
+    "memory_mb": 256,
+    "gpu": "none",
+    "timeout_seconds": 120
+  },
+  "observability": {
+    "trace_required": true,
+    "emits": [
+      "structured_log",
+      "metric",
+      "audit_event"
+    ],
+    "health": "declared_only"
+  },
+  "provenance": {
+    "source_refs": [
+      "docs/plugin-protocol.md",
+      "docs/审计组网插件规划-v1.md#r3"
+    ]
+  },
+  "ui": {
+    "mode": "declarative",
+    "contribution_schema": "ui-contribution.schema.json"
+  }
+}

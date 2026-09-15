@@ -1,0 +1,92 @@
+{
+ "protocol_version": "1.0.0",
+ "id": "audit.risk.risk-advice-generate",
+ "version": "0.1.0",
+ "name": "风险应对建议生成",
+ "description": "针对高风险点自动匹配应对策略与审计重点；上游对接高风险领域，调用自然语言处理插件。",
+ "kind": "analysis",
+ "domains": [
+  "audit",
+  "compliance"
+ ],
+ "lifecycle": "verified",
+ "compatibility": {
+  "host_protocol": ">=1.0.0 <2.0.0",
+  "adapters": [
+   "python"
+  ],
+  "fallback_behavior": "human_review"
+ },
+ "capabilities": [
+  {
+   "id": "audit.risk.risk-advice-generate",
+   "summary": "针对高风险点自动匹配应对策略与审计重点；上游对接高风险领域，调用自然语言处理插件。",
+   "side_effects": "read_only",
+   "idempotency": "input_sha256 + capability_version",
+   "inputs": [
+    {
+     "contract_id": "high-risk-area",
+     "version": "1.0.0",
+     "format": "artifact_ref",
+     "delivery": "reference",
+     "classification": "audit_confidential",
+     "schema_ref": "metric-series.schema.json",
+     "max_bytes": 268435456
+    }
+   ],
+   "outputs": [
+    {
+     "contract_id": "risk-advice-set",
+     "version": "1.0.0",
+     "format": "artifact_ref",
+     "delivery": "reference",
+     "classification": "audit_confidential",
+     "schema_ref": "document-content.schema.json",
+     "max_bytes": 268435456
+    }
+   ],
+   "invokes": [
+    "audit.foundation.nlp-process"
+   ]
+  }
+ ],
+ "governance": {
+  "default_data_classification": "audit_confidential",
+  "permissions": {
+   "data_read": [],
+   "data_write": [],
+   "network": "none",
+   "secret_refs": []
+  },
+  "policy": {
+   "gateway_required": true,
+   "approval_required": false,
+   "evidence_required": true
+  }
+ },
+ "resources": {
+  "cpu": 1,
+  "memory_mb": 256,
+  "gpu": "none",
+  "timeout_seconds": 300
+ },
+ "observability": {
+  "trace_required": true,
+  "emits": [
+   "structured_log",
+   "artifact_ref",
+   "audit_event"
+  ],
+  "health": "declared_only"
+ },
+ "provenance": {
+  "source_refs": [
+   "docs/audit-plugin-network-100.md",
+   "docs/插件开发与接入标准-UPP-v1.0.md",
+   "plugins/builtin/audit_risk_risk_advice_generate/runtime.py"
+  ]
+ },
+ "ui": {
+  "mode": "none"
+ }
+}

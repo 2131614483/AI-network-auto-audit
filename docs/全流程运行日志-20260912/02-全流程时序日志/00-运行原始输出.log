@@ -1,0 +1,192 @@
+========================================================================
+AI 组网全流程运行（完整捕获）
+========================================================================
+驱动脚本  : D:\pythonpro\audit_network\.data\_ai_compose_demo.py
+产物目录  : D:\pythonpro\audit_network\docs\全流程运行日志-20260912\12-本次运行产物
+数据库    : postgresql://audit_app:admin@localhost:5432/audit_network
+目标      : 资金舞弊专项审计：需求征集、战略对齐、立项申报、立项评分、项目库、优先级排序、审计通知书、资料报送与预检、项目组组建、年度计划、项目方案、程序模板、抽样、样本量…
+选定插件  : 100 个
+固定主链  : 65 条边
+========================================================================
+AI composed workflow:
+  nodes=100  edges=71  seeds=44  chain=65
+  edges:
+    finance-clean-001.clean-finance-set -> finance-anomaly-alert-001.clean-finance-set
+    finance-anomaly-alert-001.finance-anomaly-set -> suspicion-merge-001.suspicion-set
+    suspicion-merge-001.merged-suspicion -> issue-type-judge-001.merged-suspicion
+    issue-type-judge-001.issue-type-set -> violation-clause-match-001.issue-type-set
+    issue-type-judge-001.issue-type-set -> issue-amount-compute-001.issue-verify-input
+    violation-clause-match-001.violation-clause -> responsible-party-find-001.issue-trace-input
+    responsible-party-find-001.responsible-party -> issue-grade-001.responsible-party
+    issue-amount-compute-001.issue-amount -> issue-grade-001.issue-amount
+    issue-grade-001.graded-issue -> auditee-feedback-001.graded-issue
+    auditee-feedback-001.feedback-set -> issue-final-review-001.feedback-set
+    issue-final-review-001.final-issue-set -> issue-desc-write-001.final-issue-set
+    finance-anomaly-alert-001.finance-anomaly-set -> risk-matrix-build-001.finance-anomaly-set
+    demand-collect-001.demand-set -> strategy-align-001.demand-set
+    strategy-align-001.aligned-demand -> annual-propose-001.aligned-demand
+    annual-propose-001.proposal-set -> proposal-score-001.proposal-set
+    proposal-score-001.scored-proposal -> project-library-001.scored-proposal
+    project-library-001.project-snapshot -> priority-rank-001.project-snapshot
+    priority-rank-001.priority-order -> annual-plan-build-001.priority-order
+    project-library-001.project-snapshot -> notice-generate-001.project-snapshot
+    material-submit-001.submitted-material -> material-precheck-001.submitted-material
+    project-library-001.project-snapshot -> team-forming-001.project-snapshot
+    team-forming-001.team-scheme -> staff-schedule-001.team-scheme
+    staff-schedule-001.schedule-plan -> effort-budget-001.schedule-plan
+    staff-schedule-001.schedule-plan -> resource-conflict-detect-001.schedule-plan
+    project-scheme-build-001.project-scheme -> program-template-match-001.scheme-request
+    sampling-select-001.sampling-plan -> sample-size-compute-001.sampling-plan
+    program-template-match-001.program-template -> workpaper-build-001.program-template
+    macro-policy-risk-scan-001.policy-risk-set -> risk-matrix-build-001.policy-risk-set
+    industry-risk-benchmark-001.industry-risk-set -> risk-matrix-build-001.industry-risk-set
+    internal-control-risk-map-001.ic-risk-set -> risk-matrix-build-001.ic-risk-set
+    process-gap-detect-001.process-gap-set -> risk-matrix-build-001.process-gap-set
+    fraud-risk-match-001.fraud-risk-set -> risk-matrix-build-001.fraud-risk-set
+    risk-matrix-build-001.risk-matrix -> risk-level-assign-001.risk-matrix
+    risk-level-assign-001.risk-level -> high-risk-area-locate-001.risk-level
+    risk-level-assign-001.risk-level -> risk-heatmap-draw-001.risk-level
+    high-risk-area-locate-001.high-risk-area -> risk-advice-generate-001.high-risk-area
+    high-risk-area-locate-001.high-risk-area -> project-scheme-build-001.high-risk-area
+    risk-advice-generate-001.risk-advice-set -> project-scheme-build-001.risk-advice-set
+    workpaper-build-001.workpaper-draft -> workpaper-reconcile-001.workpaper-draft
+    workpaper-build-001.workpaper-draft -> evidence-index-link-001.workpaper-draft
+    workpaper-build-001.workpaper-draft -> workpaper-version-diff-001.workpaper-draft
+    workpaper-build-001.workpaper-draft -> workpaper-template-update-001.workpaper-draft
+    workpaper-build-001.workpaper-draft -> workpaper-review3-001.workpaper-draft
+    evidence-photo-001.photo-evidence -> evidence-archive-001.evidence-input
+    evidence-photo-001.photo-evidence -> evidence-index-link-001.photo-evidence
+    evidence-index-link-001.evidence-index -> evidence-verify-001.evidence-index
+    workpaper-reconcile-001.reconcile-report -> workpaper-review3-001.reconcile-report
+    workpaper-review3-001.review-status -> e-signature-001.review-status
+    e-signature-001.signed-workpaper -> workpaper-encrypt-store-001.signed-workpaper
+    project-library-001.project-snapshot -> report-frame-build-001.project-snapshot
+    issue-final-review-001.final-issue-set -> advice-match-001.final-issue-set
+    report-frame-build-001.report-frame -> report-data-check-001.report-draft-input
+    report-data-check-001.report-check-report -> report-multi-review-001.report-check-report
+    report-multi-review-001.report-approved -> result-distill-001.report-approved
+    report-multi-review-001.report-approved -> notice-mask-publish-001.report-approved
+    issue-final-review-001.final-issue-set -> remedy-dispatch-001.final-issue-set
+    remedy-dispatch-001.remedy-task -> remedy-plan-review-001.remedy-task
+    remedy-plan-review-001.remedy-plan-approved -> remedy-progress-track-001.remedy-plan-approved
+    remedy-progress-track-001.remedy-progress -> remedy-overdue-alert-001.remedy-progress
+    evidence-index-link-001.evidence-index -> remedy-effect-verify-001.evidence-index
+    remedy-effect-verify-001.remedy-verdict -> remedy-close-001.remedy-verdict
+    remedy-close-001.remedy-ledger -> remedy-publish-001.remedy-ledger
+    remedy-close-001.remedy-ledger -> effect-evaluate-001.remedy-ledger
+    result-distill-001.distilled-result -> case-library-update-001.distilled-result
+    issue-trend-analysis-001.trend-report -> rule-iteration-001.trend-report
+    finance-clean-001.clean-finance-set -> issue-amount-compute-001.clean-finance-set
+    finance-clean-001.clean-finance-set -> voucher-drilldown-001.clean-finance-set
+    evidence-photo-001.photo-evidence -> suspicion-merge-001.photo-evidence
+    project-library-001.project-snapshot -> resource-conflict-detect-001.project-snapshot
+    sample-size-compute-001.sample-size -> workpaper-build-001.sample-size
+    master-mapping-001.master-map -> responsible-party-find-001.master-map
+run_id: 416b0efc-2f18-4c9a-841f-0a1f4370c7c2
+status: succeeded
+attempt_count: 100
+succeeded: 100
+failed: 0
+  attempt: advice-match-001 audit.report.advice-match succeeded 
+  attempt: annual-plan-build-001 audit.plan.annual-plan-build succeeded 
+  attempt: annual-propose-001 audit.mandate.annual-propose succeeded 
+  attempt: asset-check-001 audit.field.asset-check succeeded 
+  attempt: audit-log-001 audit.field.audit-log succeeded 
+  attempt: auditee-feedback-001 audit.finding.auditee-feedback succeeded 
+  attempt: biz-standardize-001 audit.foundation.biz-standardize succeeded 
+  attempt: case-library-update-001 audit.govern.case-library-update succeeded 
+  attempt: confirm-letter-001 audit.field.confirm-letter succeeded 
+  attempt: cross-dept-inquiry-001 audit.field.cross-dept-inquiry succeeded 
+  attempt: data-encrypt-001 audit.foundation.data-encrypt succeeded 
+  attempt: data-mask-001 audit.foundation.data-mask succeeded 
+  attempt: demand-collect-001 audit.mandate.demand-collect succeeded 
+  attempt: e-signature-001 audit.evidence.e-signature succeeded 
+  attempt: effect-evaluate-001 audit.govern.effect-evaluate succeeded 
+  attempt: effort-budget-001 audit.plan.effort-budget succeeded 
+  attempt: evidence-archive-001 audit.evidence.evidence-archive succeeded 
+  attempt: evidence-index-link-001 audit.evidence.evidence-index-link succeeded 
+  attempt: evidence-photo-001 audit.field.evidence-photo succeeded 
+  attempt: evidence-verify-001 audit.evidence.evidence-verify succeeded 
+  attempt: extension-approve-001 audit.field.extension-approve succeeded 
+  attempt: finance-anomaly-alert-001 audit.risk.finance-anomaly-alert succeeded 
+  attempt: finance-clean-001 audit.foundation.finance-clean succeeded 
+  attempt: fraud-risk-match-001 audit.risk.fraud-risk-match succeeded 
+  attempt: fulltext-search-001 audit.foundation.fulltext-search succeeded 
+  attempt: high-risk-area-locate-001 audit.risk.high-risk-area-locate succeeded 
+  attempt: industry-risk-benchmark-001 audit.risk.industry-risk-benchmark succeeded 
+  attempt: internal-control-risk-map-001 audit.risk.internal-control-risk-map succeeded 
+  attempt: interview-record-001 audit.field.interview-record succeeded 
+  attempt: inventory-count-001 audit.field.inventory-count succeeded 
+  attempt: issue-amount-compute-001 audit.finding.issue-amount-compute succeeded 
+  attempt: issue-desc-write-001 audit.report.issue-desc-write succeeded 
+  attempt: issue-final-review-001 audit.finding.issue-final-review succeeded 
+  attempt: issue-grade-001 audit.finding.issue-grade succeeded 
+  attempt: issue-trend-analysis-001 audit.govern.issue-trend-analysis succeeded 
+  attempt: issue-type-judge-001 audit.finding.issue-type-judge succeeded 
+  attempt: lineage-track-001 audit.foundation.lineage-track succeeded 
+  attempt: macro-policy-risk-scan-001 audit.risk.macro-policy-risk-scan succeeded 
+  attempt: master-mapping-001 audit.foundation.master-mapping succeeded 
+  attempt: material-precheck-001 audit.mandate.material-precheck succeeded 
+  attempt: material-submit-001 audit.mandate.material-submit succeeded 
+  attempt: meeting-minutes-001 audit.field.meeting-minutes succeeded 
+  attempt: metadata-manage-001 audit.foundation.metadata-manage succeeded 
+  attempt: method-distill-001 audit.govern.method-distill succeeded 
+  attempt: metric-compute-001 audit.foundation.metric-compute succeeded 
+  attempt: multi-source-collect-001 audit.foundation.multi-source-collect succeeded 
+  attempt: nlp-process-001 audit.foundation.nlp-process succeeded 
+  attempt: notice-generate-001 audit.mandate.notice-generate succeeded 
+  attempt: notice-mask-publish-001 audit.report.notice-mask-publish succeeded 
+  attempt: ocr-extract-001 audit.foundation.ocr-extract succeeded 
+  attempt: permission-control-001 audit.foundation.permission-control succeeded 
+  attempt: plan-version-control-001 audit.plan.plan-version-control succeeded 
+  attempt: priority-rank-001 audit.mandate.priority-rank succeeded 
+  attempt: process-gap-detect-001 audit.risk.process-gap-detect succeeded 
+  attempt: program-template-match-001 audit.plan.program-template-match succeeded 
+  attempt: progress-report-001 audit.field.progress-report succeeded 
+  attempt: project-library-001 audit.mandate.project-library succeeded 
+  attempt: project-quality-score-001 audit.govern.project-quality-score succeeded 
+  attempt: project-scheme-build-001 audit.plan.project-scheme-build succeeded 
+  attempt: proposal-score-001 audit.mandate.proposal-score succeeded 
+  attempt: quality-check-001 audit.foundation.quality-check succeeded 
+  attempt: remedy-close-001 audit.remedy.remedy-close succeeded 
+  attempt: remedy-dispatch-001 audit.remedy.remedy-dispatch succeeded 
+  attempt: remedy-effect-verify-001 audit.remedy.remedy-effect-verify succeeded 
+  attempt: remedy-overdue-alert-001 audit.remedy.remedy-overdue-alert succeeded 
+  attempt: remedy-plan-review-001 audit.remedy.remedy-plan-review succeeded 
+  attempt: remedy-progress-track-001 audit.remedy.remedy-progress-track succeeded 
+  attempt: remedy-publish-001 audit.remedy.remedy-publish succeeded 
+  attempt: report-data-check-001 audit.report.report-data-check succeeded 
+  attempt: report-frame-build-001 audit.report.report-frame-build succeeded 
+  attempt: report-multi-review-001 audit.report.report-multi-review succeeded 
+  attempt: resource-conflict-detect-001 audit.plan.resource-conflict-detect succeeded 
+  attempt: responsible-party-find-001 audit.finding.responsible-party-find succeeded 
+  attempt: result-distill-001 audit.report.result-distill succeeded 
+  attempt: risk-advice-generate-001 audit.risk.risk-advice-generate succeeded 
+  attempt: risk-heatmap-draw-001 audit.risk.risk-heatmap-draw succeeded 
+  attempt: risk-level-assign-001 audit.risk.risk-level-assign succeeded 
+  attempt: risk-matrix-build-001 audit.risk.risk-matrix-build succeeded 
+  attempt: rule-engine-001 audit.foundation.rule-engine succeeded 
+  attempt: rule-iteration-001 audit.govern.rule-iteration succeeded 
+  attempt: sample-size-compute-001 audit.plan.sample-size-compute succeeded 
+  attempt: sampling-select-001 audit.plan.sampling-select succeeded 
+  attempt: site-checkin-track-001 audit.field.site-checkin-track succeeded 
+  attempt: staff-schedule-001 audit.plan.staff-schedule succeeded 
+  attempt: strategy-align-001 audit.mandate.strategy-align succeeded 
+  attempt: suspicion-flag-001 audit.field.suspicion-flag succeeded 
+  attempt: suspicion-merge-001 audit.finding.suspicion-merge succeeded 
+  attempt: tag-manage-001 audit.foundation.tag-manage succeeded 
+  attempt: team-forming-001 audit.mandate.team-forming succeeded 
+  attempt: violation-clause-match-001 audit.finding.violation-clause-match succeeded 
+  attempt: viz-analysis-001 audit.foundation.viz-analysis succeeded 
+  attempt: voucher-drilldown-001 audit.field.voucher-drilldown succeeded 
+  attempt: workflow-engine-001 audit.foundation.workflow-engine succeeded 
+  attempt: workpaper-borrow-approve-001 audit.evidence.workpaper-borrow-approve succeeded 
+  attempt: workpaper-build-001 audit.field.workpaper-build succeeded 
+  attempt: workpaper-encrypt-store-001 audit.evidence.workpaper-encrypt-store succeeded 
+  attempt: workpaper-reconcile-001 audit.evidence.workpaper-reconcile succeeded 
+  attempt: workpaper-review3-001 audit.evidence.workpaper-review3 succeeded 
+  attempt: workpaper-template-update-001 audit.evidence.workpaper-template-update succeeded 
+  attempt: workpaper-version-diff-001 audit.evidence.workpaper-version-diff succeeded 
+OK
+========================================================================
+总耗时: 17.1s

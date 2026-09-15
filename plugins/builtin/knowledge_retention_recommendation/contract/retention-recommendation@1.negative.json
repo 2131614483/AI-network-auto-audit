@@ -1,0 +1,39 @@
+{
+  "contract_id": "retention-recommendation",
+  "contract_version": "1.0.0",
+  "recommendation_id": "0b4c7d2e9f1a35b8",
+  "status": "executed",
+  "document_ref": {
+    "artifact_id": "a1b2c3d4-e5f6-4a7b-8c9d-0e1f2a3b4c5d",
+    "uri": "file:///G:/数据/04-审计数据集与基准/benchmark_cases/deleted.json",
+    "sha256": "a1b2c3d4e5f67890a1b2c3d4e5f67890a1b2c3d4e5f67890a1b2c3d4e5f67890",
+    "media_type": "application/json"
+  },
+  "recommendation": "delete_now",
+  "rationale": {
+    "matched_rules": ["auto_purge"],
+    "last_access_days": 999,
+    "ref_count": 0,
+    "classification": "internal",
+    "detail": "反例：已执行删除与自动清理，违反不可删除约束。"
+  },
+  "summary": {
+    "retain": 0,
+    "archive": 0,
+    "delete_candidate": 1
+  },
+  "signature": {
+    "recommended_by": "knowledge.retention-recommendation@0.1.0",
+    "reviewed": true
+  },
+  "constraints": {
+    "no_delete": false,
+    "evidence_immutable": true,
+    "requires_human_approval": false
+  },
+  "provenance": {
+    "source_sha256": "a1b2c3d4e5f67890a1b2c3d4e5f67890a1b2c3d4e5f67890a1b2c3d4e5f67890",
+    "plugin": "knowledge.retention-recommendation@0.1.0",
+    "recommend_time": "2026-09-06T12:00:00Z"
+  }
+}

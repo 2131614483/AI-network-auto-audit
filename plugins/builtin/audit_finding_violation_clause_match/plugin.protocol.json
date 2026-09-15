@@ -1,0 +1,94 @@
+{
+ "protocol_version": "1.0.0",
+ "id": "audit.finding.violation-clause-match",
+ "version": "0.1.0",
+ "name": "违规条款匹配",
+ "description": "自动匹配监管法规/公司制度条款；上游问题性质，调用法规库数据。",
+ "kind": "retrieval",
+ "domains": [
+  "audit",
+  "compliance"
+ ],
+ "lifecycle": "verified",
+ "compatibility": {
+  "host_protocol": ">=1.0.0 <2.0.0",
+  "adapters": [
+   "python"
+  ],
+  "fallback_behavior": "human_review"
+ },
+ "capabilities": [
+  {
+   "id": "audit.finding.violation-clause-match",
+   "summary": "违规条款匹配：自动匹配监管法规/公司制度条款；上游问题性质，调用法规库数据。",
+   "side_effects": "read_only",
+   "idempotency": "input_sha256 + capability_version",
+   "inputs": [
+    {
+     "contract_id": "issue-type-set",
+     "version": "1.0.0",
+     "format": "artifact_ref",
+     "delivery": "reference",
+     "classification": "audit_confidential",
+     "schema_ref": "finding-draft.schema.json",
+     "max_bytes": 16777216
+    }
+   ],
+   "outputs": [
+    {
+     "contract_id": "violation-clause",
+     "version": "1.0.0",
+     "format": "json",
+     "delivery": "request_response",
+     "classification": "audit_confidential",
+     "schema_ref": "finding-draft.schema.json",
+     "max_bytes": 16777216
+    }
+   ],
+   "invokes": [
+    "audit.foundation.rule-engine"
+   ]
+  }
+ ],
+ "governance": {
+  "default_data_classification": "audit_confidential",
+  "permissions": {
+   "data_read": [
+    "audit.finding.violation-clause-match.read"
+   ],
+   "data_write": [],
+   "network": "none",
+   "secret_refs": []
+  },
+  "policy": {
+   "gateway_required": true,
+   "approval_required": false,
+   "evidence_required": true
+  }
+ },
+ "resources": {
+  "cpu": 1,
+  "memory_mb": 256,
+  "gpu": "none",
+  "timeout_seconds": 300
+ },
+ "observability": {
+  "trace_required": true,
+  "emits": [
+   "structured_log",
+   "artifact_ref",
+   "audit_event"
+  ],
+  "health": "declared_only"
+ },
+ "provenance": {
+  "source_refs": [
+   "docs/audit-plugin-network-100.md#75",
+   "docs/插件开发与接入标准-UPP-v1.0.md",
+   "plugins/builtin/audit_finding_violation_clause_match/runtime.py"
+  ]
+ },
+ "ui": {
+  "mode": "none"
+ }
+}

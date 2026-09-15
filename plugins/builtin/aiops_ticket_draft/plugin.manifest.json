@@ -1,0 +1,33 @@
+{
+  "id": "aiops.ticket-draft",
+  "version": "0.1.0",
+  "name": "AIOps 工单草稿（受审批输出，只读）",
+  "runtime": "python",
+  "entrypoint": "plugins.builtin.aiops_ticket_draft.runtime:handle",
+  "capabilities": ["aiops.ticket.draft"],
+  "inputs": {
+    "capability": "aiops.ticket.draft",
+    "schema": "incident-proposal.schema.json",
+    "content_type": "application/json"
+  },
+  "outputs": {
+    "capability": "aiops.ticket.draft",
+    "schema": "ticket-draft@1.0.0",
+    "content_type": "application/json"
+  },
+  "side_effects": "read_only",
+  "idempotency": "incident_proposal_sha256_and_target_system",
+  "permissions": {
+    "data_read": ["aiops.incident_proposals"],
+    "data_write": [],
+    "network": "none",
+    "secrets": []
+  },
+  "resources": {"cpu": 1, "memory_mb": 256, "gpu": false, "timeout_seconds": 120},
+  "data_classification": "internal",
+  "evidence": {"preserve_inputs": true, "code_hash_required": true},
+  "tests": {
+    "contract": "tests/contract/test_aiops_ticket_draft_contract.py",
+    "golden": "tests/unit/test_aiops_ticket_draft_runtime.py"
+  }
+}

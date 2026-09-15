@@ -1,0 +1,2523 @@
+{
+  "contract_id": "audit-report-render-bundle",
+  "contract_version": "1.0.0",
+  "report": {
+    "id": "qianling-2025-experiment",
+    "title": "黔岭酒业 2025 年度财务报表审计（实验组）· 组网复算 DAG",
+    "markdown_ref": "审计项目案例/黔岭酒业2025年度财务报表审计_实验组/07_审计成果/审计报告-黔岭酒业2025年度财务报表审计(实验组).md",
+    "report_date": "2026-09-14",
+    "verdict": "qualified_with_reservation_direction"
+  },
+  "sources": [
+    {
+      "id": "S001",
+      "path": "01_账务资料/合并范围内子公司清单.csv",
+      "bytes": 805,
+      "sha256": "92165d1779a1490a70b5aaebdd7eb488c44d833e6e725e332705bc7f8be39e34"
+    },
+    {
+      "id": "S002",
+      "path": "01_账务资料/总账科目与核算维度设置说明.md",
+      "bytes": 5337,
+      "sha256": "71fa039359e65970e9a847e508cf7293e739fb0b65daa0c3d5a794572b59c770"
+    },
+    {
+      "id": "S003",
+      "path": "01_账务资料/科目余额表_P_黔岭酒业股份有限公司.csv",
+      "bytes": 5394,
+      "sha256": "e9aab3c9a9ce5f9bcc7ae26a6ab6c81886e69bc8acb6453da7a2a2cdf8de53dc"
+    },
+    {
+      "id": "S004",
+      "path": "01_账务资料/科目余额表_S1_黔岭销售有限公司.csv",
+      "bytes": 2479,
+      "sha256": "8249eff52ac03e1a1433a50291c2d25906998700b95fff52340d2f9da1be711b"
+    },
+    {
+      "id": "S005",
+      "path": "01_账务资料/科目余额表_S2_黔岭酒类包装有限公司.csv",
+      "bytes": 2159,
+      "sha256": "0f42c3d63220c9a734d9847645625b0a1287620228e9d482d02820bfedd2b490"
+    },
+    {
+      "id": "S006",
+      "path": "01_账务资料/管理层编制的合并财务报表_未审数.csv",
+      "bytes": 2809,
+      "sha256": "7fc60c91556d24064ff5d702fd6c9b6daa0ee32ce42bbc44542e53d31c902b99"
+    },
+    {
+      "id": "S007",
+      "path": "01_账务资料/记账凭证_2025年度明细.csv",
+      "bytes": 34170,
+      "sha256": "54f06d84921b457cf922672c5fa21204bc0bf1e8c3107bfaa2cab39edc546de5"
+    },
+    {
+      "id": "S008",
+      "path": "02_业务资料/主要供应商及付款流水.csv",
+      "bytes": 1305,
+      "sha256": "23b887038d8cf50e5b8c11bae01b4428b364738003a6f923980ec2360ae493a1"
+    },
+    {
+      "id": "S009",
+      "path": "02_业务资料/主要客户清单_前五名.csv",
+      "bytes": 789,
+      "sha256": "bf9b5a31a5e974a9957f84e555c7f9c050261a8d6269d7be8a34f743613eae77"
+    },
+    {
+      "id": "S010",
+      "path": "02_业务资料/关联方及关联交易清单_管理层提供.csv",
+      "bytes": 594,
+      "sha256": "318a9a3bd80ca3b259e826968a02411c220dcd21a6b9863e37158872e8de88b3"
+    },
+    {
+      "id": "S011",
+      "path": "02_业务资料/其他应收款明细表.csv",
+      "bytes": 590,
+      "sha256": "2d4a3e0b989ac2c6a51a60ee26402b6d41a22e6fa8986b2a566c0516628b8114"
+    },
+    {
+      "id": "S012",
+      "path": "02_业务资料/受限资产与担保台账.csv",
+      "bytes": 809,
+      "sha256": "4b8c1ae33315efe30582d94778c2c749c4cca7cacc71356f8b992482ffa419da"
+    },
+    {
+      "id": "S013",
+      "path": "02_业务资料/固定资产及折旧明细表.csv",
+      "bytes": 2541,
+      "sha256": "dcf8f7746f3827fc298bce30eaf54705e61c69172c8616b2388475ecf3d13412"
+    },
+    {
+      "id": "S014",
+      "path": "02_业务资料/固定资产盘点表.csv",
+      "bytes": 815,
+      "sha256": "6fc4dafb57ee06ab67a92e0d5714a66b771834c6f6cd2036b6ef998fdd8ee867"
+    },
+    {
+      "id": "S015",
+      "path": "02_业务资料/在建工程明细表.csv",
+      "bytes": 713,
+      "sha256": "673218ae8b09912483983f815ea7c8e4c8e8ff7967507dd63f5aff32f8337656"
+    },
+    {
+      "id": "S016",
+      "path": "02_业务资料/存货收发存明细表.csv",
+      "bytes": 1193,
+      "sha256": "7d188d8c10b7b2d9565dcabc2d0b778596aad57a45b48aa72ca46018fbeb4151"
+    },
+    {
+      "id": "S017",
+      "path": "02_业务资料/存货盘点表.csv",
+      "bytes": 917,
+      "sha256": "c22254195a832d9cd2f0ac8b39d5a04a02f3a86f28b248c35092ababba83dfdc"
+    },
+    {
+      "id": "S018",
+      "path": "02_业务资料/存货跌价测试表_管理层编制.csv",
+      "bytes": 1001,
+      "sha256": "d75a4cec13e6151291501867dedd96f19d4b4041138f7b1ae304959966dfecbf"
+    },
+    {
+      "id": "S019",
+      "path": "02_业务资料/工程验收单摘要.md",
+      "bytes": 1085,
+      "sha256": "66a9e88d18dbe9e0ffe4b81d6b5fb34803f1e960a3f442e1d029870212e8b678"
+    },
+    {
+      "id": "S020",
+      "path": "02_业务资料/应付账款账龄明细表_管理层编制.csv",
+      "bytes": 647,
+      "sha256": "ef1820f6cb8b250707f2306fd495f7c4568c20e1ff6c84e2593f5e4a96630e99"
+    },
+    {
+      "id": "S021",
+      "path": "02_业务资料/应收票据明细表.csv",
+      "bytes": 499,
+      "sha256": "e382ee8e714028b233d7fc0aec982f702cd027fa5b6633a2d16f813909bc9256"
+    },
+    {
+      "id": "S022",
+      "path": "02_业务资料/应收账款保理合同摘要.md",
+      "bytes": 957,
+      "sha256": "7cce27c19cdec2ccc6b90cee3d5819f172278859b67e14749d58d554de15cd7d"
+    },
+    {
+      "id": "S023",
+      "path": "02_业务资料/应收账款账龄明细表_管理层编制.csv",
+      "bytes": 1371,
+      "sha256": "3e46710cd099ead9f4d206dcfb1dda47f8c9aab7ef568ef6cb91b74890a81bd3"
+    },
+    {
+      "id": "S024",
+      "path": "02_业务资料/房屋产权登记情况表.csv",
+      "bytes": 575,
+      "sha256": "9666290153ae718d805c1d5b3aae0c91e29b9af7fbcab598a4f27ee893a442d0"
+    },
+    {
+      "id": "S025",
+      "path": "02_业务资料/无形资产及长期待摊费用明细表.csv",
+      "bytes": 586,
+      "sha256": "e02688a64f17d51a071b49e762bfcd7cd1e728006541311b991c757d005bbc92"
+    },
+    {
+      "id": "S026",
+      "path": "02_业务资料/期后付款与发票清单.csv",
+      "bytes": 597,
+      "sha256": "1470f086252bc038039d559d766c3ab2aa0ccc645ad28fe4a672bf1b6c7d0d1b"
+    },
+    {
+      "id": "S027",
+      "path": "02_业务资料/期后销售退回清单.csv",
+      "bytes": 571,
+      "sha256": "e558e76594145be0539cdd3abcbf8e3abcce3ce30fc11981ad80f6590e5b7d37"
+    },
+    {
+      "id": "S028",
+      "path": "02_业务资料/期间费用明细表_按性质分类.csv",
+      "bytes": 1052,
+      "sha256": "5bcec8940a3bd46ecbd17a5465ec2fed7723254123d73e6c52e0da0390ceef17"
+    },
+    {
+      "id": "S029",
+      "path": "02_业务资料/研发项目台账.csv",
+      "bytes": 862,
+      "sha256": "b8cb533b60959c1c9d0c57ce62c1bda3caa5fffc000a2badf124788e3f1d052e"
+    },
+    {
+      "id": "S030",
+      "path": "02_业务资料/社会保险缴纳情况表.csv",
+      "bytes": 484,
+      "sha256": "e42aeaeccbcba8960b2fa108cc3233097b192e4312d3c8c80c43e979887ca803"
+    },
+    {
+      "id": "S031",
+      "path": "02_业务资料/职工薪酬明细表.csv",
+      "bytes": 760,
+      "sha256": "b2dec3d997ad24215a9886197c452d87f9235e6565c8f051cedd15cc7319c5ff"
+    },
+    {
+      "id": "S032",
+      "path": "02_业务资料/资产减值测试表_管理层编制.csv",
+      "bytes": 621,
+      "sha256": "bafebd653f982cc32576cc31b8d6d82ff872c49158d57ac54f22ca19b0523225"
+    },
+    {
+      "id": "S033",
+      "path": "02_业务资料/重大销售与采购合同台账.csv",
+      "bytes": 1633,
+      "sha256": "f66e332099bc6ff33c48ccb6fe0eb314e93c84e8b3bec2663cae00daab6d5e32"
+    },
+    {
+      "id": "S034",
+      "path": "02_业务资料/销售明细_分产品分渠道分地区.csv",
+      "bytes": 1845,
+      "sha256": "e9397b5bb4509ebccc0289dff9ab929f26338bb91cb9c8d8910515de825efd3e"
+    },
+    {
+      "id": "S035",
+      "path": "02_业务资料/长期股权投资明细表.csv",
+      "bytes": 659,
+      "sha256": "644729bb56ee93a6840a9f38dc27098e7f1121bf7ee832c5356f37a312dfd8b7"
+    },
+    {
+      "id": "S036",
+      "path": "02_业务资料/预付款项账龄明细表.csv",
+      "bytes": 439,
+      "sha256": "6bffa212f59c53d33c35c619892d67e0782fc90e5479dd39a224668c47e8e5a4"
+    },
+    {
+      "id": "S037",
+      "path": "03_治理资料/公司章程与主要制度清单.md",
+      "bytes": 908,
+      "sha256": "34a22239029512aa35d150c7ac667a52b935921fb25573cd0aa3b31681620947"
+    },
+    {
+      "id": "S038",
+      "path": "03_治理资料/内部控制自我评价报告摘要.md",
+      "bytes": 1363,
+      "sha256": "e03c74789d1b1b1e579ca5743523a0602dbd8cb252bb1c12fa37db8686ef37bc"
+    },
+    {
+      "id": "S039",
+      "path": "03_治理资料/组织架构与关键管理人员.md",
+      "bytes": 3054,
+      "sha256": "e11c276aad749e38ffd04a44b7fbdf28f0056e9adc191ac8071773ea6e4ed9fb"
+    },
+    {
+      "id": "S040",
+      "path": "03_治理资料/董事会决议汇编_2025.md",
+      "bytes": 2611,
+      "sha256": "dc5414c94cf66d71ad44cfc902dc586b22a0932ab6d3eca1830d7527ab64afea"
+    },
+    {
+      "id": "S041",
+      "path": "04_税务资料/企业所得税纳税调整明细表_管理层编制.csv",
+      "bytes": 644,
+      "sha256": "2f0282207631e9e5a525ee6a0ea9ad7985a7d8696b61f3d97001e30c98721884"
+    },
+    {
+      "id": "S042",
+      "path": "04_税务资料/应交税费明细表_按税种.csv",
+      "bytes": 236,
+      "sha256": "66cacbae01a6728a686a4b85f181d2d79ffdf5bed4f8aba54551c00b3f9dc51a"
+    },
+    {
+      "id": "S043",
+      "path": "04_税务资料/税种税率及税收优惠说明.md",
+      "bytes": 1825,
+      "sha256": "4d3da6a91dd50ea397ef8c797a98c00a6223434143c0abfc8af8cfd92e6f5efd"
+    },
+    {
+      "id": "S044",
+      "path": "04_税务资料/纳税申报与缴纳汇总_2025.csv",
+      "bytes": 806,
+      "sha256": "bf59fd3763933a6d66a42c10b690e235b97471465e74d46eed4801f336e897e8"
+    },
+    {
+      "id": "S045",
+      "path": "05_银行资料/银行存款余额调节表_编制情况说明.md",
+      "bytes": 1809,
+      "sha256": "61bda65370997cf96c50a03042a9a1f6da7a8d3325ab94aa48bd171c9034d617"
+    },
+    {
+      "id": "S046",
+      "path": "05_银行资料/银行存款日记账_工商银行基本户_202512.csv",
+      "bytes": 3183,
+      "sha256": "741ff9f78dd47ee00180af55f93fd91594d331fbaf5c7a2d772774b02771f623"
+    },
+    {
+      "id": "S047",
+      "path": "05_银行资料/银行对账单_工商银行基本户_202512.csv",
+      "bytes": 2990,
+      "sha256": "962f3666b1c2e0a33a864d7f996d937c2efd973b2f88b08d52c0f7fdf14f0fc8"
+    },
+    {
+      "id": "S048",
+      "path": "05_银行资料/银行账户清单.csv",
+      "bytes": 564,
+      "sha256": "ba3dbad4850f5c56ffa524633bcc7a575b971ff20e385e7e48f392aba97ccaba"
+    },
+    {
+      "id": "S049",
+      "path": "06_其他资料/政府补助文件摘要.csv",
+      "bytes": 1012,
+      "sha256": "af3398e3c2478b41a190b7761bdbed544b8800e323d675a27072cb919731857c"
+    },
+    {
+      "id": "S050",
+      "path": "06_其他资料/管理层声明书.md",
+      "bytes": 1400,
+      "sha256": "52ff7ca9d7d99dbec9947185c03fcc91d62d5c983a8defa7cc937624067e5db9"
+    },
+    {
+      "id": "S051",
+      "path": "06_其他资料/资产负债表日后事项说明.md",
+      "bytes": 1402,
+      "sha256": "b9b031e225ccd1cf56f69e03840570775a0f9e4b6f9b450f2e881ad2ceffeaea"
+    },
+    {
+      "id": "S052",
+      "path": "06_其他资料/资料提供清单与交接记录.md",
+      "bytes": 3959,
+      "sha256": "773da68aec50e94569c0f3b903bbd27d4d1ee2b5913a38869b9d6d46cb9a1723"
+    },
+    {
+      "id": "S053",
+      "path": "06_其他资料/重大承诺事项与或有事项说明.md",
+      "bytes": 1464,
+      "sha256": "a505413d4a678e7e331f79e99a767b9d9fa1cb242b7f01dc9b38164badde4ed7"
+    }
+  ],
+  "graph": {
+    "direction": "LR",
+    "layers": [
+      {
+        "id": "L0",
+        "order": 0,
+        "label": "数据接入 L0"
+      },
+      {
+        "id": "L1",
+        "order": 1,
+        "label": "勾稽门户 L1"
+      },
+      {
+        "id": "L2",
+        "order": 2,
+        "label": "实质性程序 L2 ×28"
+      },
+      {
+        "id": "L3",
+        "order": 3,
+        "label": "发现收敛 L3"
+      },
+      {
+        "id": "L4",
+        "order": 4,
+        "label": "报表影响 L4"
+      },
+      {
+        "id": "L5",
+        "order": 5,
+        "label": "结论与评测 L5"
+      }
+    ],
+    "nodes": [
+      {
+        "id": "P-books",
+        "kind": "source_domain",
+        "layer": "L0",
+        "label": "账务域 P-books"
+      },
+      {
+        "id": "P-biz",
+        "kind": "source_domain",
+        "layer": "L0",
+        "label": "业务域 P-biz"
+      },
+      {
+        "id": "P-gov",
+        "kind": "source_domain",
+        "layer": "L0",
+        "label": "治理域 P-gov"
+      },
+      {
+        "id": "P-tax",
+        "kind": "source_domain",
+        "layer": "L0",
+        "label": "税务域 P-tax"
+      },
+      {
+        "id": "P-bank",
+        "kind": "source_domain",
+        "layer": "L0",
+        "label": "银行域 P-bank"
+      },
+      {
+        "id": "P-oth",
+        "kind": "source_domain",
+        "layer": "L0",
+        "label": "其他域 P-oth"
+      },
+      {
+        "id": "P01",
+        "kind": "procedure",
+        "layer": "L2",
+        "label": "P01 sales_cutoff 收入截止"
+      },
+      {
+        "id": "P02",
+        "kind": "procedure",
+        "layer": "L2",
+        "label": "P02 goods_flow 实物流转"
+      },
+      {
+        "id": "P03",
+        "kind": "procedure",
+        "layer": "L2",
+        "label": "P03 aging_recompute 账龄重算"
+      },
+      {
+        "id": "P04",
+        "kind": "procedure",
+        "layer": "L2",
+        "label": "P04 nrv_test 跌价测试"
+      },
+      {
+        "id": "P05",
+        "kind": "procedure",
+        "layer": "L2",
+        "label": "P05 inventory_count 存货监盘"
+      },
+      {
+        "id": "P06",
+        "kind": "procedure",
+        "layer": "L2",
+        "label": "P06 cogs_recompute 成本倒算"
+      },
+      {
+        "id": "P07",
+        "kind": "procedure",
+        "layer": "L2",
+        "label": "P07 dep_recompute 折旧重算"
+      },
+      {
+        "id": "P08",
+        "kind": "procedure",
+        "layer": "L2",
+        "label": "P08 impairment_test 减值测试"
+      },
+      {
+        "id": "P09",
+        "kind": "procedure",
+        "layer": "L2",
+        "label": "P09 fa_count 固资监盘"
+      },
+      {
+        "id": "P10",
+        "kind": "procedure",
+        "layer": "L2",
+        "label": "P10 cip_transfer 在建转固"
+      },
+      {
+        "id": "P11",
+        "kind": "procedure",
+        "layer": "L2",
+        "label": "P11 asset_condition 资产确认"
+      },
+      {
+        "id": "P12",
+        "kind": "procedure",
+        "layer": "L2",
+        "label": "P12 expense_cutoff 费用截止"
+      },
+      {
+        "id": "P13",
+        "kind": "procedure",
+        "layer": "L2",
+        "label": "P13 voucher_review 凭证审查"
+      },
+      {
+        "id": "P14",
+        "kind": "procedure",
+        "layer": "L2",
+        "label": "P14 ap_lookup 未入账负债"
+      },
+      {
+        "id": "P15",
+        "kind": "procedure",
+        "layer": "L2",
+        "label": "P15 payroll_recompute 社保交叉"
+      },
+      {
+        "id": "P16",
+        "kind": "procedure",
+        "layer": "L2",
+        "label": "P16 salary_cutoff 薪酬截止"
+      },
+      {
+        "id": "P17",
+        "kind": "procedure",
+        "layer": "L2",
+        "label": "P17 related_party 关联方穿透"
+      },
+      {
+        "id": "P18",
+        "kind": "procedure",
+        "layer": "L2",
+        "label": "P18 bank_recon 银行调节"
+      },
+      {
+        "id": "P19",
+        "kind": "procedure",
+        "layer": "L2",
+        "label": "P19 ic_reconcile 内部往来"
+      },
+      {
+        "id": "P20",
+        "kind": "procedure",
+        "layer": "L2",
+        "label": "P20 consolidation_scope 合并范围"
+      },
+      {
+        "id": "P21",
+        "kind": "procedure",
+        "layer": "L2",
+        "label": "P21 disclosure_lookup 披露检查"
+      },
+      {
+        "id": "P22",
+        "kind": "procedure",
+        "layer": "L2",
+        "label": "P22 note_reclass 票据置换"
+      },
+      {
+        "id": "P23",
+        "kind": "procedure",
+        "layer": "L2",
+        "label": "P23 revenue_concentration 收入集中度"
+      },
+      {
+        "id": "P24",
+        "kind": "procedure",
+        "layer": "L2",
+        "label": "P24 contract_clause 合同条款"
+      },
+      {
+        "id": "P25",
+        "kind": "procedure",
+        "layer": "L2",
+        "label": "P25 gov_grant_class 补助分类"
+      },
+      {
+        "id": "P26",
+        "kind": "procedure",
+        "layer": "L2",
+        "label": "P26 aging_lookup 预付账龄"
+      },
+      {
+        "id": "P27",
+        "kind": "procedure",
+        "layer": "L2",
+        "label": "P27 subsequent_return 期后事项"
+      },
+      {
+        "id": "P28",
+        "kind": "procedure",
+        "layer": "L2",
+        "label": "P28 dev_cost_test 研发归集"
+      },
+      {
+        "id": "P29",
+        "kind": "procedure",
+        "layer": "L1",
+        "label": "P29 勾稽门户"
+      },
+      {
+        "id": "w_evid",
+        "kind": "evidence_pool",
+        "layer": "L1",
+        "label": "取证工件池 G02"
+      },
+      {
+        "id": "P30",
+        "kind": "finding_aggregate",
+        "layer": "L3",
+        "label": "P30 发现收敛"
+      },
+      {
+        "id": "P31",
+        "kind": "impact",
+        "layer": "L4",
+        "label": "P31 报表影响评估"
+      },
+      {
+        "id": "P32",
+        "kind": "conclusion",
+        "layer": "L5",
+        "label": "P32 结论与评测"
+      }
+    ],
+    "edges": [
+      {
+        "id": "E001",
+        "from": "P-books",
+        "to": "P29",
+        "kind": "finding",
+        "label": "G01"
+      },
+      {
+        "id": "E002",
+        "from": "P-books",
+        "to": "w_evid",
+        "kind": "finding",
+        "label": "G02"
+      },
+      {
+        "id": "E003",
+        "from": "P-biz",
+        "to": "P29",
+        "kind": "finding",
+        "label": "G01"
+      },
+      {
+        "id": "E004",
+        "from": "P-biz",
+        "to": "w_evid",
+        "kind": "finding",
+        "label": "G02"
+      },
+      {
+        "id": "E005",
+        "from": "P-gov",
+        "to": "P29",
+        "kind": "finding",
+        "label": "G01"
+      },
+      {
+        "id": "E006",
+        "from": "P-gov",
+        "to": "w_evid",
+        "kind": "finding",
+        "label": "G02"
+      },
+      {
+        "id": "E007",
+        "from": "P-tax",
+        "to": "P29",
+        "kind": "finding",
+        "label": "G01"
+      },
+      {
+        "id": "E008",
+        "from": "P-tax",
+        "to": "w_evid",
+        "kind": "finding",
+        "label": "G02"
+      },
+      {
+        "id": "E009",
+        "from": "P-bank",
+        "to": "P29",
+        "kind": "finding",
+        "label": "G01"
+      },
+      {
+        "id": "E010",
+        "from": "P-bank",
+        "to": "w_evid",
+        "kind": "finding",
+        "label": "G02"
+      },
+      {
+        "id": "E011",
+        "from": "P-oth",
+        "to": "P29",
+        "kind": "finding",
+        "label": "G01"
+      },
+      {
+        "id": "E012",
+        "from": "P-oth",
+        "to": "w_evid",
+        "kind": "finding",
+        "label": "G02"
+      },
+      {
+        "id": "E013",
+        "from": "w_evid",
+        "to": "P01",
+        "kind": "evidence",
+        "label": "G02"
+      },
+      {
+        "id": "E014",
+        "from": "w_evid",
+        "to": "P02",
+        "kind": "evidence",
+        "label": "G02"
+      },
+      {
+        "id": "E015",
+        "from": "w_evid",
+        "to": "P03",
+        "kind": "evidence",
+        "label": "G02"
+      },
+      {
+        "id": "E016",
+        "from": "w_evid",
+        "to": "P04",
+        "kind": "evidence",
+        "label": "G02"
+      },
+      {
+        "id": "E017",
+        "from": "w_evid",
+        "to": "P05",
+        "kind": "evidence",
+        "label": "G02"
+      },
+      {
+        "id": "E018",
+        "from": "w_evid",
+        "to": "P06",
+        "kind": "evidence",
+        "label": "G02"
+      },
+      {
+        "id": "E019",
+        "from": "w_evid",
+        "to": "P07",
+        "kind": "evidence",
+        "label": "G02"
+      },
+      {
+        "id": "E020",
+        "from": "w_evid",
+        "to": "P08",
+        "kind": "evidence",
+        "label": "G02"
+      },
+      {
+        "id": "E021",
+        "from": "w_evid",
+        "to": "P09",
+        "kind": "evidence",
+        "label": "G02"
+      },
+      {
+        "id": "E022",
+        "from": "w_evid",
+        "to": "P10",
+        "kind": "evidence",
+        "label": "G02"
+      },
+      {
+        "id": "E023",
+        "from": "w_evid",
+        "to": "P11",
+        "kind": "evidence",
+        "label": "G02"
+      },
+      {
+        "id": "E024",
+        "from": "w_evid",
+        "to": "P12",
+        "kind": "evidence",
+        "label": "G02"
+      },
+      {
+        "id": "E025",
+        "from": "w_evid",
+        "to": "P13",
+        "kind": "evidence",
+        "label": "G02"
+      },
+      {
+        "id": "E026",
+        "from": "w_evid",
+        "to": "P14",
+        "kind": "evidence",
+        "label": "G02"
+      },
+      {
+        "id": "E027",
+        "from": "w_evid",
+        "to": "P15",
+        "kind": "evidence",
+        "label": "G02"
+      },
+      {
+        "id": "E028",
+        "from": "w_evid",
+        "to": "P16",
+        "kind": "evidence",
+        "label": "G02"
+      },
+      {
+        "id": "E029",
+        "from": "w_evid",
+        "to": "P17",
+        "kind": "evidence",
+        "label": "G02"
+      },
+      {
+        "id": "E030",
+        "from": "w_evid",
+        "to": "P18",
+        "kind": "evidence",
+        "label": "G02"
+      },
+      {
+        "id": "E031",
+        "from": "w_evid",
+        "to": "P19",
+        "kind": "evidence",
+        "label": "G02"
+      },
+      {
+        "id": "E032",
+        "from": "w_evid",
+        "to": "P20",
+        "kind": "evidence",
+        "label": "G02"
+      },
+      {
+        "id": "E033",
+        "from": "w_evid",
+        "to": "P21",
+        "kind": "evidence",
+        "label": "G02"
+      },
+      {
+        "id": "E034",
+        "from": "w_evid",
+        "to": "P22",
+        "kind": "evidence",
+        "label": "G02"
+      },
+      {
+        "id": "E035",
+        "from": "w_evid",
+        "to": "P23",
+        "kind": "evidence",
+        "label": "G02"
+      },
+      {
+        "id": "E036",
+        "from": "w_evid",
+        "to": "P24",
+        "kind": "evidence",
+        "label": "G02"
+      },
+      {
+        "id": "E037",
+        "from": "w_evid",
+        "to": "P25",
+        "kind": "evidence",
+        "label": "G02"
+      },
+      {
+        "id": "E038",
+        "from": "w_evid",
+        "to": "P26",
+        "kind": "evidence",
+        "label": "G02"
+      },
+      {
+        "id": "E039",
+        "from": "w_evid",
+        "to": "P27",
+        "kind": "evidence",
+        "label": "G02"
+      },
+      {
+        "id": "E040",
+        "from": "w_evid",
+        "to": "P28",
+        "kind": "evidence",
+        "label": "G02"
+      },
+      {
+        "id": "E041",
+        "from": "P01",
+        "to": "P30",
+        "kind": "finding",
+        "label": "G03"
+      },
+      {
+        "id": "E042",
+        "from": "P02",
+        "to": "P30",
+        "kind": "finding",
+        "label": "G03"
+      },
+      {
+        "id": "E043",
+        "from": "P03",
+        "to": "P30",
+        "kind": "finding",
+        "label": "G03"
+      },
+      {
+        "id": "E044",
+        "from": "P04",
+        "to": "P30",
+        "kind": "finding",
+        "label": "G03"
+      },
+      {
+        "id": "E045",
+        "from": "P05",
+        "to": "P30",
+        "kind": "finding",
+        "label": "G03"
+      },
+      {
+        "id": "E046",
+        "from": "P06",
+        "to": "P30",
+        "kind": "finding",
+        "label": "G03"
+      },
+      {
+        "id": "E047",
+        "from": "P07",
+        "to": "P30",
+        "kind": "finding",
+        "label": "G03"
+      },
+      {
+        "id": "E048",
+        "from": "P08",
+        "to": "P30",
+        "kind": "finding",
+        "label": "G03"
+      },
+      {
+        "id": "E049",
+        "from": "P09",
+        "to": "P30",
+        "kind": "finding",
+        "label": "G03"
+      },
+      {
+        "id": "E050",
+        "from": "P10",
+        "to": "P30",
+        "kind": "finding",
+        "label": "G03"
+      },
+      {
+        "id": "E051",
+        "from": "P11",
+        "to": "P30",
+        "kind": "finding",
+        "label": "G03"
+      },
+      {
+        "id": "E052",
+        "from": "P12",
+        "to": "P30",
+        "kind": "finding",
+        "label": "G03"
+      },
+      {
+        "id": "E053",
+        "from": "P13",
+        "to": "P30",
+        "kind": "finding",
+        "label": "G03"
+      },
+      {
+        "id": "E054",
+        "from": "P14",
+        "to": "P30",
+        "kind": "finding",
+        "label": "G03"
+      },
+      {
+        "id": "E055",
+        "from": "P15",
+        "to": "P30",
+        "kind": "finding",
+        "label": "G03"
+      },
+      {
+        "id": "E056",
+        "from": "P16",
+        "to": "P30",
+        "kind": "finding",
+        "label": "G03"
+      },
+      {
+        "id": "E057",
+        "from": "P17",
+        "to": "P30",
+        "kind": "finding",
+        "label": "G03"
+      },
+      {
+        "id": "E058",
+        "from": "P18",
+        "to": "P30",
+        "kind": "finding",
+        "label": "G03"
+      },
+      {
+        "id": "E059",
+        "from": "P19",
+        "to": "P30",
+        "kind": "finding",
+        "label": "G03"
+      },
+      {
+        "id": "E060",
+        "from": "P20",
+        "to": "P30",
+        "kind": "finding",
+        "label": "G03"
+      },
+      {
+        "id": "E061",
+        "from": "P21",
+        "to": "P30",
+        "kind": "finding",
+        "label": "G03"
+      },
+      {
+        "id": "E062",
+        "from": "P22",
+        "to": "P30",
+        "kind": "finding",
+        "label": "G03"
+      },
+      {
+        "id": "E063",
+        "from": "P23",
+        "to": "P30",
+        "kind": "finding",
+        "label": "G03"
+      },
+      {
+        "id": "E064",
+        "from": "P24",
+        "to": "P30",
+        "kind": "finding",
+        "label": "G03"
+      },
+      {
+        "id": "E065",
+        "from": "P25",
+        "to": "P30",
+        "kind": "finding",
+        "label": "G03"
+      },
+      {
+        "id": "E066",
+        "from": "P26",
+        "to": "P30",
+        "kind": "finding",
+        "label": "G03"
+      },
+      {
+        "id": "E067",
+        "from": "P27",
+        "to": "P30",
+        "kind": "finding",
+        "label": "G03"
+      },
+      {
+        "id": "E068",
+        "from": "P28",
+        "to": "P30",
+        "kind": "finding",
+        "label": "G03"
+      },
+      {
+        "id": "E069",
+        "from": "P30",
+        "to": "P31",
+        "kind": "finding",
+        "label": "G04"
+      },
+      {
+        "id": "E070",
+        "from": "P31",
+        "to": "P32",
+        "kind": "finding",
+        "label": "G05"
+      }
+    ]
+  },
+  "evidence_index": {
+    "artifact_ref": "审计项目案例/黔岭酒业2025年度财务报表审计_实验组/_ground_truth/检出验证报告.md",
+    "sha256": "82be99ffab9ac67880b37460f2e7f3d4e13bee6b60e3fc4576bb50fe96d82a7e",
+    "findings": [
+      {
+        "id": "P01",
+        "tier": "L2",
+        "group": "legacy_dag_spec",
+        "issue": "发现 F1 · E09",
+        "amount": "not_quantified_in_dag_spec",
+        "status": "hit",
+        "evidence": [
+          "既有 DAG 节点证据卡"
+        ]
+      },
+      {
+        "id": "P02",
+        "tier": "L2",
+        "group": "legacy_dag_spec",
+        "issue": "发现 E01",
+        "amount": "not_quantified_in_dag_spec",
+        "status": "hit",
+        "evidence": [
+          "既有 DAG 节点证据卡"
+        ]
+      },
+      {
+        "id": "P03",
+        "tier": "L2",
+        "group": "legacy_dag_spec",
+        "issue": "发现 F3 · E01",
+        "amount": "not_quantified_in_dag_spec",
+        "status": "hit",
+        "evidence": [
+          "既有 DAG 节点证据卡"
+        ]
+      },
+      {
+        "id": "P04",
+        "tier": "L2",
+        "group": "legacy_dag_spec",
+        "issue": "发现 F4",
+        "amount": "not_quantified_in_dag_spec",
+        "status": "hit",
+        "evidence": [
+          "既有 DAG 节点证据卡"
+        ]
+      },
+      {
+        "id": "P05",
+        "tier": "L2",
+        "group": "legacy_dag_spec",
+        "issue": "发现 E06 · E15",
+        "amount": "not_quantified_in_dag_spec",
+        "status": "hit",
+        "evidence": [
+          "既有 DAG 节点证据卡"
+        ]
+      },
+      {
+        "id": "P06",
+        "tier": "L2",
+        "group": "legacy_dag_spec",
+        "issue": "发现 E03",
+        "amount": "not_quantified_in_dag_spec",
+        "status": "hit",
+        "evidence": [
+          "既有 DAG 节点证据卡"
+        ]
+      },
+      {
+        "id": "P07",
+        "tier": "L2",
+        "group": "legacy_dag_spec",
+        "issue": "发现 F5",
+        "amount": "not_quantified_in_dag_spec",
+        "status": "hit",
+        "evidence": [
+          "既有 DAG 节点证据卡"
+        ]
+      },
+      {
+        "id": "P08",
+        "tier": "L2",
+        "group": "legacy_dag_spec",
+        "issue": "发现 E18",
+        "amount": "not_quantified_in_dag_spec",
+        "status": "hit",
+        "evidence": [
+          "既有 DAG 节点证据卡"
+        ]
+      },
+      {
+        "id": "P09",
+        "tier": "L2",
+        "group": "legacy_dag_spec",
+        "issue": "发现 E19",
+        "amount": "not_quantified_in_dag_spec",
+        "status": "hit",
+        "evidence": [
+          "既有 DAG 节点证据卡"
+        ]
+      },
+      {
+        "id": "P10",
+        "tier": "L2",
+        "group": "legacy_dag_spec",
+        "issue": "发现 E17",
+        "amount": "not_quantified_in_dag_spec",
+        "status": "hit",
+        "evidence": [
+          "既有 DAG 节点证据卡"
+        ]
+      },
+      {
+        "id": "P11",
+        "tier": "L2",
+        "group": "legacy_dag_spec",
+        "issue": "发现 F6",
+        "amount": "not_quantified_in_dag_spec",
+        "status": "hit",
+        "evidence": [
+          "既有 DAG 节点证据卡"
+        ]
+      },
+      {
+        "id": "P12",
+        "tier": "L2",
+        "group": "legacy_dag_spec",
+        "issue": "发现 E05 · E24",
+        "amount": "not_quantified_in_dag_spec",
+        "status": "hit",
+        "evidence": [
+          "既有 DAG 节点证据卡"
+        ]
+      },
+      {
+        "id": "P13",
+        "tier": "L2",
+        "group": "legacy_dag_spec",
+        "issue": "发现 E05 · E31",
+        "amount": "not_quantified_in_dag_spec",
+        "status": "hit",
+        "evidence": [
+          "既有 DAG 节点证据卡"
+        ]
+      },
+      {
+        "id": "P14",
+        "tier": "L2",
+        "group": "legacy_dag_spec",
+        "issue": "发现 E02 · E22",
+        "amount": "not_quantified_in_dag_spec",
+        "status": "hit",
+        "evidence": [
+          "既有 DAG 节点证据卡"
+        ]
+      },
+      {
+        "id": "P15",
+        "tier": "L2",
+        "group": "legacy_dag_spec",
+        "issue": "发现 E23",
+        "amount": "not_quantified_in_dag_spec",
+        "status": "hit",
+        "evidence": [
+          "既有 DAG 节点证据卡"
+        ]
+      },
+      {
+        "id": "P16",
+        "tier": "L2",
+        "group": "legacy_dag_spec",
+        "issue": "发现 F10",
+        "amount": "not_quantified_in_dag_spec",
+        "status": "hit",
+        "evidence": [
+          "既有 DAG 节点证据卡"
+        ]
+      },
+      {
+        "id": "P17",
+        "tier": "L2",
+        "group": "legacy_dag_spec",
+        "issue": "发现 F2 · F7 · E04 · E27",
+        "amount": "not_quantified_in_dag_spec",
+        "status": "hit",
+        "evidence": [
+          "既有 DAG 节点证据卡"
+        ]
+      },
+      {
+        "id": "P18",
+        "tier": "L2",
+        "group": "legacy_dag_spec",
+        "issue": "发现 F9",
+        "amount": "not_quantified_in_dag_spec",
+        "status": "hit",
+        "evidence": [
+          "既有 DAG 节点证据卡"
+        ]
+      },
+      {
+        "id": "P19",
+        "tier": "L2",
+        "group": "legacy_dag_spec",
+        "issue": "发现 E30",
+        "amount": "not_quantified_in_dag_spec",
+        "status": "hit",
+        "evidence": [
+          "既有 DAG 节点证据卡"
+        ]
+      },
+      {
+        "id": "P20",
+        "tier": "L2",
+        "group": "legacy_dag_spec",
+        "issue": "发现 E29",
+        "amount": "not_quantified_in_dag_spec",
+        "status": "hit",
+        "evidence": [
+          "既有 DAG 节点证据卡"
+        ]
+      },
+      {
+        "id": "P21",
+        "tier": "L2",
+        "group": "legacy_dag_spec",
+        "issue": "发现 E12·E14·E16·E20·E26·E28",
+        "amount": "not_quantified_in_dag_spec",
+        "status": "hit",
+        "evidence": [
+          "既有 DAG 节点证据卡"
+        ]
+      },
+      {
+        "id": "P22",
+        "tier": "L2",
+        "group": "legacy_dag_spec",
+        "issue": "发现 E07",
+        "amount": "not_quantified_in_dag_spec",
+        "status": "hit",
+        "evidence": [
+          "既有 DAG 节点证据卡"
+        ]
+      },
+      {
+        "id": "P23",
+        "tier": "L2",
+        "group": "legacy_dag_spec",
+        "issue": "发现 E12",
+        "amount": "not_quantified_in_dag_spec",
+        "status": "hit",
+        "evidence": [
+          "既有 DAG 节点证据卡"
+        ]
+      },
+      {
+        "id": "P24",
+        "tier": "L2",
+        "group": "legacy_dag_spec",
+        "issue": "发现 E11·E13·E32",
+        "amount": "not_quantified_in_dag_spec",
+        "status": "hit",
+        "evidence": [
+          "既有 DAG 节点证据卡"
+        ]
+      },
+      {
+        "id": "P25",
+        "tier": "L2",
+        "group": "legacy_dag_spec",
+        "issue": "发现 F8 · E08",
+        "amount": "not_quantified_in_dag_spec",
+        "status": "hit",
+        "evidence": [
+          "既有 DAG 节点证据卡"
+        ]
+      },
+      {
+        "id": "P26",
+        "tier": "L2",
+        "group": "legacy_dag_spec",
+        "issue": "发现 E25",
+        "amount": "not_quantified_in_dag_spec",
+        "status": "hit",
+        "evidence": [
+          "既有 DAG 节点证据卡"
+        ]
+      },
+      {
+        "id": "P27",
+        "tier": "L2",
+        "group": "legacy_dag_spec",
+        "issue": "发现 E10",
+        "amount": "not_quantified_in_dag_spec",
+        "status": "hit",
+        "evidence": [
+          "既有 DAG 节点证据卡"
+        ]
+      },
+      {
+        "id": "P28",
+        "tier": "L2",
+        "group": "legacy_dag_spec",
+        "issue": "发现 E21",
+        "amount": "not_quantified_in_dag_spec",
+        "status": "hit",
+        "evidence": [
+          "既有 DAG 节点证据卡"
+        ]
+      },
+      {
+        "id": "P32",
+        "tier": "L5",
+        "group": "legacy_dag_spec",
+        "issue": "意见方向：保留",
+        "amount": "not_quantified_in_dag_spec",
+        "status": "hit",
+        "evidence": [
+          "既有 DAG 节点证据卡"
+        ]
+      }
+    ],
+    "noise_exclusions": []
+  },
+  "presentation": {
+    "renderer": "legacy-dag@1.0.0",
+    "legacy_dag": {
+      "title": "黔岭酒业 2025 年度财务报表审计（实验组）· 组网复算 DAG",
+      "sub": "32 插件 / G01–G05 / 42 项发现 (F1–F10/E01–E32) · 浏览器端确定性渲染",
+      "plan": "exp-qianling-2025",
+      "dataset": "01_被审计单位提供资料（8 域 53 文件）",
+      "files": "8 域 53 文件",
+      "rows": "凭证 200 行",
+      "sha": "",
+      "source": "审计项目案例/黔岭酒业2025年度财务报表审计_实验组/01_被审计单位提供资料/",
+      "foot": "节点与边定义见《审计报告-黔岭酒业2025年度财务报表审计(实验组).md》§7/§8；本页为纯只读演示，不写库、不进网络、零执行副作用。",
+      "layers": [
+        "数据接入 L0",
+        "勾稽门户 L1",
+        "实质性程序 L2 ×28",
+        "发现收敛 L3",
+        "报表影响 L4",
+        "结论与评测 L5"
+      ],
+      "nodes": [
+        {
+          "id": "P-books",
+          "layer": 0,
+          "name": "账务域 P-books",
+          "cap": "06 文件",
+          "rows": [
+            [
+              "行式工件",
+              "全量转入 L1/L2"
+            ]
+          ],
+          "note": "L0 数据域接入：单文件原样读入 + 截断标注，工件化后进入门户与取证分发。",
+          "kpis": []
+        },
+        {
+          "id": "P-biz",
+          "layer": 0,
+          "name": "业务域 P-biz",
+          "cap": "28+2MD 文件",
+          "rows": [
+            [
+              "行式工件",
+              "全量转入 L1/L2"
+            ]
+          ],
+          "note": "L0 数据域接入：单文件原样读入 + 截断标注，工件化后进入门户与取证分发。",
+          "kpis": []
+        },
+        {
+          "id": "P-gov",
+          "layer": 0,
+          "name": "治理域 P-gov",
+          "cap": "04 文件",
+          "rows": [
+            [
+              "行式工件",
+              "全量转入 L1/L2"
+            ]
+          ],
+          "note": "L0 数据域接入：单文件原样读入 + 截断标注，工件化后进入门户与取证分发。",
+          "kpis": []
+        },
+        {
+          "id": "P-tax",
+          "layer": 0,
+          "name": "税务域 P-tax",
+          "cap": "3+1 文件",
+          "rows": [
+            [
+              "行式工件",
+              "全量转入 L1/L2"
+            ]
+          ],
+          "note": "L0 数据域接入：单文件原样读入 + 截断标注，工件化后进入门户与取证分发。",
+          "kpis": []
+        },
+        {
+          "id": "P-bank",
+          "layer": 0,
+          "name": "银行域 P-bank",
+          "cap": "3+1 文件",
+          "rows": [
+            [
+              "行式工件",
+              "全量转入 L1/L2"
+            ]
+          ],
+          "note": "L0 数据域接入：单文件原样读入 + 截断标注，工件化后进入门户与取证分发。",
+          "kpis": []
+        },
+        {
+          "id": "P-oth",
+          "layer": 0,
+          "name": "其他域 P-oth",
+          "cap": "1+4 文件",
+          "rows": [
+            [
+              "行式工件",
+              "全量转入 L1/L2"
+            ]
+          ],
+          "note": "L0 数据域接入：单文件原样读入 + 截断标注，工件化后进入门户与取证分发。",
+          "kpis": []
+        },
+        {
+          "id": "P01",
+          "layer": 2,
+          "name": "P01 sales_cutoff 收入截止",
+          "cap": "rule.p01",
+          "finding": "发现 F1 · E09",
+          "rows": [
+            [
+              "检出编号",
+              "F1 · E09"
+            ]
+          ],
+          "note": "规则 P01（T2）逐条产出带文件+数字的证据引用；规则明细见报告 §7。",
+          "kpis": []
+        },
+        {
+          "id": "P02",
+          "layer": 2,
+          "name": "P02 goods_flow 实物流转",
+          "cap": "rule.p02",
+          "finding": "发现 E01",
+          "rows": [
+            [
+              "检出编号",
+              "E01"
+            ]
+          ],
+          "note": "规则 P02（T2）逐条产出带文件+数字的证据引用；规则明细见报告 §7。",
+          "kpis": []
+        },
+        {
+          "id": "P03",
+          "layer": 2,
+          "name": "P03 aging_recompute 账龄重算",
+          "cap": "rule.p03",
+          "finding": "发现 F3 · E01",
+          "rows": [
+            [
+              "检出编号",
+              "F3 · E01"
+            ]
+          ],
+          "note": "规则 P03（T2）逐条产出带文件+数字的证据引用；规则明细见报告 §7。",
+          "kpis": []
+        },
+        {
+          "id": "P04",
+          "layer": 2,
+          "name": "P04 nrv_test 跌价测试",
+          "cap": "rule.p04",
+          "finding": "发现 F4",
+          "rows": [
+            [
+              "检出编号",
+              "F4"
+            ]
+          ],
+          "note": "规则 P04（T2）逐条产出带文件+数字的证据引用；规则明细见报告 §7。",
+          "kpis": []
+        },
+        {
+          "id": "P05",
+          "layer": 2,
+          "name": "P05 inventory_count 存货监盘",
+          "cap": "rule.p05",
+          "finding": "发现 E06 · E15",
+          "rows": [
+            [
+              "检出编号",
+              "E06 · E15"
+            ]
+          ],
+          "note": "规则 P05（T2）逐条产出带文件+数字的证据引用；规则明细见报告 §7。",
+          "kpis": []
+        },
+        {
+          "id": "P06",
+          "layer": 2,
+          "name": "P06 cogs_recompute 成本倒算",
+          "cap": "rule.p06",
+          "finding": "发现 E03",
+          "rows": [
+            [
+              "检出编号",
+              "E03"
+            ]
+          ],
+          "note": "规则 P06（T2）逐条产出带文件+数字的证据引用；规则明细见报告 §7。",
+          "kpis": []
+        },
+        {
+          "id": "P07",
+          "layer": 2,
+          "name": "P07 dep_recompute 折旧重算",
+          "cap": "rule.p07",
+          "finding": "发现 F5",
+          "rows": [
+            [
+              "检出编号",
+              "F5"
+            ]
+          ],
+          "note": "规则 P07（T2）逐条产出带文件+数字的证据引用；规则明细见报告 §7。",
+          "kpis": []
+        },
+        {
+          "id": "P08",
+          "layer": 2,
+          "name": "P08 impairment_test 减值测试",
+          "cap": "rule.p08",
+          "finding": "发现 E18",
+          "rows": [
+            [
+              "检出编号",
+              "E18"
+            ]
+          ],
+          "note": "规则 P08（T2）逐条产出带文件+数字的证据引用；规则明细见报告 §7。",
+          "kpis": []
+        },
+        {
+          "id": "P09",
+          "layer": 2,
+          "name": "P09 fa_count 固资监盘",
+          "cap": "rule.p09",
+          "finding": "发现 E19",
+          "rows": [
+            [
+              "检出编号",
+              "E19"
+            ]
+          ],
+          "note": "规则 P09（T2）逐条产出带文件+数字的证据引用；规则明细见报告 §7。",
+          "kpis": []
+        },
+        {
+          "id": "P10",
+          "layer": 2,
+          "name": "P10 cip_transfer 在建转固",
+          "cap": "rule.p10",
+          "finding": "发现 E17",
+          "rows": [
+            [
+              "检出编号",
+              "E17"
+            ]
+          ],
+          "note": "规则 P10（T2）逐条产出带文件+数字的证据引用；规则明细见报告 §7。",
+          "kpis": []
+        },
+        {
+          "id": "P11",
+          "layer": 2,
+          "name": "P11 asset_condition 资产确认",
+          "cap": "rule.p11",
+          "finding": "发现 F6",
+          "rows": [
+            [
+              "检出编号",
+              "F6"
+            ]
+          ],
+          "note": "规则 P11（T2）逐条产出带文件+数字的证据引用；规则明细见报告 §7。",
+          "kpis": []
+        },
+        {
+          "id": "P12",
+          "layer": 2,
+          "name": "P12 expense_cutoff 费用截止",
+          "cap": "rule.p12",
+          "finding": "发现 E05 · E24",
+          "rows": [
+            [
+              "检出编号",
+              "E05 · E24"
+            ]
+          ],
+          "note": "规则 P12（T2）逐条产出带文件+数字的证据引用；规则明细见报告 §7。",
+          "kpis": []
+        },
+        {
+          "id": "P13",
+          "layer": 2,
+          "name": "P13 voucher_review 凭证审查",
+          "cap": "rule.p13",
+          "finding": "发现 E05 · E31",
+          "rows": [
+            [
+              "检出编号",
+              "E05 · E31"
+            ]
+          ],
+          "note": "规则 P13（T2）逐条产出带文件+数字的证据引用；规则明细见报告 §7。",
+          "kpis": []
+        },
+        {
+          "id": "P14",
+          "layer": 2,
+          "name": "P14 ap_lookup 未入账负债",
+          "cap": "rule.p14",
+          "finding": "发现 E02 · E22",
+          "rows": [
+            [
+              "检出编号",
+              "E02 · E22"
+            ]
+          ],
+          "note": "规则 P14（T2）逐条产出带文件+数字的证据引用；规则明细见报告 §7。",
+          "kpis": []
+        },
+        {
+          "id": "P15",
+          "layer": 2,
+          "name": "P15 payroll_recompute 社保交叉",
+          "cap": "rule.p15",
+          "finding": "发现 E23",
+          "rows": [
+            [
+              "检出编号",
+              "E23"
+            ]
+          ],
+          "note": "规则 P15（T2）逐条产出带文件+数字的证据引用；规则明细见报告 §7。",
+          "kpis": []
+        },
+        {
+          "id": "P16",
+          "layer": 2,
+          "name": "P16 salary_cutoff 薪酬截止",
+          "cap": "rule.p16",
+          "finding": "发现 F10",
+          "rows": [
+            [
+              "检出编号",
+              "F10"
+            ]
+          ],
+          "note": "规则 P16（T2）逐条产出带文件+数字的证据引用；规则明细见报告 §7。",
+          "kpis": []
+        },
+        {
+          "id": "P17",
+          "layer": 2,
+          "name": "P17 related_party 关联方穿透",
+          "cap": "rule.p17",
+          "finding": "发现 F2 · F7 · E04 · E27",
+          "rows": [
+            [
+              "检出编号",
+              "F2 · F7 · E04 · E27"
+            ]
+          ],
+          "note": "规则 P17（T2）逐条产出带文件+数字的证据引用；规则明细见报告 §7。",
+          "kpis": []
+        },
+        {
+          "id": "P18",
+          "layer": 2,
+          "name": "P18 bank_recon 银行调节",
+          "cap": "rule.p18",
+          "finding": "发现 F9",
+          "rows": [
+            [
+              "检出编号",
+              "F9"
+            ]
+          ],
+          "note": "规则 P18（T2）逐条产出带文件+数字的证据引用；规则明细见报告 §7。",
+          "kpis": []
+        },
+        {
+          "id": "P19",
+          "layer": 2,
+          "name": "P19 ic_reconcile 内部往来",
+          "cap": "rule.p19",
+          "finding": "发现 E30",
+          "rows": [
+            [
+              "检出编号",
+              "E30"
+            ]
+          ],
+          "note": "规则 P19（T2）逐条产出带文件+数字的证据引用；规则明细见报告 §7。",
+          "kpis": []
+        },
+        {
+          "id": "P20",
+          "layer": 2,
+          "name": "P20 consolidation_scope 合并范围",
+          "cap": "rule.p20",
+          "finding": "发现 E29",
+          "rows": [
+            [
+              "检出编号",
+              "E29"
+            ]
+          ],
+          "note": "规则 P20（T2）逐条产出带文件+数字的证据引用；规则明细见报告 §7。",
+          "kpis": []
+        },
+        {
+          "id": "P21",
+          "layer": 2,
+          "name": "P21 disclosure_lookup 披露检查",
+          "cap": "rule.p21",
+          "finding": "发现 E12·E14·E16·E20·E26·E28",
+          "rows": [
+            [
+              "检出编号",
+              "E12·E14·E16·E20·E26·E28"
+            ]
+          ],
+          "note": "规则 P21（T2）逐条产出带文件+数字的证据引用；规则明细见报告 §7。",
+          "kpis": []
+        },
+        {
+          "id": "P22",
+          "layer": 2,
+          "name": "P22 note_reclass 票据置换",
+          "cap": "rule.p22",
+          "finding": "发现 E07",
+          "rows": [
+            [
+              "检出编号",
+              "E07"
+            ]
+          ],
+          "note": "规则 P22（T2）逐条产出带文件+数字的证据引用；规则明细见报告 §7。",
+          "kpis": []
+        },
+        {
+          "id": "P23",
+          "layer": 2,
+          "name": "P23 revenue_concentration 收入集中度",
+          "cap": "rule.p23",
+          "finding": "发现 E12",
+          "rows": [
+            [
+              "检出编号",
+              "E12"
+            ]
+          ],
+          "note": "规则 P23（T2）逐条产出带文件+数字的证据引用；规则明细见报告 §7。",
+          "kpis": []
+        },
+        {
+          "id": "P24",
+          "layer": 2,
+          "name": "P24 contract_clause 合同条款",
+          "cap": "rule.p24",
+          "finding": "发现 E11·E13·E32",
+          "rows": [
+            [
+              "检出编号",
+              "E11·E13·E32"
+            ]
+          ],
+          "note": "规则 P24（T2）逐条产出带文件+数字的证据引用；规则明细见报告 §7。",
+          "kpis": []
+        },
+        {
+          "id": "P25",
+          "layer": 2,
+          "name": "P25 gov_grant_class 补助分类",
+          "cap": "rule.p25",
+          "finding": "发现 F8 · E08",
+          "rows": [
+            [
+              "检出编号",
+              "F8 · E08"
+            ]
+          ],
+          "note": "规则 P25（T2）逐条产出带文件+数字的证据引用；规则明细见报告 §7。",
+          "kpis": []
+        },
+        {
+          "id": "P26",
+          "layer": 2,
+          "name": "P26 aging_lookup 预付账龄",
+          "cap": "rule.p26",
+          "finding": "发现 E25",
+          "rows": [
+            [
+              "检出编号",
+              "E25"
+            ]
+          ],
+          "note": "规则 P26（T2）逐条产出带文件+数字的证据引用；规则明细见报告 §7。",
+          "kpis": []
+        },
+        {
+          "id": "P27",
+          "layer": 2,
+          "name": "P27 subsequent_return 期后事项",
+          "cap": "rule.p27",
+          "finding": "发现 E10",
+          "rows": [
+            [
+              "检出编号",
+              "E10"
+            ]
+          ],
+          "note": "规则 P27（T2）逐条产出带文件+数字的证据引用；规则明细见报告 §7。",
+          "kpis": []
+        },
+        {
+          "id": "P28",
+          "layer": 2,
+          "name": "P28 dev_cost_test 研发归集",
+          "cap": "rule.p28",
+          "finding": "发现 E21",
+          "rows": [
+            [
+              "检出编号",
+              "E21"
+            ]
+          ],
+          "note": "规则 P28（T2）逐条产出带文件+数字的证据引用；规则明细见报告 §7。",
+          "kpis": []
+        },
+        {
+          "id": "P29",
+          "layer": 1,
+          "name": "P29 勾稽门户",
+          "cap": "reconcile · 试算平衡(3主体)+六域建档",
+          "kpis": [
+            [
+              3,
+              "平衡主体（差额 0.00）",
+              0
+            ]
+          ],
+          "rows": [
+            [
+              "试算平衡",
+              "3/3 ✓"
+            ],
+            [
+              "六域建档",
+              "全量行式工件"
+            ]
+          ],
+          "note": "试算平衡（3 主体）+ 六域建档为自洽锚点。"
+        },
+        {
+          "id": "w_evid",
+          "layer": 1,
+          "virtual": true,
+          "name": "取证工件池 G02",
+          "cap": "WAS · L0→P01–P28 取证分发",
+          "rows": [
+            [
+              "程序级取证边",
+              "28 条（并行）"
+            ]
+          ],
+          "note": "虚拟汇聚节点：承载 G02 下 28 条 L0→程序取证边，非独立插件。",
+          "kpis": []
+        },
+        {
+          "id": "P30",
+          "layer": 3,
+          "name": "P30 发现收敛",
+          "cap": "classify · 42 项",
+          "kpis": [
+            [
+              42,
+              "发现 (F1–F10/E01–E32)",
+              0
+            ],
+            [
+              32,
+              "需调整 / 1,083,925,000",
+              0
+            ]
+          ],
+          "rows": [
+            [
+              "按性质",
+              "错报 27 / 舞弊 4 / 披露 9 / 内控 2"
+            ],
+            [
+              "编号归口",
+              "42/42"
+            ]
+          ],
+          "note": "42 项按性质/严重/处理归类、编号归口。"
+        },
+        {
+          "id": "P31",
+          "layer": 4,
+          "name": "P31 报表影响评估",
+          "cap": "impact.eval",
+          "kpis": [
+            [
+              1083925000,
+              "需调整金额合计",
+              0
+            ]
+          ],
+          "rows": [
+            [
+              "需调整",
+              "32 项"
+            ],
+            [
+              "影响程度判断",
+              "待办重编(演示)"
+            ]
+          ],
+          "note": "需调整金额汇总 → 影响程度判断（演示留待报表重编）。"
+        },
+        {
+          "id": "P32",
+          "layer": 5,
+          "kind": "sink",
+          "name": "P32 结论与评测",
+          "cap": "eval · recall",
+          "finding": "意见方向：保留",
+          "kpis": [
+            [
+              1,
+              "召回率 100.0%",
+              2
+            ],
+            [
+              0,
+              "误报",
+              0
+            ]
+          ],
+          "rows": [
+            [
+              "对拍基准",
+              "_ground_truth"
+            ],
+            [
+              "口径",
+              "42/42、0 误报、保留意见"
+            ]
+          ],
+          "note": "召回/误报比对标准答案 → 42/42、0 误报、意见方向保留。"
+        }
+      ],
+      "edges": [
+        {
+          "from": "P-books",
+          "to": "P29",
+          "label": "G01",
+          "virtual": false
+        },
+        {
+          "from": "P-books",
+          "to": "w_evid",
+          "label": "G02",
+          "virtual": false
+        },
+        {
+          "from": "P-biz",
+          "to": "P29",
+          "label": "G01",
+          "virtual": false
+        },
+        {
+          "from": "P-biz",
+          "to": "w_evid",
+          "label": "G02",
+          "virtual": false
+        },
+        {
+          "from": "P-gov",
+          "to": "P29",
+          "label": "G01",
+          "virtual": false
+        },
+        {
+          "from": "P-gov",
+          "to": "w_evid",
+          "label": "G02",
+          "virtual": false
+        },
+        {
+          "from": "P-tax",
+          "to": "P29",
+          "label": "G01",
+          "virtual": false
+        },
+        {
+          "from": "P-tax",
+          "to": "w_evid",
+          "label": "G02",
+          "virtual": false
+        },
+        {
+          "from": "P-bank",
+          "to": "P29",
+          "label": "G01",
+          "virtual": false
+        },
+        {
+          "from": "P-bank",
+          "to": "w_evid",
+          "label": "G02",
+          "virtual": false
+        },
+        {
+          "from": "P-oth",
+          "to": "P29",
+          "label": "G01",
+          "virtual": false
+        },
+        {
+          "from": "P-oth",
+          "to": "w_evid",
+          "label": "G02",
+          "virtual": false
+        },
+        {
+          "from": "w_evid",
+          "to": "P01",
+          "label": "G02",
+          "virtual": true
+        },
+        {
+          "from": "w_evid",
+          "to": "P02",
+          "label": "G02",
+          "virtual": true
+        },
+        {
+          "from": "w_evid",
+          "to": "P03",
+          "label": "G02",
+          "virtual": true
+        },
+        {
+          "from": "w_evid",
+          "to": "P04",
+          "label": "G02",
+          "virtual": true
+        },
+        {
+          "from": "w_evid",
+          "to": "P05",
+          "label": "G02",
+          "virtual": true
+        },
+        {
+          "from": "w_evid",
+          "to": "P06",
+          "label": "G02",
+          "virtual": true
+        },
+        {
+          "from": "w_evid",
+          "to": "P07",
+          "label": "G02",
+          "virtual": true
+        },
+        {
+          "from": "w_evid",
+          "to": "P08",
+          "label": "G02",
+          "virtual": true
+        },
+        {
+          "from": "w_evid",
+          "to": "P09",
+          "label": "G02",
+          "virtual": true
+        },
+        {
+          "from": "w_evid",
+          "to": "P10",
+          "label": "G02",
+          "virtual": true
+        },
+        {
+          "from": "w_evid",
+          "to": "P11",
+          "label": "G02",
+          "virtual": true
+        },
+        {
+          "from": "w_evid",
+          "to": "P12",
+          "label": "G02",
+          "virtual": true
+        },
+        {
+          "from": "w_evid",
+          "to": "P13",
+          "label": "G02",
+          "virtual": true
+        },
+        {
+          "from": "w_evid",
+          "to": "P14",
+          "label": "G02",
+          "virtual": true
+        },
+        {
+          "from": "w_evid",
+          "to": "P15",
+          "label": "G02",
+          "virtual": true
+        },
+        {
+          "from": "w_evid",
+          "to": "P16",
+          "label": "G02",
+          "virtual": true
+        },
+        {
+          "from": "w_evid",
+          "to": "P17",
+          "label": "G02",
+          "virtual": true
+        },
+        {
+          "from": "w_evid",
+          "to": "P18",
+          "label": "G02",
+          "virtual": true
+        },
+        {
+          "from": "w_evid",
+          "to": "P19",
+          "label": "G02",
+          "virtual": true
+        },
+        {
+          "from": "w_evid",
+          "to": "P20",
+          "label": "G02",
+          "virtual": true
+        },
+        {
+          "from": "w_evid",
+          "to": "P21",
+          "label": "G02",
+          "virtual": true
+        },
+        {
+          "from": "w_evid",
+          "to": "P22",
+          "label": "G02",
+          "virtual": true
+        },
+        {
+          "from": "w_evid",
+          "to": "P23",
+          "label": "G02",
+          "virtual": true
+        },
+        {
+          "from": "w_evid",
+          "to": "P24",
+          "label": "G02",
+          "virtual": true
+        },
+        {
+          "from": "w_evid",
+          "to": "P25",
+          "label": "G02",
+          "virtual": true
+        },
+        {
+          "from": "w_evid",
+          "to": "P26",
+          "label": "G02",
+          "virtual": true
+        },
+        {
+          "from": "w_evid",
+          "to": "P27",
+          "label": "G02",
+          "virtual": true
+        },
+        {
+          "from": "w_evid",
+          "to": "P28",
+          "label": "G02",
+          "virtual": true
+        },
+        {
+          "from": "P01",
+          "to": "P30",
+          "label": "G03",
+          "virtual": false
+        },
+        {
+          "from": "P02",
+          "to": "P30",
+          "label": "G03",
+          "virtual": false
+        },
+        {
+          "from": "P03",
+          "to": "P30",
+          "label": "G03",
+          "virtual": false
+        },
+        {
+          "from": "P04",
+          "to": "P30",
+          "label": "G03",
+          "virtual": false
+        },
+        {
+          "from": "P05",
+          "to": "P30",
+          "label": "G03",
+          "virtual": false
+        },
+        {
+          "from": "P06",
+          "to": "P30",
+          "label": "G03",
+          "virtual": false
+        },
+        {
+          "from": "P07",
+          "to": "P30",
+          "label": "G03",
+          "virtual": false
+        },
+        {
+          "from": "P08",
+          "to": "P30",
+          "label": "G03",
+          "virtual": false
+        },
+        {
+          "from": "P09",
+          "to": "P30",
+          "label": "G03",
+          "virtual": false
+        },
+        {
+          "from": "P10",
+          "to": "P30",
+          "label": "G03",
+          "virtual": false
+        },
+        {
+          "from": "P11",
+          "to": "P30",
+          "label": "G03",
+          "virtual": false
+        },
+        {
+          "from": "P12",
+          "to": "P30",
+          "label": "G03",
+          "virtual": false
+        },
+        {
+          "from": "P13",
+          "to": "P30",
+          "label": "G03",
+          "virtual": false
+        },
+        {
+          "from": "P14",
+          "to": "P30",
+          "label": "G03",
+          "virtual": false
+        },
+        {
+          "from": "P15",
+          "to": "P30",
+          "label": "G03",
+          "virtual": false
+        },
+        {
+          "from": "P16",
+          "to": "P30",
+          "label": "G03",
+          "virtual": false
+        },
+        {
+          "from": "P17",
+          "to": "P30",
+          "label": "G03",
+          "virtual": false
+        },
+        {
+          "from": "P18",
+          "to": "P30",
+          "label": "G03",
+          "virtual": false
+        },
+        {
+          "from": "P19",
+          "to": "P30",
+          "label": "G03",
+          "virtual": false
+        },
+        {
+          "from": "P20",
+          "to": "P30",
+          "label": "G03",
+          "virtual": false
+        },
+        {
+          "from": "P21",
+          "to": "P30",
+          "label": "G03",
+          "virtual": false
+        },
+        {
+          "from": "P22",
+          "to": "P30",
+          "label": "G03",
+          "virtual": false
+        },
+        {
+          "from": "P23",
+          "to": "P30",
+          "label": "G03",
+          "virtual": false
+        },
+        {
+          "from": "P24",
+          "to": "P30",
+          "label": "G03",
+          "virtual": false
+        },
+        {
+          "from": "P25",
+          "to": "P30",
+          "label": "G03",
+          "virtual": false
+        },
+        {
+          "from": "P26",
+          "to": "P30",
+          "label": "G03",
+          "virtual": false
+        },
+        {
+          "from": "P27",
+          "to": "P30",
+          "label": "G03",
+          "virtual": false
+        },
+        {
+          "from": "P28",
+          "to": "P30",
+          "label": "G03",
+          "virtual": false
+        },
+        {
+          "from": "P30",
+          "to": "P31",
+          "label": "G04",
+          "virtual": false
+        },
+        {
+          "from": "P31",
+          "to": "P32",
+          "label": "G05",
+          "virtual": false
+        }
+      ],
+      "stats": [
+        [
+          "程序",
+          "P01–P28"
+        ],
+        [
+          "发现",
+          "42/42"
+        ],
+        [
+          "需调整",
+          "1,083,925,000"
+        ],
+        [
+          "误报",
+          "0"
+        ],
+        [
+          "意见",
+          "保留"
+        ]
+      ],
+      "generated": "2026-09-15T00:00:00"
+    }
+  },
+  "integrity": {
+    "markdown_sha256": "f3ac804e5e4d1db2cace8df1d1f1d11e180fb4077864c6fa75a75f53aff2871f",
+    "source_inventory_sha256": "fa3c836767a905c388aac9982ff9ea6c9a1177581daaa64f7f04f51b95af9f7d",
+    "render_spec_sha256": "0aadb1aed05c6c5f24bd6c18f1d764902375f4e022e2b4fb2c10ee731e4f322b",
+    "content_sha256": "8f595cc792e58300ede0d304c1d0637f23e48c1065f61aab23331227ad02d71b",
+    "generator_version": "0.1.0"
+  }
+}

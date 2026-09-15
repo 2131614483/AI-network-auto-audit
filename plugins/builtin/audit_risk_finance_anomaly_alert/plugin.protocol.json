@@ -1,0 +1,94 @@
+{
+ "protocol_version": "1.0.0",
+ "id": "audit.risk.finance-anomaly-alert",
+ "version": "0.1.0",
+ "name": "财务异常指标预警",
+ "description": "计算财务指标偏离度识别异常波动；调用统一指标计算，输出至风险矩阵。",
+ "kind": "analysis",
+ "domains": [
+  "audit",
+  "compliance"
+ ],
+ "lifecycle": "verified",
+ "compatibility": {
+  "host_protocol": ">=1.0.0 <2.0.0",
+  "adapters": [
+   "python"
+  ],
+  "fallback_behavior": "human_review"
+ },
+ "capabilities": [
+  {
+   "id": "audit.risk.finance-anomaly-alert",
+   "summary": "财务异常指标预警：计算财务指标偏离度识别异常波动；调用统一指标计算，输出至风险矩阵。",
+   "side_effects": "read_only",
+   "idempotency": "input_sha256 + capability_version",
+   "inputs": [
+    {
+     "contract_id": "clean-finance-set",
+     "version": "1.0.0",
+     "format": "artifact_ref",
+     "delivery": "reference",
+     "classification": "audit_confidential",
+     "schema_ref": "ledger-artifact-ref.schema.json",
+     "max_bytes": 268435456
+    }
+   ],
+   "outputs": [
+    {
+     "contract_id": "finance-anomaly-set",
+     "version": "1.0.0",
+     "format": "json",
+     "delivery": "request_response",
+     "classification": "audit_confidential",
+     "schema_ref": "anomaly-candidates.schema.json",
+     "max_bytes": 67108864
+    }
+   ],
+   "invokes": [
+    "audit.foundation.metric-compute"
+   ]
+  }
+ ],
+ "governance": {
+  "default_data_classification": "audit_confidential",
+  "permissions": {
+   "data_read": [
+    "audit.risk.finance-anomaly-alert.read"
+   ],
+   "data_write": [],
+   "network": "none",
+   "secret_refs": []
+  },
+  "policy": {
+   "gateway_required": true,
+   "approval_required": false,
+   "evidence_required": true
+  }
+ },
+ "resources": {
+  "cpu": 1,
+  "memory_mb": 256,
+  "gpu": "none",
+  "timeout_seconds": 300
+ },
+ "observability": {
+  "trace_required": true,
+  "emits": [
+   "structured_log",
+   "artifact_ref",
+   "audit_event"
+  ],
+  "health": "declared_only"
+ },
+ "provenance": {
+  "source_refs": [
+   "docs/audit-plugin-network-100.md#32",
+   "docs/插件开发与接入标准-UPP-v1.0.md",
+   "plugins/builtin/audit-risk-finance-anomaly-alert/runtime.py"
+  ]
+ },
+ "ui": {
+  "mode": "none"
+ }
+}

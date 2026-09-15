@@ -1,0 +1,18 @@
+{
+  "schema_version": "1.0.0",
+  "plugin": {
+    "id": "audit.mandate.priority-rank",
+    "version": "0.1.0",
+    "sha256": "272bf7d86bb2f0b9b5a0690994750b25840c84b1dac84e9a36229835c82b71cd"
+  },
+  "protocol": {
+    "id": "audit.mandate.priority-rank",
+    "version": "0.1.0",
+    "sha256": "c0cb287645fdb24dcc50b3764574c2982f6aaca9341ef5e89164ebf3402b4321"
+  },
+  "execution_mode": "isolated_subprocess",
+  "capabilities": [
+    "audit.mandate.priority-rank"
+  ],
+  "status": "verified"
+}

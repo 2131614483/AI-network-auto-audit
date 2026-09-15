@@ -1,0 +1,8 @@
+{
+  "schema_version": "1.0.0",
+  "plugin": {"id": "aiops.alert-correlation", "version": "0.1.0", "sha256": "56c963f2c014937a615d2d80bc5190a7145b6afa6970c36328457fb5ab205367"},
+  "protocol": {"id": "aiops.alert-correlation", "version": "0.1.0", "sha256": "a88281f7a751efd3ad97d334be364972163ed67e9d7409a188380fc028813aec"},
+  "execution_mode": "isolated_subprocess",
+  "capabilities": ["aiops.alert.correlate"],
+  "status": "verified"
+}

@@ -1,0 +1,45 @@
+{
+ "id": "audit.evidence.workpaper-review3",
+ "version": "0.1.0",
+ "name": "审计证据与底稿（契约声明）",
+ "runtime": "python",
+ "entrypoint": "plugins.builtin.audit_evidence_workpaper_review3.runtime:handle",
+ "capabilities": [
+  "audit.evidence.workpaper-review3"
+ ],
+ "inputs": {
+  "capability": "audit.evidence.workpaper-review3",
+  "schema": "workpaper-export.schema.json",
+  "content_type": "application/json"
+ },
+ "outputs": {
+  "capability": "audit.evidence.workpaper-review3",
+  "schema": "document-content.schema.json",
+  "content_type": "application/json"
+ },
+ "side_effects": "read_only",
+ "idempotency": "input_sha256 + capability_version",
+ "permissions": {
+  "data_read": [
+   "audit.evidence.workpaper-review3.read"
+  ],
+  "data_write": [],
+  "network": "none",
+  "secrets": []
+ },
+ "resources": {
+  "cpu": 1,
+  "memory_mb": 256,
+  "gpu": false,
+  "timeout_seconds": 300
+ },
+ "data_classification": "audit_confidential",
+ "evidence": {
+  "preserve_inputs": true,
+  "code_hash_required": true
+ },
+ "tests": {
+  "contract": "tests/contract/test_audit_evidence_workpaper_review3_contract.py",
+  "golden": "tests/unit/test_audit_evidence_workpaper_review3_runtime.py"
+ }
+}

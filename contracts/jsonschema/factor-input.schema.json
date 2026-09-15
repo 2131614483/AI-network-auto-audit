@@ -1,0 +1,23 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://audit.local/contracts/factor-input.schema.json",
+  "title": "FactorInput",
+  "description": "因子计算输入：已验证市场快照 CSV 工件引用、参考时间、因子清单与回看窗口；内容不嵌入控制面消息。",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["contract_id", "contract_version", "artifact", "reference_time", "factors", "lookback"],
+  "properties": {
+    "contract_id": {"const": "factor-input"},
+    "contract_version": {"const": "1.0.0"},
+    "artifact": {"$ref": "artifact-ref.schema.json"},
+    "reference_time": {"type": "string", "format": "date-time"},
+    "factors": {
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 8,
+      "uniqueItems": true,
+      "items": {"type": "string", "enum": ["returns", "volatility", "momentum", "zscore", "drawdown", "volume_zscore"]}
+    },
+    "lookback": {"type": "integer", "minimum": 2, "maximum": 10000}
+  }
+}

@@ -1,0 +1,45 @@
+{
+ "id": "audit.report.report-frame-build",
+ "version": "0.1.0",
+ "name": "报告框架自动生成（契约声明）",
+ "runtime": "python",
+ "entrypoint": "plugins.builtin.audit_report_report_frame_build.runtime:handle",
+ "capabilities": [
+  "audit.report.report-frame-build"
+ ],
+ "inputs": {
+  "capability": "audit.report.report-frame-build",
+  "schema": "dataset-validation.schema.json",
+  "content_type": "application/json"
+ },
+ "outputs": {
+  "capability": "audit.report.report-frame-build",
+  "schema": "report-draft.schema.json",
+  "content_type": "application/json"
+ },
+ "side_effects": "read_only",
+ "idempotency": "input_sha256 + capability_version",
+ "permissions": {
+  "data_read": [
+   "audit.report.report-frame-build.read"
+  ],
+  "data_write": [],
+  "network": "none",
+  "secrets": []
+ },
+ "resources": {
+  "cpu": 1,
+  "memory_mb": 256,
+  "gpu": false,
+  "timeout_seconds": 300
+ },
+ "data_classification": "audit_confidential",
+ "evidence": {
+  "preserve_inputs": true,
+  "code_hash_required": true
+ },
+ "tests": {
+  "contract": "tests/contract/test_audit_report_report_frame_build_contract.py",
+  "golden": "tests/unit/test_audit_report_report_frame_build_runtime.py"
+ }
+}

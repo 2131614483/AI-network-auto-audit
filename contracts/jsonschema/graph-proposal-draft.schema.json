@@ -1,0 +1,85 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://audit.local/contracts/graph-proposal-draft.schema.json",
+  "title": "GraphProposalDraft",
+  "description": "由实体/关系候选集合构建的图谱 ChangeSet 草稿：每个操作带来源定位、目标空间、重复/冲突标注与置信度。草稿不写入活跃图谱，须经规则/人工批准后才作为影子 ChangeSet 落库与发布。",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["contract_id", "contract_version", "candidate_set_sha256", "space_level", "draft_id", "summary", "entity_proposals", "relation_proposals", "conflicts"],
+  "properties": {
+    "contract_id": {"const": "graph-proposal-draft"},
+    "contract_version": {"const": "1.0.0"},
+    "candidate_set_sha256": {"type": "string", "pattern": "^[A-Fa-f0-9]{64}$"},
+    "space_level": {"type": "string", "enum": ["L0", "L1", "L2", "L3", "L4"]},
+    "draft_id": {"type": "string", "pattern": "^[A-Fa-f0-9]{16}$"},
+    "graph_snapshot_sha256": {"type": "string", "pattern": "^[A-Fa-f0-9]{64}$"},
+    "entity_proposals": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["op", "candidate_id", "name", "entity_type", "target_space", "status"],
+        "properties": {
+          "op": {"const": "add_entity"},
+          "candidate_id": {"type": "string", "minLength": 1, "maxLength": 255},
+          "name": {"type": "string", "minLength": 1, "maxLength": 512},
+          "entity_type": {"type": "string", "enum": ["organization", "document", "person", "generic"]},
+          "source_ref": {"type": "string", "minLength": 1, "maxLength": 2048},
+          "confidence": {"type": "number", "minimum": 0, "maximum": 1},
+          "target_space": {"type": "string", "enum": ["L0", "L1", "L2", "L3", "L4"]},
+          "status": {"type": "string", "enum": ["proposed", "duplicate", "conflict_name", "skipped_unknown"]},
+          "reason": {"type": "string", "minLength": 1, "maxLength": 512}
+        }
+      }
+    },
+    "relation_proposals": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["op", "candidate_id", "source_id", "target_id", "relation_type", "idempotent_key", "target_space", "status"],
+        "properties": {
+          "op": {"const": "add_relation"},
+          "candidate_id": {"type": "string", "minLength": 1, "maxLength": 255},
+          "source_id": {"type": "string", "minLength": 1, "maxLength": 255},
+          "target_id": {"type": "string", "minLength": 1, "maxLength": 255},
+          "relation_type": {"type": "string", "enum": ["related_party", "controls", "invests_in", "transacts_with", "cites", "part_of", "generic"]},
+          "idempotent_key": {"type": "string", "minLength": 1, "maxLength": 1024},
+          "span": {"type": "string", "minLength": 1, "maxLength": 512},
+          "confidence": {"type": "number", "minimum": 0, "maximum": 1},
+          "target_space": {"type": "string", "enum": ["L0", "L1", "L2", "L3", "L4"]},
+          "status": {"type": "string", "enum": ["proposed", "blocked_by_entity", "duplicate"]},
+          "reason": {"type": "string", "minLength": 1, "maxLength": 512}
+        }
+      }
+    },
+    "conflicts": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["name", "entity_types", "reason"],
+        "properties": {
+          "name": {"type": "string", "minLength": 1, "maxLength": 512},
+          "entity_types": {"type": "array", "items": {"type": "string", "enum": ["organization", "document", "person", "generic"]}, "minItems": 2},
+          "reason": {"type": "string", "minLength": 1, "maxLength": 512}
+        }
+      }
+    },
+    "summary": {
+      "type": "object",
+      "additionalProperties": true,
+      "required": ["entities_proposed", "relations_proposed", "duplicates", "conflicts", "truncated"],
+      "properties": {
+        "entities_proposed": {"type": "integer", "minimum": 0},
+        "relations_proposed": {"type": "integer", "minimum": 0},
+        "duplicates": {"type": "integer", "minimum": 0},
+        "conflicts": {"type": "integer", "minimum": 0},
+        "truncated": {"type": "boolean"},
+        "dropped_relations": {"type": "integer", "minimum": 0},
+        "candidate_entities": {"type": "integer", "minimum": 0},
+        "candidate_relations": {"type": "integer", "minimum": 0}
+      }
+    }
+  }
+}

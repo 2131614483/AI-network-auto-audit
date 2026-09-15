@@ -1,0 +1,45 @@
+{
+ "id": "audit.govern.rule-iteration",
+ "version": "0.1.0",
+ "name": "规则库迭代优化（契约声明）",
+ "runtime": "python",
+ "entrypoint": "plugins.builtin.audit_govern_rule_iteration.runtime:handle",
+ "capabilities": [
+  "audit.govern.rule-iteration"
+ ],
+ "inputs": {
+  "capability": "audit.govern.rule-iteration",
+  "schema": "metric-series.schema.json",
+  "content_type": "application/json"
+ },
+ "outputs": {
+  "capability": "audit.govern.rule-iteration",
+  "schema": "dataset-validation.schema.json",
+  "content_type": "application/json"
+ },
+ "side_effects": "read_only",
+ "idempotency": "input_sha256 + capability_version",
+ "permissions": {
+  "data_read": [
+   "audit.govern.rule-iteration.read"
+  ],
+  "data_write": [],
+  "network": "none",
+  "secrets": []
+ },
+ "resources": {
+  "cpu": 1,
+  "memory_mb": 256,
+  "gpu": false,
+  "timeout_seconds": 300
+ },
+ "data_classification": "audit_confidential",
+ "evidence": {
+  "preserve_inputs": true,
+  "code_hash_required": true
+ },
+ "tests": {
+  "contract": "tests/contract/test_audit_govern_rule_iteration_contract.py",
+  "golden": "tests/unit/test_audit_govern_rule_iteration_runtime.py"
+ }
+}

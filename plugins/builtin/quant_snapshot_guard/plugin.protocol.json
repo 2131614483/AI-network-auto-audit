@@ -1,0 +1,48 @@
+{
+  "protocol_version": "1.0.0",
+  "id": "quant.snapshot-guard",
+  "version": "0.1.0",
+  "name": "量化市场快照校验闸门",
+  "description": "对市场快照 CSV 工件引用运行确定性数据集闸门：新鲜度、点时、重复时间戳、缺失率与列完整性；不写入回测或交易。",
+  "kind": "analysis",
+  "domains": ["quant"],
+  "lifecycle": "contract_only",
+  "compatibility": {"host_protocol": ">=1.0.0 <2.0.0", "adapters": ["python"], "fallback_behavior": "human_review"},
+  "capabilities": [
+    {
+      "id": "quant.dataset.validate",
+      "summary": "校验市场快照的新鲜度、点时门、重复时间戳、缺失率与列完整性，输出 dataset-validation@1。",
+      "side_effects": "read_only",
+      "idempotency": "snapshot_sha256 + reference_time + max_freshness_hours",
+      "inputs": [
+        {
+          "contract_id": "market-snapshot-ref",
+          "version": "1.0.0",
+          "format": "artifact_ref",
+          "delivery": "reference",
+          "classification": "restricted",
+          "schema_ref": "market-snapshot-ref.schema.json"
+        }
+      ],
+      "outputs": [
+        {
+          "contract_id": "dataset-validation",
+          "version": "1.0.0",
+          "format": "json",
+          "delivery": "request_response",
+          "classification": "restricted",
+          "schema_ref": "dataset-validation.schema.json"
+        }
+      ]
+    }
+  ],
+  "governance": {
+    "default_data_classification": "restricted",
+    "permissions": {"data_read": ["quant.backtests"], "data_write": [], "network": "none", "secret_refs": []},
+    "policy": {"gateway_required": true, "approval_required": false, "evidence_required": true}
+  },
+  "resources": {"cpu": 1, "memory_mb": 512, "gpu": "none", "timeout_seconds": 300},
+  "observability": {"trace_required": true, "emits": ["structured_log", "artifact_ref", "audit_event"], "health": "declared_only"},
+  "provenance": {"source_refs": ["docs/审计组网插件规划-v1.md#6.1", "docs/审计组网插件规划-v1.md#8", "docs/插件开发与接入标准-UPP-v1.0.md"]},
+  "ui": {"mode": "none"}
+}

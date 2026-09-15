@@ -1,0 +1,18 @@
+{
+  "schema_version": "1.0.0",
+  "plugin": {
+    "id": "audit.risk.industry-risk-benchmark",
+    "version": "0.1.0",
+    "sha256": "c1f59bae8822f9c91803f0a0a4f439b0246bbbb39987391927f5d581d6a7bcea"
+  },
+  "protocol": {
+    "id": "audit.risk.industry-risk-benchmark",
+    "version": "0.1.0",
+    "sha256": "7e9f3dbe44527dfec5b4122bd07aba9045c66b0e7f326159538783abfd734b0f"
+  },
+  "execution_mode": "isolated_subprocess",
+  "capabilities": [
+    "audit.risk.industry-risk-benchmark"
+  ],
+  "status": "verified"
+}

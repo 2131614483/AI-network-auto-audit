@@ -1,0 +1,1126 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>知识星云 · 审计插件动态知识图谱</title>
+<style>
+  :root{
+    --bg:#05070e; --panel:rgba(13,20,34,.72); --panel-solid:#0c1424;
+    --border:rgba(120,160,255,.18); --text:#e8eef9; --muted:#93a6c4; --faint:#5f7190;
+    --accent:#6fa8ff; --gold:#ffd98a; --purple:#c79bff; --cyan:#6fd0e8;
+    --mono:"Cascadia Mono",Consolas,"SFMono-Regular",Menlo,monospace;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html,body{height:100%;overflow:hidden;background:var(--bg);color:var(--text);
+    font-family:"Microsoft YaHei","PingFang SC","Noto Sans CJK SC",system-ui,sans-serif;-webkit-font-smoothing:antialiased}
+  #sky{position:fixed;inset:0;display:block;cursor:grab}
+  #sky.dragging{cursor:grabbing}
+  #sky.hovering{cursor:pointer}
+
+  /* 顶部 HUD */
+  .hud{position:fixed;top:0;left:0;right:0;display:flex;align-items:center;gap:14px;flex-wrap:wrap;
+    padding:12px 18px;background:linear-gradient(180deg,rgba(5,8,16,.85),rgba(5,8,16,0));
+    pointer-events:none;z-index:10}
+  .hud>*{pointer-events:auto}
+  .hud-title{display:flex;flex-direction:column;line-height:1.25;margin-right:6px}
+  .hud-title b{font-size:17px;font-weight:700;letter-spacing:.04em}
+  .hud-title b .glow{color:var(--cyan);text-shadow:0 0 12px rgba(111,208,232,.7)}
+  .hud-title small{font-size:11px;color:var(--faint);letter-spacing:.12em;font-family:var(--mono)}
+  .hud-title small #srcBadge{padding:1px 6px;border-radius:10px;font-weight:600;letter-spacing:.04em}
+  .hud-title small #srcBadge.live{color:#7ff0c8;background:rgba(80,224,180,.12);border:1px solid rgba(80,224,180,.35)}
+  .hud-title small #srcBadge.snap{color:var(--muted);background:rgba(140,160,200,.1);border:1px solid var(--border)}
+  .hud-stats{display:flex;gap:8px}
+  .stat{background:var(--panel);border:1px solid var(--border);border-radius:6px;padding:5px 11px;
+    backdrop-filter:blur(6px);font-family:var(--mono)}
+  .stat .n{font-size:16px;font-weight:700;color:var(--accent)}
+  .stat .l{font-size:10.5px;color:var(--muted);margin-left:5px}
+  .hud-tools{display:flex;align-items:center;gap:8px;margin-left:auto}
+  .layers{display:flex;gap:6px;background:var(--panel);border:1px solid var(--border);border-radius:6px;
+    padding:5px 9px;backdrop-filter:blur(6px)}
+  .layers label{display:flex;align-items:center;gap:4px;font-size:11.5px;color:var(--muted);cursor:pointer;white-space:nowrap}
+  .layers input{accent-color:var(--accent);cursor:pointer}
+  .search{display:flex;align-items:center;gap:6px;background:var(--panel);border:1px solid var(--border);
+    border-radius:6px;padding:4px 9px;backdrop-filter:blur(6px)}
+  .search input{background:transparent;border:0;outline:none;color:var(--text);font-size:12.5px;width:140px}
+  .search input::placeholder{color:var(--faint)}
+  .btn{background:var(--panel);border:1px solid var(--border);color:var(--muted);border-radius:6px;
+    padding:6px 11px;font-size:12px;cursor:pointer;backdrop-filter:blur(6px);transition:.15s}
+  .btn:hover{color:var(--text);border-color:var(--accent)}
+  .btn.on{color:var(--accent);border-color:var(--accent)}
+
+  /* 图例 */
+  .legend{position:fixed;left:18px;bottom:16px;z-index:10;background:var(--panel);border:1px solid var(--border);
+    border-radius:8px;padding:11px 13px;backdrop-filter:blur(6px);font-size:11.5px;min-width:168px}
+  .legend h4{font-size:11px;letter-spacing:.1em;color:var(--faint);margin-bottom:7px;font-weight:600}
+  .lg-row{display:flex;align-items:center;gap:8px;margin:4px 0;color:var(--muted)}
+  .lg-dot{width:9px;height:9px;border-radius:50%;flex:none}
+  .lg-stage{display:flex;align-items:center;gap:6px;margin-top:6px;padding-top:7px;border-top:1px solid var(--border)}
+  .lg-band{flex:1;height:5px;border-radius:3px;
+    background:linear-gradient(90deg,#6f9bff,#5fb8ff,#4fd8e0,#52e0c4,#6fe0a0,#8cd07f,#b48ce0,#e08cc8)}
+
+  /* hover 提示 */
+  #tip{position:fixed;z-index:20;pointer-events:none;max-width:280px;background:rgba(10,17,30,.94);
+    border:1px solid var(--accent);border-radius:7px;padding:8px 11px;font-size:12px;line-height:1.5;
+    box-shadow:0 8px 30px rgba(0,0,0,.55);opacity:0;transition:opacity .12s;backdrop-filter:blur(8px)}
+  #tip b{font-size:13px}
+  #tip .t-id{font-family:var(--mono);color:var(--faint);font-size:11px}
+  #tip .t-meta{color:var(--muted);margin-top:2px}
+
+  /* 详情面板 */
+  #detail{position:fixed;top:74px;right:18px;width:300px;z-index:15;background:var(--panel);
+    border:1px solid var(--border);border-radius:10px;padding:15px 16px;backdrop-filter:blur(10px);
+    box-shadow:0 18px 50px rgba(0,0,0,.5);transform:translateX(340px);opacity:0;transition:.22s;max-height:74vh;overflow:auto}
+  #detail.show{transform:translateX(0);opacity:1}
+  #detail .d-close{position:absolute;top:10px;right:12px;cursor:pointer;color:var(--faint);background:none;border:0;font-size:15px}
+  #detail .d-close:hover{color:var(--text)}
+  #detail .d-kind{display:inline-block;font-size:10.5px;letter-spacing:.08em;padding:2px 8px;border-radius:20px;
+    border:1px solid var(--border);color:var(--muted);margin-bottom:8px;font-family:var(--mono)}
+  #detail h3{font-size:16px;font-weight:700;line-height:1.4;padding-right:20px}
+  #detail .d-id{font-family:var(--mono);font-size:11px;color:var(--faint);margin:4px 0 11px}
+  #detail .d-sec{font-size:11px;color:var(--faint);letter-spacing:.08em;margin:11px 0 6px}
+  .d-ports{display:flex;flex-wrap:wrap;gap:4px}
+  .d-ports .port{font-family:var(--mono);font-size:10px;padding:2px 7px;border-radius:9px;line-height:1.5;
+    border:1px solid rgba(127,224,176,.32);color:#9ff0d0;background:rgba(127,224,176,.08)}
+  .d-ports .port.out{border-color:rgba(255,217,138,.35);color:#ffe3a8;background:rgba(255,217,138,.08)}
+  .d-ports .port.invoke{border-color:rgba(170,140,230,.5);color:#cbb6f5;background:rgba(154,134,216,.12);cursor:pointer}
+  .d-ports .port.invoke:hover{border-color:rgba(190,160,250,.85);background:rgba(154,134,216,.24)}
+  #detail .d-line{display:flex;justify-content:space-between;font-size:12.5px;color:var(--muted);margin:3px 0}
+  #detail .d-line b{color:var(--text);font-weight:600}
+  .neighbor{display:flex;align-items:center;gap:7px;padding:5px 8px;margin:3px 0;border-radius:5px;
+    font-size:12px;color:var(--muted);cursor:pointer;background:rgba(120,160,255,.05);transition:.12s}
+  .neighbor:hover{background:rgba(120,160,255,.14);color:var(--text)}
+  .neighbor .nd{width:7px;height:7px;border-radius:50%;flex:none}
+  .neighbor .nt{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .neighbor .nr{font-size:10px;color:var(--faint);font-family:var(--mono)}
+  .sug-actions{display:flex;gap:8px;margin-top:12px}
+  .sug-actions .btn{flex:1;padding:7px 6px;font-size:12px;border-radius:9px;cursor:pointer}
+  .sug-actions .btn.on{border-color:rgba(127,240,200,.55);color:#9ff5d2;background:rgba(127,224,176,.12)}
+
+  .edit-bar{position:fixed;top:78px;left:50%;transform:translateX(-50%) translateY(-8px);display:none;align-items:center;gap:10px;
+  padding:8px 12px;border-radius:12px;background:rgba(14,22,42,.86);border:1px solid rgba(255,217,138,.4);
+  box-shadow:0 8px 30px rgba(0,0,0,.5),0 0 22px rgba(255,217,138,.12);backdrop-filter:blur(10px);z-index:30;opacity:0;
+  transition:opacity .18s,transform .18s;}
+.edit-bar.show{display:flex;opacity:1;transform:translateX(-50%) translateY(0);}
+.edit-hint{font-size:12px;color:#ffe3a8;letter-spacing:.3px;max-width:440px;}
+.edit-hint b{color:#9ff0d0;}
+body.editing canvas{cursor:crosshair;}
+.hint{position:fixed;right:18px;bottom:16px;z-index:10;font-size:11px;color:var(--faint);
+    background:var(--panel);border:1px solid var(--border);border-radius:6px;padding:7px 11px;backdrop-filter:blur(6px);line-height:1.7}
+  kbd{font-family:var(--mono);background:rgba(120,160,255,.12);border-radius:3px;padding:0 5px;color:var(--muted)}
+</style>
+</head>
+<body>
+<canvas id="sky"></canvas>
+
+<div class="hud">
+  <div class="hud-title">
+    <b>知识星云 <span class="glow">Knowledge Nebula</span></b>
+    <small>AUDIT NETWORK · <span id="srcBadge" class="snap">内置快照</span></small>
+  </div>
+  <div class="hud-stats">
+    <span class="stat"><span class="n" id="stPlugin">100</span><span class="l">插件</span></span>
+    <span class="stat"><span class="n" id="stStage">8</span><span class="l">业务阶段</span></span>
+    <span class="stat"><span class="n" id="stFlow">0</span><span class="l">数据接口</span></span>
+    <span class="stat"><span class="n">3</span><span class="l">能力层</span></span>
+  </div>
+  <div class="hud-tools">
+    <div class="layers">
+      <label><input type="checkbox" id="lvTrunk" checked>主干环流</label>
+      <label><input type="checkbox" id="lvCluster" checked>阶段簇</label>
+      <label><input type="checkbox" id="lvDataflow">数据接口</label>
+      <label><input type="checkbox" id="lvExp" checked>运行经验</label>
+      <label><input type="checkbox" id="lvSug" checked>候选连线</label>
+      <label><input type="checkbox" id="lvCross">跨层调用</label>
+      <label><input type="checkbox" id="lvDeriv">衍生支路</label>
+      <label><input type="checkbox" id="lvPlexus" checked>星座网</label>
+      <label><input type="checkbox" id="lvStars" checked>星云底</label>
+    </div>
+    <div class="search">
+      <span style="color:var(--faint);font-size:12px">⌕</span>
+      <input id="search" type="text" placeholder="搜索插件 / 阶段…" autocomplete="off">
+    </div>
+    <button class="btn" id="editBtn" title="进入后：点两个节点手动连线，点一条线删除">✎ 编辑连线</button>
+    <button class="btn on" id="spinBtn" title="暂停 / 继续自转">❚❚ 自转</button>
+    <button class="btn" id="resetBtn" title="复位视图 (R)">复位</button>
+  </div>
+</div>
+
+<!-- 编辑连线工具条（进入编辑模式才显示） -->
+<div id="editBar" class="edit-bar">
+  <span id="editHint" class="edit-hint">编辑模式：依次点两个节点建立数据连线</span>
+  <button class="btn" id="editExport" title="导出手动连线 / 隐藏覆盖为 JSON">导出</button>
+  <button class="btn" id="editClear" title="清空全部手动修改">清空修改</button>
+  <button class="btn on" id="editDone">完成</button>
+</div>
+
+<div class="legend">
+  <h4>图例 · ELECTRON CLOUD</h4>
+  <div class="lg-row"><span class="lg-dot" style="background:#ffd98a;box-shadow:0 0 8px #ffd98a"></span>审计大脑 · 原子核</div>
+  <div class="lg-row"><span class="lg-dot" style="background:#c79bff;box-shadow:0 0 8px #c79bff"></span>治理优化层 · 内轨</div>
+  <div class="lg-row"><span class="lg-dot" style="background:#6fd0e8;box-shadow:0 0 8px #6fd0e8"></span>数据支撑层 · 外轨</div>
+  <div class="lg-row"><span class="lg-dot" style="background:#6f9bff;box-shadow:0 0 8px #6f9bff"></span>业务阶段簇心 · 中轨</div>
+  <div class="lg-stage"><span class="lg-band"></span></div>
+  <div style="color:var(--faint);margin-top:5px;font-size:10.5px">业务插件沿 8 阶段色相环绕</div>
+  <div class="lg-row" style="margin-top:7px"><span style="width:18px;height:0;border-top:2px solid #7fe0b0;display:inline-block"></span>数据接口连线（产出→消费，带流向）</div>
+  <div class="lg-row"><span style="width:18px;height:0;border-top:2px solid #ffd98a;display:inline-block"></span>手动连线（编辑模式可增删）</div>
+  <div class="lg-row"><span style="width:18px;height:0;border-top:2px solid #ffb76e;display:inline-block"></span>衍生支路（派生插件 → 其基座，见节点详情「衍生自」）</div>
+  <div class="lg-row" style="margin-top:7px"><span style="width:18px;height:0;border-top:3px solid #52d08a;display:inline-block"></span>运行经验：越绿越稳、越粗用得越多（90 天半衰期）</div>
+  <div class="lg-row"><span style="width:18px;height:0;border-top:2px dashed #ffd98a;display:inline-block"></span>外协作候选：金点线=待采纳，金实线=已采纳</div>
+  <div class="lg-row"><span style="width:18px;height:0;border-top:3px solid #7ff0c8;display:inline-block"></span>青绿实线=已随知识发布固化的「已确认关系」</div>
+</div>
+
+<div class="hint">
+  <kbd>滚轮</kbd> 缩放 · <kbd>拖拽</kbd> 平移 · <kbd>悬停</kbd> 高亮邻域 · <kbd>点击</kbd> 详情 · <kbd>R</kbd> 复位 · <kbd>空格</kbd> 暂停
+</div>
+
+<div id="tip"></div>
+<div id="detail"></div>
+
+<script>
+(function(){
+"use strict";
+/* =============================================================
+ * 内置离线快照（后端不可达 / file:// 直接打开时兜底；与 audit-brain 同源 100 插件）
+ * 在线时优先经 window.auditControl 拉 /api/v1/topology/plugin-nebula 动态重建，
+ * 因此以后新增审计插件会自动出现，无需手改本文件。
+ * ============================================================= */
+var SNAP_STAGES=[
+ {id:"s1",name:"立项与准备",color:"#6f9bff",plugins:[["s1-01","审计需求征集"],["s1-02","战略目标对齐"],["s1-03","年度立项申报"],["s1-04","立项评审打分"],["s1-05","项目库管理"],["s1-06","项目优先级排序"],["s1-07","审计通知书生成"],["s1-08","被审单位资料报送"],["s1-09","前置资料预检"],["s1-10","项目组建与分工"]]},
+ {id:"s2",name:"风险识别与评估",color:"#5fb8ff",plugins:[["s2-01","宏观政策风险扫描"],["s2-02","行业风险对标"],["s2-03","内控流程风险测绘"],["s2-04","财务异常指标预警"],["s2-05","业务流程断点识别"],["s2-06","舞弊风险特征匹配"],["s2-07","风险矩阵生成"],["s2-08","风险等级赋值"],["s2-09","高风险领域定位"],["s2-10","风险热图绘制"],["s2-11","风险应对建议生成"]]},
+ {id:"s3",name:"计划与资源调度",color:"#4fd8e0",plugins:[["s3-01","年度审计计划编制"],["s3-02","项目审计方案编制"],["s3-03","审计程序模板匹配"],["s3-04","审计抽样"],["s3-05","样本量自动计算"],["s3-06","审计人员排班"],["s3-07","工时预算管理"],["s3-08","资源冲突检测"],["s3-09","计划版本管控"]]},
+ {id:"s4",name:"现场审计实施",color:"#52e0c4",plugins:[["s4-01","现场签到与轨迹"],["s4-02","审计底稿编制"],["s4-03","凭证穿透查询"],["s4-04","往来款函证"],["s4-05","存货监盘"],["s4-06","固定资产盘点"],["s4-07","访谈记录管理"],["s4-08","会议纪要自动整理"],["s4-09","跨部门数据协查"],["s4-10","疑点实时标记"],["s4-11","现场取证拍照上传"],["s4-12","审计日志自动记录"],["s4-13","进度实时填报"],["s4-14","延期申请审批"]]},
+ {id:"s5",name:"证据与底稿管理",color:"#6fe0a0",plugins:[["s5-01","证据分类归档"],["s5-02","证据真实性校验"],["s5-03","底稿勾稽关系校验"],["s5-04","底稿三级复核"],["s5-05","底稿版本对比"],["s5-06","证据索引关联"],["s5-07","底稿模板更新"],["s5-08","电子签章"],["s5-09","底稿借阅审批"],["s5-10","底稿加密存储"]]},
+ {id:"s6",name:"问题核查与定性",color:"#8cd07f",plugins:[["s6-01","审计疑点汇总"],["s6-02","问题性质判定"],["s6-03","违规条款匹配"],["s6-04","问题金额计算"],["s6-05","责任主体认定"],["s6-06","问题分级分类"],["s6-07","被审单位意见反馈"],["s6-08","问题定性复核"]]},
+ {id:"s7",name:"报告与成果输出",color:"#b48ce0",plugins:[["s7-01","报告框架自动生成"],["s7-02","问题描述自动撰写"],["s7-03","审计建议匹配"],["s7-04","报告数据校验"],["s7-05","报告多级审核"],["s7-06","审计成果提炼"],["s7-07","公告信息脱敏发布"]]},
+ {id:"s8",name:"整改跟踪与闭环",color:"#e08cc8",plugins:[["s8-01","整改任务派单"],["s8-02","整改方案审核"],["s8-03","整改进度跟踪"],["s8-04","整改成效验证"],["s8-05","逾期整改预警"],["s8-06","整改销号管理"],["s8-07","整改结果公示"]]}
+];
+var SNAP_GOV=[["g1","审计项目质量评分"],["g2","审计成效量化评估"],["g3","典型案例库更新"],["g4","问题趋势分析"],["g5","规则库迭代优化"],["g6","审计方法沉淀"]];
+var SNAP_BASE=[["b01","多源数据采集"],["b02","财务数据清洗"],["b03","业务数据标准化"],["b04","主数据映射"],["b05","数据血缘追踪"],["b06","元数据管理"],["b07","数据质量校验"],["b08","标签体系管理"],["b09","统一指标计算"],["b10","全文检索引擎"],["b11","OCR 识别"],["b12","自然语言处理"],["b13","规则引擎配置"],["b14","可视化分析"],["b15","数据脱敏",1],["b16","数据加密存储",1],["b17","工作流引擎",1],["b18","权限管控",1]];
+/* 跨层能力调用（业务/治理 → 支撑，仅离线快照携带；在线动态图可由端口契约后续生成） */
+var SNAP_CROSS=[["s1-06","b09"],["s1-07","b12"],["s1-09","b07"],["s2-01","b13"],["s2-04","b09"],["s2-10","b14"],["s2-11","b12"],["s3-05","b09"],["s3-09","b17"],["s4-03","b01"],["s4-04","b17"],["s4-07","b12"],["s4-08","b12"],["s4-11","b11"],["s5-01","b08"],["s5-02","b05"],["s5-03","b13"],["s5-04","b17"],["s5-09","b18"],["s5-10","b16"],["s6-03","b13"],["s6-04","b02"],["s6-05","b04"],["s6-07","b17"],["s7-02","b12"],["s7-04","b07"],["s7-07","b15"],["s8-01","b17"],["s8-04","b05"],["s8-07","b15"],["g1","b14"],["g2","b09"],["g3","b08"],["g4","b14"]];
+var SNAP_TRUNK=[["s1","s2"],["s2","s3"],["s3","s4"],["s4","s5"],["s5","s6"],["s6","s7"],["s7","s8"],["s8","g1"],["g1","g2"],["g2","g3"],["g3","g4"],["g4","g5"],["g5","g6"],["g6","s1"]];
+var STAGE_NAME={};   /* construct() 时按当前模型动态填充，供标签 / 详情使用 */
+var STAGE_FALLBACK_COLORS=["#6f9bff","#5fb8ff","#4fd8e0","#52e0c4","#6fe0a0","#8cd07f","#b48ce0","#e08cc8","#9aa6b8"];
+
+/* 离线快照 → 统一模型 */
+function snapshotModel(){
+  var mk=function(p){return {id:p[0],name:p[1],ctrl:false,lifecycle:"verified",inputs:[],outputs:[],invokes:[]};};
+  var biz={};
+  SNAP_STAGES.forEach(function(s){biz[s.id]=s.plugins.map(mk);});
+  return {stages:SNAP_STAGES.map(function(s){return {id:s.id,name:s.name,color:s.color};}),
+    gov:SNAP_GOV.map(function(g){return {id:g[0],name:g[1],ctrl:false,lifecycle:"verified",inputs:[],outputs:[],invokes:[]};}),
+    base:SNAP_BASE.map(function(b){return {id:b[0],name:b[1],ctrl:!!b[2],lifecycle:"verified",inputs:[],outputs:[],invokes:[]};}),
+    biz:biz,trunk:SNAP_TRUNK,cross:SNAP_CROSS,dataflow:[],derivation:[]};
+}
+
+/* 后端 /topology/plugin-nebula JSON → 统一模型（新增插件按 id 语义段自动归位） */
+function apiModel(g){
+  var ordered=(g.stages||[]).slice().sort(function(a,b){
+    if(a.key==="s0")return 1; if(b.key==="s0")return -1; return a.order-b.order;});
+  var stages=ordered.map(function(s,i){return {id:s.key,name:s.name,color:s.color||STAGE_FALLBACK_COLORS[i%STAGE_FALLBACK_COLORS.length]};});
+  var gov=[],base=[],biz={};
+  stages.forEach(function(s){biz[s.id]=[];});
+  (g.nodes||[]).forEach(function(n){
+    var rec={id:n.id,name:n.name,ctrl:!!n.ctrl,lifecycle:n.lifecycle||"verified",
+      version:n.version||"",derivedFrom:n.derived_from||"",
+      inputs:(n.inputs||[]).slice(),outputs:(n.outputs||[]).slice(),invokes:(n.invokes||[]).slice()};
+    if(n.layer==="gov")gov.push(rec);
+    else if(n.layer==="base")base.push(rec);
+    else{if(!biz[n.stage])biz[n.stage]=[];biz[n.stage].push(rec);}
+  });
+  /* 主体数据接口边：输出契约 == 输入契约（后端已按 composer 同规则连好） */
+  var dataflow=(g.edges||[]).filter(function(e){return e.type==="dataflow";})
+    .map(function(e){return [e.source,e.target,e.contract||""];});
+  /* 衍生边：派生插件 → 其基座（来自协议 provenance.derived_from，后端已过滤到本图节点） */
+  var derivation=(g.edges||[]).filter(function(e){return e.type==="derivation";})
+    .map(function(e){return [e.source,e.target];});
+  /* 跨层能力调用边：业务/治理 invokes → 支撑层（后端由协议 invokes 字段确定性生成） */
+  var cross=(g.edges||[]).filter(function(e){return e.type==="cross";})
+    .map(function(e){return [e.source,e.target];});
+  /* 主干：阶段簇心顺序串联，末阶段→治理链→首阶段闭环 */
+  var trunk=[];
+  for(var i=0;i<stages.length-1;i++)trunk.push([stages[i].id,stages[i+1].id]);
+  var last=stages[stages.length-1].id,first=stages[0].id;
+  if(gov.length){trunk.push([last,gov[0].id]);
+    for(var k=0;k<gov.length-1;k++)trunk.push([gov[k].id,gov[k+1].id]);
+    trunk.push([gov[gov.length-1].id,first]);
+  }else trunk.push([last,first]);
+  return {stages:stages,gov:gov,base:base,biz:biz,trunk:trunk,cross:cross,dataflow:dataflow,derivation:derivation};
+}
+
+/* =============================================================
+ * Canvas / 视图状态
+ * ============================================================= */
+var canvas=document.getElementById("sky"),ctx=canvas.getContext("2d");
+var DPR=Math.min(window.devicePixelRatio||1,2),W=0,H=0,cx=0,cy=0;
+var view={scale:1,panX:0,panY:0};
+var spin=true;
+var layers={trunk:true,cluster:true,dataflow:false,cross:false,derivation:false,plexus:true,stars:true,exp:true,suggestion:true};
+/* ---- 运行经验 / 外协作候选（来自 /plugin-nebula/experience，随真实业务运行积累） ----
+ * edgeByKey: "source|target|contract" -> edge_stat；nodeByPlugin: plugin_id -> 合并后的 node_stat；
+ * suggestions: 候选关系列表（proposed/accepted/dismissed）。 */
+var experience={edgeByKey:{},nodeByPlugin:{},suggestions:[],usedIn:[],available:false,tenantId:null};
+function expEdgeKey(s,t,c){return s+"|"+t+"|"+(c||"");}
+function pct(x){return (x*100).toFixed(0)+"%";}
+function fmtDate(s){if(!s)return "—";try{return new Date(s).toLocaleDateString();}catch(e){return s;}}
+/* 成功率 → 红→黄→绿 插值（0 红 / 0.5 黄 / 1 绿），返回 "r,g,b" */
+function successRgb(rate){
+  var r,g,b;
+  if(rate>=0.5){var k=(rate-0.5)/0.5;r=Math.round(234+(82-234)*k);g=Math.round(173+(208-173)*k);b=Math.round(104+(138-104)*k);}
+  else{var k2=rate/0.5;r=Math.round(234);g=Math.round(102+(173-102)*k2);b=Math.round(104+(104-102)*k2);}
+  return r+","+g+","+b;
+}
+/* 展示权重 → 边宽增量（封顶，避免少数高频边压垮画面） */
+function expWidth(stat){if(!stat||!stat.weight)return 0;return Math.min(2.6,0.5+stat.weight*0.55);}
+/* ---- 手动连线编辑层（仅本地持久化，不写后端业务库；按租户隔离） ---- */
+var EDITS_KEY="audit.nebula.edits.local-dev";
+var userEdits={manual:[],hidden:[]};   // manual:[{s,t,c}]  hidden:["s|t|c"]
+function loadEdits(){try{var raw=localStorage.getItem(EDITS_KEY);if(raw){var p=JSON.parse(raw);userEdits.manual=Array.isArray(p.manual)?p.manual:[];userEdits.hidden=Array.isArray(p.hidden)?p.hidden:[];}}catch(e){userEdits={manual:[],hidden:[]};}}
+function saveEdits(){try{localStorage.setItem(EDITS_KEY,JSON.stringify(userEdits));}catch(e){}}
+function edgeKey(s,t,c){return s+"|"+t+"|"+(c||"");}
+loadEdits();
+var editMode=false,pendingSource=null;   // 编辑模式 / 手动连线待选目标
+var hoverNode=null,selectedNode=null,focusNode=null,focusPan=null,hoverEdge=null;
+var drag={on:false,x:0,y:0,px:0,py:0,moved:false};
+var mouse={x:-999,y:-999};
+var t0=performance.now();
+
+function resize(){
+  W=window.innerWidth;H=window.innerHeight;cx=W/2;cy=H/2;
+  canvas.width=W*DPR;canvas.height=H*DPR;canvas.style.width=W+"px";canvas.style.height=H+"px";
+  ctx.setTransform(DPR,0,0,DPR,0,0);
+  buildBackground();
+}
+window.addEventListener("resize",resize);
+
+/* 世界→屏幕 */
+function sx(x){return cx+view.panX+x*view.scale;}
+function sy(y){return cy+view.panY+y*view.scale;}
+function screenToWorld(px,py){return {x:(px-cx-view.panX)/view.scale,y:(py-cy-view.panY)/view.scale};}
+
+/* =============================================================
+ * 节点模型：原子核 + 三层电子轨道 + 阶段电子云团
+ * ============================================================= */
+var R_GOV=150,R_STAGE=330,R_BASE=520;       // 三层轨道半径（世界坐标）
+var nodes=[],nodeById={},edges=[],adj={},currentModel=null;
+function addNode(o){nodeById[o.id]=o;nodes.push(o);return o;}
+/* 边集合（contract=数据接口契约名；manual=用户手画；key 用于隐藏覆盖去重） */
+function link(a,b,type,c,manual){var A=nodeById[a],B=nodeById[b];if(A&&B)edges.push({a:A,b:B,type:type,contract:c||"",manual:!!manual,key:edgeKey(a,b,c||"")});}
+
+/* 由统一模型（离线快照或后端动态 JSON）构建整图；在线数据到达时整体重建一次 */
+function construct(m){
+  currentModel=m;
+  nodes=[];nodeById={};edges=[];adj={};STAGE_NAME={};
+  addNode({id:"core",name:"审计大脑",kind:"core",color:"#ffd98a",r:9,phase:0,lifecycle:"verified"});
+  m.stages.forEach(function(s){STAGE_NAME[s.id]=s.name;});
+  /* 治理层 内轨 */
+  m.gov.forEach(function(g,i){
+    addNode({id:g.id,name:g.name,kind:"gov",color:"#c79bff",r:5,ctrl:!!g.ctrl,lifecycle:g.lifecycle,
+      inputs:g.inputs||[],outputs:g.outputs||[],invokes:g.invokes||[],
+      orbit:R_GOV,baseAng:(i/Math.max(1,m.gov.length))*Math.PI*2,angSpeed:0.05,phase:Math.random()*6});
+  });
+  /* 业务阶段簇心 中轨；阶段插件在簇心周围两层电子云 */
+  m.stages.forEach(function(s,i){
+    addNode({id:s.id,name:s.name,kind:"stage",color:s.color,r:7,stageIdx:i,lifecycle:"verified",
+      orbit:R_STAGE,baseAng:(i/m.stages.length)*Math.PI*2-Math.PI/2,angSpeed:0.028,phase:Math.random()*6});
+    var arr=m.biz[s.id]||[],n=arr.length;
+    arr.forEach(function(p,j){
+      var ring=j%2===0?0:1;
+      var cnt=ring===0?Math.ceil(n/2):Math.floor(n/2);
+      var idx=Math.floor(j/2);
+      var cr=ring===0?46:88;
+      addNode({id:p.id,name:p.name,kind:"plugin",color:s.color,stage:s.id,stageIdx:i,r:2.6,
+        ctrl:!!p.ctrl,lifecycle:p.lifecycle,inputs:p.inputs||[],outputs:p.outputs||[],invokes:p.invokes||[],
+        clusterR:cr+((j*37)%18),clusterAng:(idx/Math.max(1,cnt))*Math.PI*2+(ring?Math.PI/cnt:0),
+        localSpin:(ring?-0.16:0.12),phase:Math.random()*6});
+    });
+  });
+  /* 支撑层 外轨（反向慢转） */
+  m.base.forEach(function(b,i){
+    addNode({id:b.id,name:b.name,kind:"base",color:"#6fd0e8",r:4.4,ctrl:!!b.ctrl,lifecycle:b.lifecycle,
+      inputs:b.inputs||[],outputs:b.outputs||[],invokes:b.invokes||[],
+      orbit:R_BASE,baseAng:(i/Math.max(1,m.base.length))*Math.PI*2,angSpeed:-0.02,phase:Math.random()*6});
+  });
+  /* 主干环流 / 阶段簇心→插件 / 跨层调用 / 主体数据接口边 */
+  var hiddenSet={};userEdits.hidden.forEach(function(k){hiddenSet[k]=1;});
+  (m.trunk||[]).forEach(function(e){link(e[0],e[1],"trunk");});
+  m.stages.forEach(function(s){(m.biz[s.id]||[]).forEach(function(p){link(s.id,p.id,"cluster");});});
+  (m.cross||[]).forEach(function(e){link(e[0],e[1],"cross");});
+  (m.derivation||[]).forEach(function(e){link(e[0],e[1],"derivation");});
+  var flowCount=0;
+  (m.dataflow||[]).forEach(function(e){
+    if(hiddenSet[edgeKey(e[0],e[1],e[2])])return;   // 用户手动隐藏的自动边
+    link(e[0],e[1],"dataflow",e[2],false);flowCount++;
+  });
+  /* 用户手动新增的连线（两端必须仍存在；自动边已存在则不重复） */
+  var existAuto={};edges.forEach(function(e){if(e.type==="dataflow")existAuto[e.key]=1;});
+  userEdits.manual.forEach(function(me){
+    if(!nodeById[me.s]||!nodeById[me.t]||me.s===me.t)return;
+    var k=edgeKey(me.s,me.t,me.c);
+    if(existAuto[k])return;
+    link(me.s,me.t,"manual",me.c,true);flowCount++;
+  });
+  /* 外协作候选连线：proposed=金色虚线（待采纳）、accepted=金色实线；dismissed 不画。
+   * 仅当两端插件都在当前图中时落位；候选不与已有数据接口/手动边重复。 */
+  var sugCount=0;
+  (experience.suggestions||[]).forEach(function(sg){
+    if(sg.status==="dismissed")return;
+    var A=nodeById[sg.source],B=nodeById[sg.target];
+    if(!A||!B||A===B)return;
+    var sk=edgeKey(sg.source,sg.target,sg.contract||"");
+    if(existAuto[sk])return;
+    edges.push({a:A,b:B,type:"suggestion",contract:sg.contract||"design-external",
+      manual:false,key:"sug|"+sg.id,sug:sg});sugCount++;
+  });
+  /* 邻接表 */
+  nodes.forEach(function(n){adj[n.id]=[];});
+  edges.forEach(function(e){adj[e.a.id].push({node:e.b,type:e.type,contract:e.contract,manual:e.manual,sug:e.sug||null});
+    adj[e.b.id].push({node:e.a,type:e.type,contract:e.contract,manual:e.manual,sug:e.sug||null});});
+  /* HUD 统计 */
+  var pluginCount=nodes.filter(function(n){return n.kind==="gov"||n.kind==="base"||n.kind==="plugin";}).length;
+  var ep=document.getElementById("stPlugin");if(ep)ep.textContent=pluginCount;
+  var es=document.getElementById("stStage");if(es)es.textContent=m.stages.length;
+  var ef=document.getElementById("stFlow");if(ef)ef.textContent=flowCount;
+  /* 重建后刷新可能失效的选中 / 悬停引用 */
+  if(selectedNode){var re=nodeById[selectedNode.id];if(re){selectedNode=re;selectNode(re);}else selectNode(null);}
+  if(hoverNode){hoverNode=nodeById[hoverNode.id]||null;}
+}
+
+/* =============================================================
+ * 位置更新（电子轨道运动 + 局部摄动）
+ * ============================================================= */
+function updatePositions(tt){
+  var slow=spin?1:0;
+  nodes.forEach(function(n){
+    n.wob=Math.sin(tt*0.0011+(n.phase||0))*1.0;
+    if(n.kind==="core"){n.x=0;n.y=0;}
+    else if(n.kind==="stage"||n.kind==="gov"||n.kind==="base"){
+      var a=n.baseAng+tt*0.001*n.angSpeed*slow;
+      n.ang=a;
+      n.x=Math.cos(a)*n.orbit+Math.cos(tt*0.0007+(n.phase||0))*2.2;
+      n.y=Math.sin(a)*n.orbit*0.86+Math.sin(tt*0.0006+(n.phase||0))*2.2; // 椭圆透视
+    } else if(n.kind==="plugin"){
+      var head=nodeById[n.stage];
+      var la=n.clusterAng+tt*0.001*n.localSpin*slow;
+      var cr=n.clusterR+ n.wob*2.4;
+      n.x=head.x+Math.cos(la)*cr;
+      n.y=head.y+Math.sin(la)*cr*0.86;
+    }
+  });
+}
+
+/* =============================================================
+ * 背景星云（中心密电子云 + 星点闪烁 + 柔光光斑 + 暗角），离屏缓存静态层
+ * ============================================================= */
+var stars=[],bokeh=[],bgCanvas=document.createElement("canvas"),bgCtx=bgCanvas.getContext("2d");
+var STAR_COLORS=["#8fb4ff","#b48ce0","#e0a0d8","#7fe0ff","#cdd9ff","#9fb0ff"];
+function buildBackground(){
+  bgCanvas.width=W*DPR;bgCanvas.height=H*DPR;bgCtx.setTransform(DPR,0,0,DPR,0,0);
+  /* 深空径向渐变：中心微亮、四周沉黑 */
+  var g=bgCtx.createRadialGradient(cx,cy,0,cx,cy,Math.max(W,H)*0.72);
+  g.addColorStop(0,"#101a30");g.addColorStop(.42,"#0a1122");g.addColorStop(.78,"#060a15");g.addColorStop(1,"#03050b");
+  bgCtx.fillStyle=g;bgCtx.fillRect(0,0,W,H);
+  /* 星点：极坐标，r 用 sqrt(rand) 使中心更密（电子云分布） */
+  stars=[];var NS=Math.round(W*H/2600);
+  for(var i=0;i<NS;i++){
+    var rr=Math.sqrt(Math.random())*Math.max(W,H)*0.62,ang=Math.random()*Math.PI*2;
+    stars.push({x:cx+Math.cos(ang)*rr,y:cy+Math.sin(ang)*rr,r:Math.random()*1.3+0.25,
+      c:STAR_COLORS[(Math.random()*STAR_COLORS.length)|0],ph:Math.random()*6.28,sp:0.4+Math.random()*1.4,
+      drift:0.4+Math.random()*0.8,da:ang});
+  }
+  /* 柔光光斑 bokeh */
+  bokeh=[];
+  for(var k=0;k<22;k++){
+    var br=Math.sqrt(Math.random())*Math.max(W,H)*0.55,ba=Math.random()*6.28;
+    bokeh.push({x:cx+Math.cos(ba)*br,y:cy+Math.sin(ba)*br,R:30+Math.random()*90,
+      c:Math.random()<.5?"80,120,220":"150,110,210",ph:Math.random()*6.28,a:0.025+Math.random()*0.05});
+  }
+}
+function drawStars(tt){
+  /* 星点闪烁 + 极慢径向漂移 */
+  for(var i=0;i<stars.length;i++){var s=stars[i];
+    var tw=0.45+0.55*Math.abs(Math.sin(tt*0.001*s.sp+s.ph));
+    var d=Math.sin(tt*0.00018*s.drift+s.ph)*6;
+    ctx.globalAlpha=tw*0.9;ctx.fillStyle=s.c;
+    ctx.beginPath();ctx.arc(s.x+Math.cos(s.da)*d,s.y+Math.sin(s.da)*d,s.r,0,6.2832);ctx.fill();
+  }
+  ctx.globalAlpha=1;
+  for(var j=0;j<bokeh.length;j++){var b=bokeh[j];
+    var breathe=b.a*(0.6+0.4*Math.sin(tt*0.0006+b.ph));
+    var grd=ctx.createRadialGradient(b.x,b.y,0,b.x,b.y,b.R);
+    grd.addColorStop(0,"rgba("+b.c+","+(breathe*1.6)+")");grd.addColorStop(1,"rgba("+b.c+",0)");
+    ctx.fillStyle=grd;ctx.beginPath();ctx.arc(b.x,b.y,b.R,0,6.2832);ctx.fill();
+  }
+}
+function drawVignette(){
+  var v=ctx.createRadialGradient(cx,cy,Math.min(W,H)*0.35,cx,cy,Math.max(W,H)*0.75);
+  v.addColorStop(0,"rgba(0,0,0,0)");v.addColorStop(1,"rgba(0,0,0,.55)");
+  ctx.fillStyle=v;ctx.fillRect(0,0,W,H);
+}
+
+/* =============================================================
+ * 绘制边
+ * ============================================================= */
+var EDGE_COLOR={trunk:"#7fb4ff",cluster:null,cross:"#9a86d8"};
+function isNeighbor(a,b){return a===b||adj[a.id].some(function(x){return x.node===b;});}
+function dimLevel(n){
+  if(hoverNode)return isNeighbor(hoverNode,n)?1:0.12;
+  if(focusNode)return isNeighbor(focusNode,n)?1:0.2;
+  return 1;
+}
+function drawEdges(tt){
+  var showTypes={trunk:layers.trunk,cluster:layers.cluster,cross:layers.cross,
+    derivation:layers.derivation,
+    dataflow:layers.dataflow,manual:true,suggestion:layers.suggestion};
+  /* 固定边 */
+  ctx.lineWidth=1;
+  edges.forEach(function(e){
+    if(!showTypes[e.type])return;
+    var x1=sx(e.a.x),y1=sy(e.a.y),x2=sx(e.b.x),y2=sy(e.b.y);
+    if(e.type==="suggestion"){drawSuggestionEdge(e,x1,y1,x2,y2);return;}
+    if(e.type==="dataflow"||e.type==="manual"){drawFlowEdge(e,x1,y1,x2,y2);return;}
+    var alpha=e.type==="trunk"?0.4:e.type==="cross"?0.16:e.type==="derivation"?0.55:0.13;
+    var col=e.type==="trunk"?"127,180,255":e.type==="cross"?"154,134,216":e.type==="derivation"?"255,183,110":"110,200,220";
+    if(hoverNode){var hot=e.a===hoverNode||e.b===hoverNode;alpha=hot?0.85:alpha*0.18;if(hot)col="255,217,138";}
+    ctx.strokeStyle="rgba("+col+","+alpha+")";
+    if(e.type==="trunk")ctx.lineWidth=1.4;else ctx.lineWidth=1;
+    ctx.beginPath();ctx.moveTo(x1,y1);
+    if(e.type==="trunk"){ /* 主干轻微弧度 */
+      var mx=(x1+x2)/2,my=(y1+y2)/2-10*view.scale;ctx.quadraticCurveTo(mx,my,x2,y2);
+    } else ctx.lineTo(x2,y2);
+    ctx.stroke();
+  });
+  /* 星座网 plexus：屏幕距离接近的节点连细淡线 */
+  if(layers.plexus){
+    var threshold=46*view.scale;
+    ctx.lineWidth=0.6;
+    for(var i=0;i<nodes.length;i++){var a=nodes[i];if(a.kind==="plugin")continue;var ax=sx(a.x),ay=sy(a.y);
+      for(var j=i+1;j<nodes.length;j++){var b=nodes[j];if(b.kind==="plugin")continue;
+        var bx=sx(b.x),by=sy(b.y),dx=ax-bx,dy=ay-by,d2=dx*dx+dy*dy;
+        if(d2<threshold*threshold){var al=(1-Math.sqrt(d2)/threshold)*0.14;
+          if(hoverNode&&!(isNeighbor(hoverNode,a)&&isNeighbor(hoverNode,b)))al*=0.15;
+          ctx.strokeStyle="rgba(140,170,255,"+al+")";ctx.beginPath();ctx.moveTo(ax,ay);ctx.lineTo(bx,by);ctx.stroke();}
+      }
+    }
+  }
+  /* 主干环流上的数据流脉冲 */
+  if(layers.trunk){
+    var trunks=edges.filter(function(e){return e.type==="trunk";});
+    var p=(tt*0.00022)%1;
+    for(var q=0;q<3;q++){
+      var e=trunks[Math.floor((p*trunks.length+q*trunks.length/3)%trunks.length)];
+      var f=((p*trunks.length+q*trunks.length/3)%1);
+      var x1=sx(e.a.x),y1=sy(e.a.y),x2=sx(e.b.x),y2=sy(e.b.y);
+      var px=x1+(x2-x1)*f,py=y1+(y2-y1)*f;
+      ctx.fillStyle="rgba(160,220,255,.9)";ctx.shadowColor="#9fd8ff";ctx.shadowBlur=8;
+      ctx.beginPath();ctx.arc(px,py,2.1,0,6.2832);ctx.fill();ctx.shadowBlur=0;
+    }
+  }
+  /* 编辑模式：待完成的手动连线橡皮筋 */
+  if(editMode&&pendingSource){
+    var qx=sx(pendingSource.x),qy=sy(pendingSource.y);
+    ctx.setLineDash([5,4]);ctx.strokeStyle="rgba(255,217,138,.95)";ctx.lineWidth=1.4;
+    ctx.beginPath();ctx.moveTo(qx,qy);ctx.lineTo(mouse.x,mouse.y);ctx.stroke();ctx.setLineDash([]);
+    ctx.fillStyle="rgba(255,227,168,.95)";ctx.font="11px 'Microsoft YaHei'";ctx.textAlign="left";ctx.textBaseline="middle";
+    ctx.fillText("再点一个目标节点完成连线（Esc 取消）",mouse.x+10,mouse.y);
+  }
+}
+
+/* 主体数据接口边 / 手动边：带流向箭头，青绿=契约自动连，金=手动；悬停显示契约名 */
+function drawArrow(x1,y1,x2,y2,color,width){
+  var dx=x2-x1,dy=y2-y1,L=Math.sqrt(dx*dx+dy*dy)||1,ux=dx/L,uy=dy/L,gap=6+width;
+  var tx=x2-ux*gap,ty=y2-uy*gap;
+  ctx.beginPath();ctx.moveTo(tx,ty);
+  ctx.lineTo(tx-ux*8-uy*4.2,ty-uy*8+ux*4.2);
+  ctx.lineTo(tx-ux*8+uy*4.2,ty-uy*8-ux*4.2);
+  ctx.closePath();ctx.fillStyle=color;ctx.fill();
+  return [tx,ty];
+}
+function drawFlowEdge(e,x1,y1,x2,y2){
+  var manual=e.type==="manual";
+  var stat=(!manual&&layers.exp)?experience.edgeByKey[e.key]:null;
+  var rgb,baseW;
+  if(manual){rgb="255,217,138";baseW=1.5;}
+  else if(stat){
+    var tot=stat.success_count+stat.fail_count;
+    var rate=tot?stat.success_count/tot:1;       // 成功率染色：红→黄→绿
+    rgb=successRgb(rate);baseW=1+expWidth(stat); // 边宽 ∝ 衰减后展示权重
+  }else{rgb="127,224,176";baseW=1;}
+  var alpha=manual?0.8:(stat?0.72:0.4);
+  if(hoverNode){var hot=e.a===hoverNode||e.b===hoverNode;alpha=hot?0.95:alpha*0.15;}
+  if(focusNode&&!(e.a===focusNode||e.b===focusNode))alpha*=0.25;
+  var edgeHot=(hoverEdge===e);
+  if(edgeHot){alpha=1;}
+  var w=edgeHot?Math.max(2,baseW+0.6):baseW;
+  ctx.setLineDash([]);
+  ctx.strokeStyle="rgba("+rgb+","+alpha+")";ctx.lineWidth=w;
+  ctx.beginPath();ctx.moveTo(x1,y1);ctx.lineTo(x2,y2);ctx.stroke();
+  drawArrow(x1,y1,x2,y2,"rgba("+rgb+","+(alpha)+")",w);
+  /* 契约标签：放大、邻接高亮或编辑悬停时显示；有经验时附带次数/成功率 */
+  var showLabel=e.contract&&(edgeHot||(hoverNode&&(e.a===hoverNode||e.b===hoverNode))||view.scale>1.05);
+  if(showLabel){
+    var mx=(x1+x2)/2,my=(y1+y2)/2;
+    var label=e.contract+(stat?(" · "+(stat.success_count+stat.fail_count)+"次 "+pct((stat.success_count+stat.fail_count)?stat.success_count/(stat.success_count+stat.fail_count):1)):"");
+    ctx.font="9.5px Consolas,monospace";var tw=ctx.measureText(label).width;
+    ctx.fillStyle="rgba(8,14,28,.78)";ctx.fillRect(mx-tw/2-3,my-7,tw+6,13);
+    ctx.fillStyle="rgba("+rgb+",.98)";ctx.textAlign="center";ctx.textBaseline="middle";ctx.fillText(label,mx,my);
+  }
+}
+/* 外协作候选边：proposed 金色虚线（待采纳）、accepted 金色实线（已采纳）、
+   accepted+released_at 青绿实线（已随知识发布固化为「已确认关系」）；dismissed 不落位 */
+function drawSuggestionEdge(e,x1,y1,x2,y2){
+  var accepted=e.sug&&e.sug.status==="accepted";
+  var confirmed=accepted&&e.sug.released_at;
+  var rgb=confirmed?"127,240,200":"255,217,138",alpha=accepted?0.72:0.55;
+  if(hoverNode){var hot=e.a===hoverNode||e.b===hoverNode;alpha=hot?0.95:alpha*0.12;}
+  if(focusNode&&!(e.a===focusNode||e.b===focusNode))alpha*=0.25;
+  var edgeHot=(hoverEdge===e);if(edgeHot)alpha=1;
+  ctx.setLineDash(accepted?[]:[6,5]);
+  var w=edgeHot?2:(confirmed?1.8:1.3);
+  ctx.strokeStyle="rgba("+rgb+","+alpha+")";ctx.lineWidth=w;
+  ctx.beginPath();ctx.moveTo(x1,y1);ctx.lineTo(x2,y2);ctx.stroke();
+  ctx.setLineDash([]);
+  drawArrow(x1,y1,x2,y2,"rgba("+rgb+","+alpha+")",w);
+  var showLabel=edgeHot||(hoverNode&&(e.a===hoverNode||e.b===hoverNode))||view.scale>1.05;
+  if(showLabel){
+    var mx=(x1+x2)/2,my=(y1+y2)/2;
+    var stateTag=confirmed?"已确认 ":(accepted?"已采纳 ":"候选 ");
+    var label=stateTag+(e.contract||"")+" · "+(e.sug?e.sug.evidence_count:0)+" 证据";
+    ctx.font="9.5px Consolas,monospace";var tw=ctx.measureText(label).width;
+    ctx.fillStyle="rgba(28,20,8,.82)";ctx.fillRect(mx-tw/2-3,my-7,tw+6,13);
+    ctx.fillStyle="rgba("+rgb+",.98)";ctx.textAlign="center";ctx.textBaseline="middle";ctx.fillText(label,mx,my);
+  }
+}
+
+/* =============================================================
+ * 绘制节点
+ * ============================================================= */
+function drawNodes(tt){
+  nodes.forEach(function(n){
+    var x=sx(n.x),y=sy(n.y),r=n.r*view.scale;
+    if(r<0.5)return;
+    var dim=dimLevel(n);
+    var hot=(n===hoverNode||n===focusNode||n===selectedNode);
+    var breathe=1+0.12*Math.sin(tt*0.002+(n.phase||0));
+    var rr=Math.max(1.4,r*(hot?1.7:breathe));
+    /* 辉光 */
+    var glow=ctx.createRadialGradient(x,y,0,x,y,rr*3.4);
+    glow.addColorStop(0,hexA(n.color,0.55*dim));glow.addColorStop(1,hexA(n.color,0));
+    ctx.fillStyle=glow;ctx.beginPath();ctx.arc(x,y,rr*3.4,0,6.2832);ctx.fill();
+    /* 核心点：verified 实心；contract_only（协议已声明、运行时未落地）半透明虚线空心 */
+    if(n.lifecycle==="contract_only"){
+      ctx.fillStyle=hexA(n.color,0.28*dim);ctx.beginPath();ctx.arc(x,y,rr,0,6.2832);ctx.fill();
+      ctx.strokeStyle=hexA(n.color,0.9*dim);ctx.lineWidth=1;ctx.setLineDash([2.4,2]);
+      ctx.beginPath();ctx.arc(x,y,rr+0.6,0,6.2832);ctx.stroke();ctx.setLineDash([]);
+    }else{
+      ctx.fillStyle=hexA(n.color,dim);
+      ctx.beginPath();ctx.arc(x,y,rr,0,6.2832);ctx.fill();
+      if(n.kind!=="plugin"){ctx.fillStyle="rgba(255,255,255,"+(0.85*dim)+")";ctx.beginPath();ctx.arc(x-rr*0.25,y-rr*0.25,rr*0.4,0,6.2832);ctx.fill();}
+    }
+    /* 管控节点描边环 */
+    if(n.ctrl){ctx.strokeStyle=hexA("#ffd98a",0.7*dim);ctx.lineWidth=1;ctx.beginPath();ctx.arc(x,y,rr+2.4,0,6.2832);ctx.stroke();}
+    /* 标签：核/阶段/治理/支撑常显；插件仅 hover/focus 显示 */
+    var showLabel=(n.kind!=="plugin")||hot;
+    if(showLabel&&view.scale>0.55){
+      var fontSize=n.kind==="core"?13:n.kind==="stage"?11.5:10.5;
+      ctx.font=(n.kind==="stage"||n.kind==="core"?"600 ":"")+fontSize+"px 'Microsoft YaHei',sans-serif";
+      ctx.textAlign="center";ctx.textBaseline="top";
+      var tyy=y+rr+3;
+      if(n.kind==="core"){ctx.fillStyle="rgba(0,0,0,.4)";var tw=ctx.measureText(n.name).width;ctx.fillRect(x-tw/2-4,tyy-1,tw+8,fontSize+3);}
+      ctx.fillStyle="rgba(232,238,249,"+(dim*(n.kind==="plugin"?0.95:0.92))+")";
+      ctx.fillText(n.name,x,tyy);
+    }
+  });
+}
+function hexA(hex,a){
+  var h=hex.replace("#","");if(h.length===3)h=h.split("").map(function(c){return c+c;}).join("");
+  var r=parseInt(h.slice(0,2),16),g=parseInt(h.slice(2,4),16),b=parseInt(h.slice(4,6),16);
+  return "rgba("+r+","+g+","+b+","+a+")";
+}
+
+/* =============================================================
+ * 主循环
+ * ============================================================= */
+function frame(tt){
+  try{
+    ctx.clearRect(0,0,W,H);
+    updatePositions(tt);
+    /* 静态深空底（物理像素缓存）+ 动态闪烁星点 */
+    drawBackgroundLayer(tt);
+    drawEdges(tt);
+    drawNodes(tt);
+    drawVignette();
+    /* focus 相机平滑 */
+    if(focusNode&&focusPan){
+      view.panX+=(focusPan.x-view.panX)*0.12;view.panY+=(focusPan.y-view.panY)*0.12;
+      if(Math.abs(view.panX-focusPan.x)<0.4&&Math.abs(view.panY-focusPan.y)<0.4)focusPan=null;
+    }
+  }catch(err){
+    ctx.fillStyle="#3a0d12";ctx.fillRect(0,0,W,60);
+    ctx.fillStyle="#ff9aa8";ctx.font="13px Consolas,monospace";ctx.textAlign="left";ctx.textBaseline="middle";
+    ctx.fillText("render error: "+(err&&err.message?err.message:String(err)),16,30);
+  }
+  requestAnimationFrame(frame);
+}
+/* 背景缓存按物理像素，绘制时用 setTransform 后的 CSS 像素，需要把 bgCanvas 当 W×H 图绘制 */
+function drawBackgroundLayer(tt){
+  ctx.save();ctx.setTransform(1,0,0,1,0,0);ctx.drawImage(bgCanvas,0,0);ctx.restore();
+  ctx.setTransform(DPR,0,0,DPR,0,0);
+  if(layers.stars)drawStars(tt);
+}
+
+/* =============================================================
+ * 交互：缩放 / 平移 / 悬停 / 点击
+ * ============================================================= */
+canvas.addEventListener("wheel",function(e){
+  e.preventDefault();
+  var f=e.deltaY<0?1.12:0.89;
+  var before=screenToWorld(e.clientX,e.clientY);
+  view.scale=Math.min(3.2,Math.max(0.32,view.scale*f));
+  var after=screenToWorld(e.clientX,e.clientY);
+  view.panX+=(after.x-before.x)*view.scale;view.panY+=(after.y-before.y)*view.scale;
+},{passive:false});
+canvas.addEventListener("mousedown",function(e){
+  drag.on=true;drag.x=e.clientX;drag.y=e.clientY;drag.px=view.panX;drag.py=view.panY;drag.moved=false;
+  canvas.classList.add("dragging");
+});
+window.addEventListener("mousemove",function(e){
+  mouse.x=e.clientX;mouse.y=e.clientY;
+  if(drag.on){
+    var dx=e.clientX-drag.x,dy=e.clientY-drag.y;
+    if(Math.abs(dx)+Math.abs(dy)>3)drag.moved=true;
+    view.panX=drag.px+dx;view.panY=drag.py+dy;
+  } else {
+    hoverNode=pick(e.clientX,e.clientY);
+    hoverEdge=!hoverNode?(editMode?pickEdge(e.clientX,e.clientY):pickAnyEdge(e.clientX,e.clientY)):null;
+    canvas.classList.toggle("hovering",!!(hoverNode||hoverEdge));
+    positionTip(e.clientX,e.clientY);
+  }
+});
+window.addEventListener("mouseup",function(e){
+  if(drag.on&&!drag.moved){handleClick(e.clientX,e.clientY);}
+  drag.on=false;canvas.classList.remove("dragging");
+});
+/* 单击：编辑模式=删边/两节点连线；普通模式=选中详情 */
+function handleClick(px,py){
+  if(editMode){
+    var he=pickEdge(px,py);
+    if(he){removeEdge(he);return;}
+    var n=pick(px,py);
+    if(!n){pendingSource=null;updateEditHint();return;}
+    if(n.kind==="core")return;
+    if(!pendingSource){pendingSource=n;updateEditHint();return;}
+    if(n===pendingSource){pendingSource=null;updateEditHint();return;}
+    addManualEdge(pendingSource,n);pendingSource=null;updateEditHint();
+    return;
+  }
+  var edge=pickAnyEdge(px,py);
+  if(edge){selectEdge(edge);return;}
+  var q=pick(px,py);if(q){selectNode(q);}else{selectNode(null);}
+}
+/* 命中一条数据接口/手动边（点到线段距离阈值内取最近） */
+function pickEdge(px,py){
+  var best=null,bd=8;
+  for(var i=0;i<edges.length;i++){var e=edges[i];
+    if(e.type!=="dataflow"&&e.type!=="manual")continue;
+    if(e.type==="dataflow"&&!layers.dataflow)continue;
+    var d=pointSegDist(px,py,sx(e.a.x),sy(e.a.y),sx(e.b.x),sy(e.b.y));
+    if(d<bd){bd=d;best=e;}
+  }
+  return best;
+}
+/* 普通浏览模式：数据接口 / 手动 / 候选边均可点选下钻（受图层可见性约束） */
+function pickAnyEdge(px,py){
+  var best=null,bd=9;
+  for(var i=0;i<edges.length;i++){var e=edges[i];
+    if(e.type!=="dataflow"&&e.type!=="manual"&&e.type!=="suggestion")continue;
+    if(e.type==="dataflow"&&!layers.dataflow)continue;
+    if(e.type==="suggestion"&&!layers.suggestion)continue;
+    var d=pointSegDist(px,py,sx(e.a.x),sy(e.a.y),sx(e.b.x),sy(e.b.y));
+    if(d<bd){bd=d;best=e;}
+  }
+  return best;
+}
+function pointSegDist(px,py,x1,y1,x2,y2){
+  var dx=x2-x1,dy=y2-y1,L2=dx*dx+dy*dy;
+  if(L2===0)return Math.hypot(px-x1,py-y1);
+  var t=((px-x1)*dx+(py-y1)*dy)/L2;t=Math.max(0,Math.min(1,t));
+  return Math.hypot(px-(x1+t*dx),py-(y1+t*dy));
+}
+function pick(px,py){
+  var best=null,bd=14*view.scale+6;
+  for(var i=nodes.length-1;i>=0;i--){var n=nodes[i];
+    var dx=px-sx(n.x),dy=py-sy(n.y),d=Math.sqrt(dx*dx+dy*dy);
+    var hit=Math.max(9,n.r*view.scale)+4;
+    if(d<hit&&d<bd+6){best=n;bd=d;}
+  }
+  return best;
+}
+var tip=document.getElementById("tip");
+function kindLabel(n){
+  return n.kind==="core"?"原子核 · 总控":n.kind==="gov"?"治理优化层":n.kind==="base"?(n.ctrl?"数据支撑层 · 管控穿透":"数据支撑层"):n.kind==="stage"?"业务阶段簇心":"业务插件 · "+STAGE_NAME[n.stage];
+}
+function positionTip(px,py){
+  if(hoverEdge){
+    var label=hoverEdge.type==="suggestion"
+      ?("候选关系 · "+(hoverEdge.sug.status==="accepted"&&hoverEdge.sug.released_at?"已确认·已发布":({proposed:"待采纳",accepted:"已采纳"}[hoverEdge.sug.status]||hoverEdge.sug.status)))
+      :(hoverEdge.manual?"手动连线":"自动数据接口");
+    var extra=editMode?"<div class='t-meta' style='color:#ffb3b3'>点击删除此连线</div>"
+      :"<div class='t-meta'>点击查看运行经验详情</div>";
+    tip.innerHTML="<b>"+label+"</b><div class='t-id'>"+hoverEdge.contract+"</div>"+extra;
+    tip.style.opacity=1;
+    tip.style.left=Math.min(px+14,W-290)+"px";tip.style.top=Math.min(py+14,H-90)+"px";return;
+  }
+  if(!hoverNode){tip.style.opacity=0;return;}
+  var n=hoverNode,deg=(adj[n.id]||[]).length;
+  tip.innerHTML="<b>"+n.name+"</b><div class='t-id'>"+n.id+"</div><div class='t-meta'>"+kindLabel(n)+" · 邻接 "+deg+" 节点"+(editMode&&!pendingSource?" · 点此作为连线源":"")+(editMode&&pendingSource?" · 点此作为连线目标":"")+"</div>";
+  tip.style.opacity=1;
+  var tx=Math.min(px+14,W-290),ty=Math.min(py+14,H-90);
+  tip.style.left=tx+"px";tip.style.top=ty+"px";
+}
+var detail=document.getElementById("detail");
+/* 节点详情中的运行经验分区（node_stats 为 (插件,能力) 粒度，ingest 时已按插件合并） */
+function nodeExperienceHtml(n){
+  if(!layers.exp||!experience.available)return "";
+  var st=experience.nodeByPlugin[n.id];
+  if(!st||!st.use_count)return "";
+  var tot=st.success_count+st.fail_count,rate=tot?st.success_count/tot:0;
+  var avgLat=tot?Math.round(st.total_latency_ms/tot):0;
+  var errs=Object.keys(st.error_kind_counts||{});
+  return "<div class='d-sec'>运行经验 · "+st.caps.length+" 个能力累计</div>"
+    +"<div class='d-line'><span>累计使用</span><b>"+st.use_count+" 次</b></div>"
+    +"<div class='d-line'><span>成功率</span><b style='color:rgb("+successRgb(rate)+")'>"+pct(rate)+"（"+st.success_count+" 成功 / "+st.fail_count+" 失败）</b></div>"
+    +"<div class='d-line'><span>稳定置信度</span><b>"+pct(st.confidence)+" <span style='color:var(--faint);font-weight:400'>Wilson 下界</span></b></div>"
+    +"<div class='d-line'><span>平均时延</span><b>"+avgLat+" ms</b></div>"
+    +"<div class='d-line'><span>最近使用</span><b>"+fmtDate(st.last_used_at)+"</b></div>"
+    +(errs.length?"<div class='d-line'><span>错误分布</span><b>"+errs.slice(0,4).map(function(k){return k+" ×"+st.error_kind_counts[k];}).join("，")+"</b></div>":"");
+}
+/* 项目溯源：该插件在哪些业务项目里被验证过（来自已归档运行，随业务积累变厚） */
+function nodeUsedInHtml(n){
+  if(!experience.usedIn.length)return "";
+  var rows=experience.usedIn.filter(function(u){return u.plugin_id===n.id;});
+  if(!rows.length)return "";
+  return "<div class='d-sec'>业务项目溯源 · "+rows.length+" 个项目</div>"
+    +rows.slice(0,6).map(function(u){
+        return "<div class='d-line'><span>"+(u.project_name||u.project_slug)+"</span><b>"
+          +(u.plugin_version?"v"+u.plugin_version+" · ":"")+u.use_count+" 次</b></div>";
+      }).join("")
+    +(rows.length>6?"<div class='d-line'><span>…其余</span><b>+"+(rows.length-6)+"</b></div>":"");
+}
+/* 边详情：数据接口/手动连线的运行经验下钻 */
+function selectEdge(e){
+  selectedNode=null;
+  if(e.type==="suggestion"){selectSuggestion(e);return;}
+  var stat=layers.exp?experience.edgeByKey[e.key]:null;
+  var tot=stat?stat.success_count+stat.fail_count:0,rate=tot?stat.success_count/tot:0;
+  var avgLat=tot?Math.round(stat.total_latency_ms/tot):0;
+  var html="<button class='d-close' id='dClose'>×</button>"
+    +"<span class='d-kind'>"+(e.manual?"手动连线":"数据接口连线 · 产出→消费")+"</span>"
+    +"<h3>"+e.contract+"</h3><div class='d-id'>"+e.a.name+" → "+e.b.name+"</div>"
+    +(stat&&tot?("<div class='d-sec'>运行经验</div>"
+      +"<div class='d-line'><span>交接次数</span><b>"+tot+" 次</b></div>"
+      +"<div class='d-line'><span>成功率</span><b style='color:rgb("+successRgb(rate)+")'>"+pct(rate)+"（"+stat.success_count+" / "+stat.fail_count+"）</b></div>"
+      +"<div class='d-line'><span>稳定置信度</span><b>"+pct(stat.confidence)+"</b></div>"
+      +"<div class='d-line'><span>平均交接时延</span><b>"+avgLat+" ms</b></div>"
+      +"<div class='d-line'><span>展示权重</span><b>"+(stat.weight||0).toFixed(2)+" <span style='color:var(--faint);font-weight:400'>90 天半衰期</span></b></div>"
+      +"<div class='d-line'><span>首次 / 最近</span><b>"+fmtDate(stat.first_used_at)+" / "+fmtDate(stat.last_used_at)+"</b></div>"
+      +"<div class='d-line'><span>契约状态</span><b style='color:"+(stat.declared?"#7ff0c8":"#ffd98a")+"'>"+(stat.declared?"与设计声明一致":"设计外观测（见候选连线）")+"</b></div>"
+      +"<div class='d-sec'>证据运行（近 "+(stat.evidence_run_ids||[]).length+" 条）</div>"
+      +"<div class='d-ports'>"+((stat.evidence_run_ids||[]).slice(0,8).map(function(r){return "<span class='port invoke'>"+String(r).slice(0,8)+"</span>";}).join("")||"<span style='color:var(--faint);font-size:11px'>无</span>")+"</div>")
+      :"<div class='d-sec'>运行经验</div><div style='color:var(--faint);font-size:12px;margin:4px 0'>尚无真实运行观测；用插件跑业务后会自动累积。</div>");
+  detail.innerHTML=html;detail.classList.add("show");
+  document.getElementById("dClose").onclick=function(){detail.classList.remove("show");};
+}
+/* 候选关系详情：外协作生成，proposed 可人工采纳/驳回（唯一结构性写入口，经策略网关） */
+function selectSuggestion(e){
+  var sg=e.sug,tot=sg.success_count+sg.fail_count,rate=tot?sg.success_count/tot:0;
+  var confirmed=sg.status==="accepted"&&sg.released_at;
+  var statusText=confirmed?"已确认 · 已发布":({proposed:"待采纳",accepted:"已采纳",dismissed:"已驳回"})[sg.status]||sg.status;
+  var statusColor={proposed:"#ffd98a",accepted:"#7ff0c8",dismissed:"#ea8a8a"}[sg.status]||"#ffd98a";
+  var footer;
+  if(sg.status==="proposed"){
+    footer="<div class='sug-actions'><button class='btn on' id='sugAccept'>✓ 采纳为正式关系</button><button class='btn' id='sugReject'>✗ 驳回</button></div>"
+      +"<div style='color:var(--faint);font-size:11px;margin-top:6px'>采纳将经策略网关并随知识发布固化为「已确认关系」，全程留裁决痕、终态不可逆；不自动改插件契约。</div>";
+  }else if(confirmed){
+    footer="<div style='color:#7ff0c8;font-size:11.5px;margin-top:8px'>✓ 已随知识发布固化为「已确认关系」，经变更集 / 发布流水线留痕；不修改插件 manifest 与执行器。</div>"
+      +"<div class='d-line' style='margin-top:6px'><span>固化发布</span><b>"+fmtDate(sg.released_at)+"</b></div>";
+  }else{
+    footer="<div style='color:var(--faint);font-size:11.5px;margin-top:8px'>该候选已终态，冻结不再累积新证据。</div>";
+  }
+  var html="<button class='d-close' id='dClose'>×</button>"
+    +"<span class='d-kind'>外协作候选关系 · 设计外观测</span>"
+    +"<h3>"+e.a.name+" → "+e.b.name+"</h3><div class='d-id'>"+(sg.contract||"design-external")+"</div>"
+    +"<div class='d-line'><span>状态</span><b style='color:"+statusColor+"'>"+statusText+"</b></div>"
+    +"<div class='d-line'><span>证据次数</span><b>"+sg.evidence_count+" 次运行</b></div>"
+    +"<div class='d-line'><span>成功 / 失败</span><b style='color:rgb("+successRgb(rate||0.5)+")'>"+sg.success_count+" / "+sg.fail_count+"</b></div>"
+    +"<div class='d-line'><span>稳定置信度</span><b>"+pct(sg.confidence)+"</b></div>"
+    +"<div class='d-line'><span>候选权重</span><b>"+(sg.weight||0).toFixed(2)+"</b></div>"
+    +"<div class='d-line'><span>最近证据</span><b>"+fmtDate(sg.last_evidence_at)+"</b></div>"
+    +(sg.decided_by?"<div class='d-line'><span>决策人 / 时间</span><b>"+sg.decided_by+" · "+fmtDate(sg.decided_at)+"</b></div>":"")
+    +footer;
+  detail.innerHTML=html;detail.classList.add("show");
+  document.getElementById("dClose").onclick=function(){detail.classList.remove("show");};
+  var ba=document.getElementById("sugAccept"),br=document.getElementById("sugReject");
+  if(ba)ba.onclick=function(){decideSuggestion(sg.id,"accepted");};
+  if(br)br.onclick=function(){decideSuggestion(sg.id,"dismissed");};
+}
+async function decideSuggestion(id,decision){
+  var api=window.auditControl;
+  if(!api||typeof api.request!=="function"||!experience.tenantId){flashHint("桌面通道不可用，无法提交决策");return;}
+  try{
+    await api.request({path:"/api/v1/topology/nebula-experience/suggestions/"+id+"/decision",
+      method:"POST",tenantId:experience.tenantId,
+      body:{decision:decision,reason:decision==="accepted"?"桌面人工采纳为正式关系":"桌面人工驳回"}});
+    detail.classList.remove("show");
+    await loadDynamic();
+    flashHint(decision==="accepted"?"已采纳并随知识发布固化为「已确认关系」":"已驳回该候选关系");
+  }catch(err){flashHint("决策失败："+((err&&err.message)?err.message:String(err)));}
+}
+function selectNode(n){
+  selectedNode=n;
+  if(!n){detail.classList.remove("show");return;}
+  var neighbors=(adj[n.id]||[]).slice().sort(function(a,b){
+    var rank={core:0,stage:1,gov:2,base:3,plugin:4};return rank[a.node.kind]-rank[b.node.kind];
+  });
+  var typeText={trunk:"主干环流",cluster:"阶段簇内",cross:"跨层调用",derivation:"衍生支路",dataflow:"数据接口",manual:"手动连线",suggestion:"候选关系"};
+  var html="<button class='d-close' id='dClose'>×</button>"
+    +"<span class='d-kind'>"+kindLabel(n)+"</span>"
+    +"<h3>"+n.name+"</h3><div class='d-id'>"+n.id+(n.ctrl?" · 管控穿透 ⊣":"")+"</div>"
+    +(n.kind==="core"?"":"<div class='d-line'><span>落地状态</span><b style='color:"+(n.lifecycle==="contract_only"?"#ffd98a":"#7ff0c8")+"'>"+(n.lifecycle==="contract_only"?"协议声明 · 运行时未落地":"verified · 可运行")+"</b></div>")
+    +(n.version?"<div class='d-line'><span>声明版本</span><b style='font-family:var(--mono)'>"+n.version+"</b></div>":"")
+    +(n.derivedFrom?"<div class='d-line'><span>衍生自</span><b>"+(nodeById[n.derivedFrom]?nodeById[n.derivedFrom].name:n.derivedFrom)+"</b></div>":"")
+    +(n.kind!=="core"&&n.kind!=="stage"
+      ?"<div class='d-sec'>输入数据接口 · 消费 "+(n.inputs||[]).length+"</div><div class='d-ports'>"+((n.inputs||[]).length?n.inputs.map(function(c){return "<span class='port in'>"+c+"</span>";}).join(""):"<span style='color:var(--faint);font-size:11px'>无</span>")+"</div>"
+      +"<div class='d-sec'>输出数据接口 · 产出 "+(n.outputs||[]).length+"</div><div class='d-ports'>"+((n.outputs||[]).length?n.outputs.map(function(c){return "<span class='port out'>"+c+"</span>";}).join(""):"<span style='color:var(--faint);font-size:11px'>无</span>")+"</div>"
+      :"")
+    +((n.invokes&&n.invokes.length)?"<div class='d-sec'>调用支撑能力 · 跨层 "+n.invokes.length+"（点击跳转）</div><div class='d-ports'>"+n.invokes.map(function(id){var tn=nodeById[id];return "<span class='port invoke' data-jump='"+id+"'>"+(tn?tn.name:id.split(".").pop())+"</span>";}).join("")+"</div>":"")
+    +nodeExperienceHtml(n)
+    +nodeUsedInHtml(n)
+    +"<div class='d-sec'>网络度量</div>"
+    +"<div class='d-line'><span>邻接节点</span><b>"+neighbors.length+"</b></div>"
+    +(n.kind==="plugin"?"<div class='d-line'><span>所属阶段</span><b>"+STAGE_NAME[n.stage]+"</b></div>":"")
+    +(n.kind!=="plugin"?"<div class='d-line'><span>轨道层级</span><b>"+(n.kind==="core"?"核":n.kind==="gov"?"内轨 · 治理":n.kind==="base"?"外轨 · 支撑":"中轨 · 阶段")+"</b></div>":"")
+    +"<div class='d-sec'>邻接网络（点击跳转）</div>"
+    +neighbors.slice(0,24).map(function(x){
+      return "<div class='neighbor' data-jump='"+x.node.id+"'><span class='nd' style='background:"+x.node.color+"'></span>"
+        +"<span class='nt'>"+x.node.name+"</span><span class='nr'>"+(typeText[x.type]||"")+(x.contract?" · "+x.contract:"")+"</span></div>";
+    }).join("")
+    +(neighbors.length>24?"<div style='color:var(--faint);font-size:11px;margin-top:5px'>其余 "+(neighbors.length-24)+" 个…</div>":"");
+  detail.innerHTML=html;detail.classList.add("show");
+  document.getElementById("dClose").onclick=function(){selectNode(null);};
+  Array.prototype.forEach.call(detail.querySelectorAll(".neighbor, .port.invoke"),function(el){
+    el.onclick=function(){var t=nodeById[el.getAttribute("data-jump")];focusOn(t);selectNode(t);};
+  });
+}
+function focusOn(n){
+  focusNode=n;
+  /* 把该节点世界坐标移到屏幕中心偏左（给详情面板留位） */
+  focusPan={x:-n.x*view.scale-120,y:-n.y*view.scale};
+}
+
+/* =============================================================
+ * 手动连线编辑：增 / 删 / 持久化 / 重建（仅 localStorage，不写后端）
+ * ============================================================= */
+function reconstruct(){if(currentModel)construct(currentModel);}
+function inferContract(a,b){
+  var inter=(a.outputs||[]).filter(function(c){return (b.inputs||[]).indexOf(c)>=0;});
+  return inter[0]||(b.inputs||[])[0]||(a.outputs||[])[0]||"manual-link";
+}
+function addManualEdge(a,b){
+  var c=inferContract(a,b),k=edgeKey(a.id,b.id,c);
+  var exists=edges.some(function(e){return (e.type==="dataflow"||e.type==="manual")&&e.key===k;});
+  if(exists){flashHint("该数据连线已存在："+c);return;}
+  var dup=userEdits.manual.some(function(m){return edgeKey(m.s,m.t,m.c)===k;});
+  if(dup)return;
+  userEdits.manual.push({s:a.id,t:b.id,c:c});saveEdits();reconstruct();
+  flashHint("已连线 "+a.name+" → "+b.name+"（契约 "+c+"）");
+}
+function removeEdge(e){
+  if(e.manual){
+    userEdits.manual=userEdits.manual.filter(function(m){return edgeKey(m.s,m.t,m.c)!==e.key;});
+    flashHint("已删除手动连线："+e.contract);
+  }else{
+    if(userEdits.hidden.indexOf(e.key)<0)userEdits.hidden.push(e.key);
+    flashHint("已隐藏自动数据连线："+e.contract+"（可在『清空修改』恢复）");
+  }
+  saveEdits();reconstruct();
+}
+var hintTimer=null;
+function flashHint(msg){updateEditHint(msg);}
+function updateEditHint(extra){
+  var el=document.getElementById("editHint");if(!el)return;
+  if(extra){el.innerHTML=extra;return;}
+  el.innerHTML=pendingSource
+    ?("已选源 <b>"+pendingSource.name+"</b>，再点一个目标节点完成连线（Esc 取消）")
+    :"编辑模式：依次点两个节点建立数据连线；点一条现有线可删除";
+}
+var editBtn=document.getElementById("editBtn"),editBar=document.getElementById("editBar");
+function setEditMode(on){
+  editMode=on;pendingSource=null;
+  document.body.classList.toggle("editing",on);
+  editBar.classList.toggle("show",on);
+  editBtn.classList.toggle("on",on);
+  editBtn.textContent=on?"✎ 退出编辑":"✎ 编辑连线";
+  if(on){layers.dataflow=true;var cb=document.getElementById("lvDataflow");if(cb)cb.checked=true;}
+  hoverEdge=null;updateEditHint();
+}
+
+/* =============================================================
+ * HUD 控件
+ * ============================================================= */
+["lvTrunk","lvCluster","lvDataflow","lvCross","lvDeriv","lvPlexus","lvStars","lvExp","lvSug"].forEach(function(id,idx){
+  var key=["trunk","cluster","dataflow","cross","derivation","plexus","stars","exp","suggestion"][idx];
+  document.getElementById(id).addEventListener("change",function(e){
+    layers[key]=e.target.checked;
+    /* 运行经验附着在数据接口边上：开启经验层时自动打开数据接口层 */
+    if(key==="exp"&&e.target.checked&&!layers.dataflow){
+      layers.dataflow=true;var df=document.getElementById("lvDataflow");if(df)df.checked=true;
+    }
+  });
+});
+var spinBtn=document.getElementById("spinBtn");
+function toggleSpin(){spin=!spin;spinBtn.classList.toggle("on",spin);spinBtn.textContent=spin?"❚❚ 自转":"▶ 自转";}
+spinBtn.onclick=toggleSpin;
+document.getElementById("resetBtn").onclick=resetView;
+function resetView(){view.scale=1;view.panX=0;view.panY=0;focusNode=null;focusPan=null;}
+editBtn.onclick=function(){setEditMode(!editMode);};
+document.getElementById("editDone").onclick=function(){setEditMode(false);};
+document.getElementById("editClear").onclick=function(){
+  if(!userEdits.manual.length&&!userEdits.hidden.length){flashHint("当前没有手动修改");return;}
+  userEdits={manual:[],hidden:[]};saveEdits();reconstruct();pendingSource=null;updateEditHint();
+  flashHint("已清空全部手动连线 / 隐藏覆盖，恢复后端自动图谱");
+};
+document.getElementById("editExport").onclick=function(){
+  var payload={tenant:"local-dev",exported_at:new Date().toISOString(),
+    manual_edges:userEdits.manual,hidden_auto_edges:userEdits.hidden};
+  var blob=new Blob([JSON.stringify(payload,null,2)],{type:"application/json"});
+  var a=document.createElement("a");a.href=URL.createObjectURL(blob);
+  a.download="nebula-edits.json";a.click();URL.revokeObjectURL(a.href);
+};
+window.addEventListener("keydown",function(e){
+  if(e.target.tagName==="INPUT")return;
+  if(e.key==="r"||e.key==="R")resetView();
+  if(e.key==="Escape"){if(pendingSource){pendingSource=null;updateEditHint();}else if(editMode)setEditMode(false);}
+  if(e.code==="Space"){e.preventDefault();toggleSpin();}
+});
+/* 搜索 */
+var searchInput=document.getElementById("search");
+searchInput.addEventListener("input",function(){
+  var q=this.value.trim().toLowerCase();
+  if(!q){focusNode=null;focusPan=null;return;}
+  var hit=nodes.filter(function(n){return n.name.toLowerCase().indexOf(q)>=0||n.id.toLowerCase().indexOf(q)>=0;});
+  if(hit.length){focusOn(hit[0]);hoverNode=hit[0];}
+});
+searchInput.addEventListener("keydown",function(e){
+  if(e.key==="Enter"){var q=this.value.trim().toLowerCase();
+    var hit=nodes.filter(function(n){return n.name.toLowerCase().indexOf(q)>=0||n.id.toLowerCase().indexOf(q)>=0;});
+    if(hit.length){focusOn(hit[0]);selectNode(hit[0]);}}
+});
+
+/* =============================================================
+ * 启动
+ * ============================================================= */
+/* =============================================================
+ * 启动：离线快照立即出图 → 异步拉后端权威插件目录动态重建
+ * ============================================================= */
+function setSource(kind){
+  var b=document.getElementById("srcBadge");if(!b)return;
+  if(kind==="live"){b.textContent="实时 · 后端插件目录";b.className="live";}
+  else{b.textContent="内置快照 · 离线";b.className="snap";}
+}
+/* 经验 overlay 索引：边按 "s|t|contract"、节点按插件（合并多 capability） */
+function ingestExperience(resp){
+  experience.edgeByKey={};experience.nodeByPlugin={};
+  (resp.edge_stats||[]).forEach(function(s){
+    experience.edgeByKey[expEdgeKey(s.source,s.target,s.contract||"")]=s;
+  });
+  (resp.node_stats||[]).forEach(function(s){
+    var p=experience.nodeByPlugin[s.plugin_id];
+    if(!p){p={use_count:0,success_count:0,fail_count:0,total_latency_ms:0,
+      error_kind_counts:{},confidence:0,weight:0,last_used_at:null,first_used_at:null,caps:[],_confWeighted:0};
+      experience.nodeByPlugin[s.plugin_id]=p;}
+    p.use_count+=s.use_count||0;p.success_count+=s.success_count||0;p.fail_count+=s.fail_count||0;
+    p.total_latency_ms+=s.total_latency_ms||0;p.weight+=s.weight||0;
+    if(s.capability&&p.caps.indexOf(s.capability)<0)p.caps.push(s.capability);
+    Object.keys(s.error_kind_counts||{}).forEach(function(k){p.error_kind_counts[k]=(p.error_kind_counts[k]||0)+s.error_kind_counts[k];});
+    if(s.last_used_at&&(!p.last_used_at||s.last_used_at>p.last_used_at))p.last_used_at=s.last_used_at;
+    if(s.first_used_at&&(!p.first_used_at||s.first_used_at<p.first_used_at))p.first_used_at=s.first_used_at;
+    p._confWeighted+=(s.confidence||0)*(s.use_count||0);
+  });
+  Object.keys(experience.nodeByPlugin).forEach(function(k){
+    var p=experience.nodeByPlugin[k];
+    p.confidence=p.use_count?p._confWeighted/p.use_count:0;delete p._confWeighted;
+  });
+  experience.suggestions=resp.suggestions||[];experience.usedIn=resp.used_in||[];experience.available=true;
+}
+async function loadDynamic(){
+  var api=window.auditControl;
+  if(!api||typeof api.request!=="function"){setSource("snap");return;}
+  var slug;
+  try{slug=localStorage.getItem("audit.tenantSlug")||"local-dev";}catch(e){slug="local-dev";}
+  try{
+    var ctx=await api.request({path:"/api/v1/ui/tenant-context",method:"GET",tenantSlug:slug});
+    var tenantId=ctx&&ctx.tenant_id;
+    if(!tenantId){setSource("snap");return;}
+    experience.tenantId=tenantId;
+    /* 一次取图谱 + 运行经验 overlay（边/节点统计 + 外协作候选） */
+    var resp=await api.request({path:"/api/v1/topology/plugin-nebula/experience",method:"GET",tenantId:tenantId});
+    if(resp&&resp.graph&&resp.graph.nodes&&resp.graph.nodes.length){
+      ingestExperience(resp);construct(apiModel(resp.graph));setSource("live");return;
+    }
+    /* 经验端点不可用（旧后端 / 策略未放行）：回退纯图谱，保留离线兜底 */
+    var g=await api.request({path:"/api/v1/topology/plugin-nebula",method:"GET",tenantId:tenantId});
+    if(g&&g.nodes&&g.nodes.length){experience.available=false;construct(apiModel(g));setSource("live");}
+    else{setSource("snap");}
+  }catch(err){
+    /* 后端未启动 / 策略未放行 / IPC 不可用：保留离线快照，不白屏 */
+    setSource("snap");
+    console.warn("[nebula] 动态加载失败，使用内置快照：",err);
+  }
+}
+
+/* 视觉自检钩子：仅向当前内存图注入合成经验/候选用于截图验收，不写后端、不落本地存储。
+ * 由 Electron 截图钩子经 executeJavaScript 调用（AUDIT_NETWORK_NEBULA_EXPERIENCE）。 */
+window.__nebulaExperienceSelfTest=function(){
+  try{
+    currentModel.dataflow=[
+      ["s1-06","s2-04","risk.score"],["s2-04","b09","metric.query"],["s3-04","s4-10","sample.flag"]];
+    var nowIso=new Date().toISOString();
+    ingestExperience({edge_stats:[
+      {source:"s1-06",target:"s2-04",contract:"risk.score",success_count:24,fail_count:1,total_latency_ms:12000,declared:true,confidence:0.86,base_weight:2.1,weight:1.9,first_used_at:"2026-08-20T00:00:00Z",last_used_at:nowIso,evidence_run_ids:["run-a1","run-a2","run-a3"]},
+      {source:"s2-04",target:"b09",contract:"metric.query",success_count:9,fail_count:5,total_latency_ms:28000,declared:true,confidence:0.42,base_weight:1.6,weight:0.7,first_used_at:"2026-06-01T00:00:00Z",last_used_at:"2026-07-10T00:00:00Z",evidence_run_ids:["run-b1"]},
+      {source:"s3-04",target:"s4-10",contract:"sample.flag",success_count:2,fail_count:8,total_latency_ms:9000,declared:false,confidence:0.08,base_weight:1.2,weight:0.3,first_used_at:"2026-08-01T00:00:00Z",last_used_at:nowIso,evidence_run_ids:["run-c1"]}
+    ],node_stats:[
+      {plugin_id:"s1-06",capability:"rank",use_count:25,success_count:24,fail_count:1,total_latency_ms:12500,error_kind_counts:{timeout:1},confidence:0.86,base_weight:2.1,weight:1.9,first_used_at:"2026-08-20T00:00:00Z",last_used_at:nowIso},
+      {plugin_id:"b09",capability:"compute",use_count:14,success_count:9,fail_count:5,total_latency_ms:30000,error_kind_counts:{bad_input:3,timeout:2},confidence:0.4,base_weight:1.5,weight:0.6,first_used_at:"2026-06-01T00:00:00Z",last_used_at:"2026-07-10T00:00:00Z"}
+    ],suggestions:[
+      {id:"00000000-0000-0000-0000-000000000001",source:"s4-03",target:"b14",contract:"viz.dashboard",status:"proposed",evidence_count:6,success_count:5,fail_count:1,confidence:0.45,weight:1.1,last_evidence_at:nowIso,created_at:nowIso,decided_by:null,decided_at:null,evidence_run_ids:["r1"]},
+      {id:"00000000-0000-0000-0000-000000000002",source:"s7-06",target:"b14",contract:"viz.insight",status:"accepted",evidence_count:4,success_count:4,fail_count:0,confidence:0.4,weight:0.9,last_evidence_at:nowIso,created_at:nowIso,decided_by:"desktop-local",decided_at:nowIso,evidence_run_ids:["r2"],changeset_id:"11111111-1111-1111-1111-111111111111",release_id:"22222222-2222-2222-2222-222222222222",released_at:nowIso}
+    ]});
+    layers.dataflow=true;layers.exp=true;layers.suggestion=true;
+    var df=document.getElementById("lvDataflow");if(df)df.checked=true;
+    construct(currentModel);
+    return {ok:true,edges:edges.length,edgeStats:Object.keys(experience.edgeByKey).length,suggestions:experience.suggestions.length};
+  }catch(e){return {ok:false,error:String(e),stack:e&&e.stack};}
+};
+/* 自检：打开候选详情；which="proposed"（默认，含采纳/驳回）或 "confirmed"（已确认·已发布）；或指定插件节点经验分区 */
+window.__nebulaOpenSuggestionDetail=function(which){
+  var wantConfirmed=which==="confirmed";
+  var e=edges.filter(function(x){return x.type==="suggestion"&&x.sug&&
+    (wantConfirmed?(x.sug.status==="accepted"&&x.sug.released_at):x.sug.status==="proposed");})[0];
+  if(e){selectEdge(e);return {ok:true,contract:e.contract,status:e.sug.status};}return {ok:false};
+};
+window.__nebulaOpenNodeDetail=function(id){
+  var n=nodeById[id]||nodes.filter(function(x){return x.id==="s1-06";})[0];
+  if(n){selectNode(n);return {ok:true,name:n.name};}return {ok:false};
+};
+construct(snapshotModel());   // 离线快照首帧
+setSource("snap");
+resize();
+frame(performance.now());     // 立即首帧，避免首屏空白；frame 内部继续 rAF
+loadDynamic();                // 后端就绪后自动切换为实时图
+})();
+</script>
+</body>
+</html>

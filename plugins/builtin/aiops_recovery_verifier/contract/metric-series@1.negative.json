@@ -1,0 +1,11 @@
+{
+  "contract_id": "metric-series",
+  "contract_version": "1.0.0",
+  "series_id": "svc-order-error-rate",
+  "metric": "http_error_rate",
+  "unit": "ratio",
+  "window_minutes": 60,
+  "points": [
+    {"at": "2026-09-05T08:00:00+00:00", "value": "zero-point-003"}
+  ]
+}

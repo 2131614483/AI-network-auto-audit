@@ -1,0 +1,33 @@
+{
+  "id": "audit.journal-anomaly",
+  "version": "0.1.0",
+  "name": "审计日记账异常检测（本地只读）",
+  "runtime": "python",
+  "entrypoint": "plugins.builtin.audit_journal_anomaly.runtime:handle",
+  "capabilities": ["audit.journal.detect"],
+  "inputs": {
+    "capability": "audit.journal.detect",
+    "schema": "journal-artifact-ref.schema.json",
+    "content_type": "application/json"
+  },
+  "outputs": {
+    "capability": "audit.journal.detect",
+    "schema": "anomaly-candidates@1.0.0",
+    "content_type": "application/json"
+  },
+  "side_effects": "read_only",
+  "idempotency": "ledger_sha256 + schema_mapping_version + zscore_threshold",
+  "permissions": {
+    "data_read": ["audit.ledger.snapshot"],
+    "data_write": [],
+    "network": "none",
+    "secrets": []
+  },
+  "resources": {"cpu": 1, "memory_mb": 256, "gpu": false, "timeout_seconds": 300},
+  "data_classification": "audit_confidential",
+  "evidence": {"preserve_inputs": true, "code_hash_required": true},
+  "tests": {
+    "contract": "tests/contract/test_audit_journal_anomaly_contract.py",
+    "golden": "tests/unit/test_audit_journal_anomaly_runtime.py"
+  }
+}

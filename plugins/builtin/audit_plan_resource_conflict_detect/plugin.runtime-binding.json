@@ -1,0 +1,18 @@
+{
+  "schema_version": "1.0.0",
+  "plugin": {
+    "id": "audit.plan.resource-conflict-detect",
+    "version": "0.1.0",
+    "sha256": "f895515a80c65ad8a1c26e52aa0949076484e788a7437b667b2f02e8273c1f33"
+  },
+  "protocol": {
+    "id": "audit.plan.resource-conflict-detect",
+    "version": "0.1.0",
+    "sha256": "59f3f2356d06bb37b637e033b3578c1064dc015cb14d8bc88bd68a857b24ba6a"
+  },
+  "execution_mode": "isolated_subprocess",
+  "capabilities": [
+    "audit.plan.resource-conflict-detect"
+  ],
+  "status": "verified"
+}

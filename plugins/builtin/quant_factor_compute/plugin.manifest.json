@@ -1,0 +1,33 @@
+{
+  "id": "quant.factor-compute",
+  "version": "0.1.0",
+  "name": "量化因子计算（本地只读）",
+  "runtime": "python",
+  "entrypoint": "plugins.builtin.quant_factor_compute.runtime:handle",
+  "capabilities": ["quant.factor.compute"],
+  "inputs": {
+    "capability": "quant.factor.compute",
+    "schema": "factor-input.schema.json",
+    "content_type": "application/json"
+  },
+  "outputs": {
+    "capability": "quant.factor.compute",
+    "schema": "factor-artifact-ref@1.0.0",
+    "content_type": "application/json"
+  },
+  "side_effects": "read_only",
+  "idempotency": "snapshot_sha256 + factors + lookback",
+  "permissions": {
+    "data_read": ["quant.backtests"],
+    "data_write": [],
+    "network": "none",
+    "secrets": []
+  },
+  "resources": {"cpu": 1, "memory_mb": 512, "gpu": false, "timeout_seconds": 300},
+  "data_classification": "restricted",
+  "evidence": {"preserve_inputs": true, "code_hash_required": true},
+  "tests": {
+    "contract": "tests/contract/test_quant_factor_compute_contract.py",
+    "golden": "tests/unit/test_quant_factor_compute_runtime.py"
+  }
+}

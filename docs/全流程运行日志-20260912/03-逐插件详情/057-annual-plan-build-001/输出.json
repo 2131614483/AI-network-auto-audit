@@ -1,0 +1,34 @@
+{
+  "annual-plan": {
+    "artifact": {
+      "projects": [
+        {
+          "project": "PR-0001",
+          "quarter": "Q1",
+          "rank": 1,
+          "score": 85.0
+        },
+        {
+          "project": "PR-0002",
+          "quarter": "Q2",
+          "rank": 2,
+          "score": 70.0
+        }
+      ],
+      "summary": {
+        "by_quarter": {
+          "Q1": 1,
+          "Q2": 1,
+          "Q3": 0,
+          "Q4": 0
+        },
+        "project_count": 2
+      },
+      "title": "年度审计计划",
+      "year": "2026"
+    },
+    "contract_id": "document-content",
+    "contract_version": "1.0.0",
+    "language": "zh-CN"
+  }
+}

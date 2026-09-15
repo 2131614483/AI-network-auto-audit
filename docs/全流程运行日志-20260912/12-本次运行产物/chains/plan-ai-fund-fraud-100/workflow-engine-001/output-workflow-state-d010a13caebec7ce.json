@@ -1,0 +1,1 @@
+{"contract_id": "workflow", "contract_version": "1.0.0", "nodes": [{"node_id": "n1", "state": "approved"}, {"node_id": "n2", "state": "pending"}], "summary": {"approved": 1, "state": "running", "total": 2}, "workflow_id": "wf-foundation"}

@@ -1,0 +1,18 @@
+{
+  "schema_version": "1.0.0",
+  "plugin": {
+    "id": "audit.remedy.remedy-overdue-alert",
+    "version": "0.1.0",
+    "sha256": "57c51f2ffcd9cc2b7da52cfecd2445c6263bdfc67207ab5c500fa1e43a16fe69"
+  },
+  "protocol": {
+    "id": "audit.remedy.remedy-overdue-alert",
+    "version": "0.1.0",
+    "sha256": "96ce2a9aaa531a38c9196b152f74ebba362bf4d36a6473262a882d4d0dacebe7"
+  },
+  "execution_mode": "isolated_subprocess",
+  "capabilities": [
+    "audit.remedy.remedy-overdue-alert"
+  ],
+  "status": "verified"
+}

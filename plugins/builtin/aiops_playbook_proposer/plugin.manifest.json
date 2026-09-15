@@ -1,0 +1,33 @@
+{
+  "id": "aiops.playbook-proposer",
+  "version": "0.1.0",
+  "name": "AIOps 修复提案（影子草稿，本地只读）",
+  "runtime": "python",
+  "entrypoint": "plugins.builtin.aiops_playbook_proposer.runtime:handle",
+  "capabilities": ["aiops.remediation.propose"],
+  "inputs": {
+    "capability": "aiops.remediation.propose",
+    "schema": "rca-candidates.schema.json",
+    "content_type": "application/json"
+  },
+  "outputs": {
+    "capability": "aiops.remediation.propose",
+    "schema": "remediation-proposal@1.0.0",
+    "content_type": "application/json"
+  },
+  "side_effects": "read_only",
+  "idempotency": "rca_candidates_sha256 + max_playbooks + canary_scope",
+  "permissions": {
+    "data_read": ["aiops.rca_candidates"],
+    "data_write": [],
+    "network": "none",
+    "secrets": []
+  },
+  "resources": {"cpu": 1, "memory_mb": 256, "gpu": false, "timeout_seconds": 300},
+  "data_classification": "internal",
+  "evidence": {"preserve_inputs": true, "code_hash_required": true},
+  "tests": {
+    "contract": "tests/contract/test_aiops_playbook_proposer_contract.py",
+    "golden": "tests/unit/test_aiops_playbook_proposer_runtime.py"
+  }
+}

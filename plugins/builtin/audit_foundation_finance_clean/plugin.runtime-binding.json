@@ -1,0 +1,18 @@
+{
+  "schema_version": "1.0.0",
+  "plugin": {
+    "id": "audit.foundation.finance-clean",
+    "version": "0.1.0",
+    "sha256": "091f6d297a1ce19e0f359722f12b9d9c2cd73dc775a5522ee02a074b62f3e0ca"
+  },
+  "protocol": {
+    "id": "audit.foundation.finance-clean",
+    "version": "0.1.0",
+    "sha256": "52da7af518c50d8137f84bf6c4352d1377907d767614416c3f0d54a8bfd0758f"
+  },
+  "execution_mode": "isolated_subprocess",
+  "capabilities": [
+    "audit.foundation.finance-clean"
+  ],
+  "status": "verified"
+}

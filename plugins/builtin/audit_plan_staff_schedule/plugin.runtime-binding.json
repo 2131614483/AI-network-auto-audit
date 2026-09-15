@@ -1,0 +1,18 @@
+{
+  "schema_version": "1.0.0",
+  "plugin": {
+    "id": "audit.plan.staff-schedule",
+    "version": "0.1.0",
+    "sha256": "2690592c57180b5cd27728bd98e5f86f770b086cde5a2c090ce1606fce8949a9"
+  },
+  "protocol": {
+    "id": "audit.plan.staff-schedule",
+    "version": "0.1.0",
+    "sha256": "b06bbe7bf9f65a202b1d667f1e65f66c8bd8a7bad9c7454dca8eafe0e4b6441f"
+  },
+  "execution_mode": "isolated_subprocess",
+  "capabilities": [
+    "audit.plan.staff-schedule"
+  ],
+  "status": "verified"
+}

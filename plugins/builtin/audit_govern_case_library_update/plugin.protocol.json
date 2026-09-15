@@ -1,0 +1,94 @@
+{
+ "protocol_version": "1.0.0",
+ "id": "audit.govern.case-library-update",
+ "version": "0.1.0",
+ "name": "典型案例库更新",
+ "description": "典型案例入库沉淀；上游审计成果，调用标签体系分类。",
+ "kind": "analysis",
+ "domains": [
+  "audit",
+  "compliance"
+ ],
+ "lifecycle": "verified",
+ "compatibility": {
+  "host_protocol": ">=1.0.0 <2.0.0",
+  "adapters": [
+   "python"
+  ],
+  "fallback_behavior": "human_review"
+ },
+ "capabilities": [
+  {
+   "id": "audit.govern.case-library-update",
+   "summary": "典型案例库更新：典型案例入库沉淀；上游审计成果，调用标签体系分类。",
+   "side_effects": "read_only",
+   "idempotency": "input_sha256 + capability_version",
+   "inputs": [
+    {
+     "contract_id": "distilled-result",
+     "version": "1.0.0",
+     "format": "artifact_ref",
+     "delivery": "reference",
+     "classification": "audit_confidential",
+     "schema_ref": "document-content.schema.json",
+     "max_bytes": 67108864
+    }
+   ],
+   "outputs": [
+    {
+     "contract_id": "case-entry",
+     "version": "1.0.0",
+     "format": "json",
+     "delivery": "request_response",
+     "classification": "audit_confidential",
+     "schema_ref": "document-content.schema.json",
+     "max_bytes": 67108864
+    }
+   ],
+   "invokes": [
+    "audit.foundation.tag-manage"
+   ]
+  }
+ ],
+ "governance": {
+  "default_data_classification": "audit_confidential",
+  "permissions": {
+   "data_read": [
+    "audit.govern.case-library-update.read"
+   ],
+   "data_write": [],
+   "network": "none",
+   "secret_refs": []
+  },
+  "policy": {
+   "gateway_required": true,
+   "approval_required": false,
+   "evidence_required": true
+  }
+ },
+ "resources": {
+  "cpu": 1,
+  "memory_mb": 256,
+  "gpu": "none",
+  "timeout_seconds": 300
+ },
+ "observability": {
+  "trace_required": true,
+  "emits": [
+   "structured_log",
+   "artifact_ref",
+   "audit_event"
+  ],
+  "health": "declared_only"
+ },
+ "provenance": {
+  "source_refs": [
+   "docs/audit-plugin-network-100.md#97",
+   "docs/插件开发与接入标准-UPP-v1.0.md",
+   "plugins/builtin/audit_govern_case_library_update/runtime.py"
+  ]
+ },
+ "ui": {
+  "mode": "none"
+ }
+}

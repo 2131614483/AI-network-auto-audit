@@ -1,0 +1,18 @@
+{
+  "schema_version": "1.0.0",
+  "plugin": {
+    "id": "audit.govern.effect-evaluate",
+    "version": "0.1.0",
+    "sha256": "e3ceb4e0ecffe718c84d63d012cc494bd3f67512a958ef343c1797b0c05321f4"
+  },
+  "protocol": {
+    "id": "audit.govern.effect-evaluate",
+    "version": "0.1.0",
+    "sha256": "f9c8b34a91c98fcb3859562859b3f0c0e0105009de895cfb4f814746aad4b948"
+  },
+  "execution_mode": "isolated_subprocess",
+  "capabilities": [
+    "audit.govern.effect-evaluate"
+  ],
+  "status": "verified"
+}

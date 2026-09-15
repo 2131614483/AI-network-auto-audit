@@ -1,0 +1,33 @@
+{
+  "id": "audit.network.skill-output",
+  "version": "0.1.0",
+  "name": "组网结果 Skill 输出（受审批，只读）",
+  "runtime": "python",
+  "entrypoint": "plugins.builtin.audit_network_skill_output.runtime:handle",
+  "capabilities": ["audit.network.skill-output"],
+  "inputs": {
+    "capability": "audit.network.skill-output",
+    "schema": "network-result-set.schema.json",
+    "content_type": "application/json"
+  },
+  "outputs": {
+    "capability": "audit.network.skill-output",
+    "schema": "skill-output@1.0.0",
+    "content_type": "application/json"
+  },
+  "side_effects": "read_only",
+  "idempotency": "result_set_sha256_and_skill_or_catalog_and_template",
+  "permissions": {
+    "data_read": ["audit.network.result-set", "audit.findings", "audit.evidence"],
+    "data_write": [],
+    "network": "none",
+    "secrets": []
+  },
+  "resources": {"cpu": 1, "memory_mb": 256, "gpu": false, "timeout_seconds": 180},
+  "data_classification": "audit_confidential",
+  "evidence": {"preserve_inputs": true, "code_hash_required": true},
+  "tests": {
+    "contract": "tests/contract/test_audit_network_skill_output_contract.py",
+    "golden": "tests/unit/test_audit_network_skill_output_runtime.py"
+  }
+}

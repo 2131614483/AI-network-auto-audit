@@ -1,0 +1,33 @@
+{
+  "id": "audit.finding-draft",
+  "version": "0.1.0",
+  "name": "审计发现草稿（影子草稿，本地只读）",
+  "runtime": "python",
+  "entrypoint": "plugins.builtin.audit_finding_draft.runtime:handle",
+  "capabilities": ["audit.finding.draft"],
+  "inputs": {
+    "capability": "audit.finding.draft",
+    "schema": "anomaly-candidates.schema.json",
+    "content_type": "application/json"
+  },
+  "outputs": {
+    "capability": "audit.finding.draft",
+    "schema": "finding-draft@1.0.0",
+    "content_type": "application/json"
+  },
+  "side_effects": "read_only",
+  "idempotency": "anomaly_set_sha256 + plan_sha256",
+  "permissions": {
+    "data_read": ["audit.anomaly_candidates", "audit.investigation_plan_draft"],
+    "data_write": [],
+    "network": "none",
+    "secrets": []
+  },
+  "resources": {"cpu": 1, "memory_mb": 256, "gpu": false, "timeout_seconds": 300},
+  "data_classification": "audit_confidential",
+  "evidence": {"preserve_inputs": true, "code_hash_required": true},
+  "tests": {
+    "contract": "tests/contract/test_audit_finding_draft_contract.py",
+    "golden": "tests/unit/test_audit_finding_draft_runtime.py"
+  }
+}

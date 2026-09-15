@@ -1,0 +1,18 @@
+{
+  "schema_version": "1.0.0",
+  "plugin": {
+    "id": "audit.risk.finance-anomaly-alert",
+    "version": "0.1.0",
+    "sha256": "117e785744d69a760503502a966fc7cf09c4aadfd7d06d842dd3d1c84b94a738"
+  },
+  "protocol": {
+    "id": "audit.risk.finance-anomaly-alert",
+    "version": "0.1.0",
+    "sha256": "9b8b9a1cebe6a27c684ef9452b95344db00de8cdd05bf300f9e0574f0a92d62a"
+  },
+  "execution_mode": "isolated_subprocess",
+  "capabilities": [
+    "audit.risk.finance-anomaly-alert"
+  ],
+  "status": "verified"
+}

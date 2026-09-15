@@ -1,0 +1,612 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Audit Network · 插件数据流全景展示方案</title>
+<style>
+  :root {
+    --bg: #070b12;
+    --panel: #0d1520;
+    --panel-2: #111c2b;
+    --border: #1d2c3d;
+    --text: #e8eef5;
+    --muted: #8ba0b5;
+    --faint: #5a7084;
+    --blue: #6fa8dc;
+    --green: #52e08a;
+    --amber: #e0a458;
+    --red: #d96c6c;
+    --mono: "Cascadia Mono", Consolas, "SFMono-Regular", Menlo, monospace;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html { scroll-behavior: smooth; }
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: "Microsoft YaHei", "PingFang SC", "Noto Sans CJK SC", system-ui, sans-serif;
+    font-size: 14px;
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+  }
+  .wrap { max-width: 1240px; margin: 0 auto; padding: 0 20px 80px; }
+
+  /* ===== 头部 ===== */
+  header { padding: 48px 0 20px; border-bottom: 1px solid var(--border); }
+  .kicker { font-size: 12px; letter-spacing: .14em; color: var(--blue); text-transform: none; margin-bottom: 10px; }
+  h1 { font-size: 30px; font-weight: 700; letter-spacing: .01em; }
+  h1 .accent { color: var(--green); }
+  .sub { color: var(--muted); margin-top: 8px; max-width: 720px; }
+  .meta { margin-top: 14px; font-size: 12px; color: var(--faint); font-family: var(--mono); }
+
+  /* ===== 指标带 ===== */
+  .metrics {
+    display: grid;
+    grid-template-columns: repeat(6, 1fr);
+    gap: 10px;
+    margin: 22px 0 6px;
+  }
+  .metric {
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 12px 14px;
+  }
+  .metric .num { font-size: 26px; font-weight: 700; font-family: var(--mono); line-height: 1.2; }
+  .metric .lbl { font-size: 12px; color: var(--muted); margin-top: 2px; }
+  .metric.n-blue .num { color: var(--blue); }
+  .metric.n-green .num { color: var(--green); }
+  .metric.n-amber .num { color: var(--amber); }
+  .metric.n-red .num { color: var(--red); }
+
+  /* ===== 区块 ===== */
+  section { margin-top: 44px; }
+  .sec-head { display: flex; align-items: baseline; gap: 12px; margin-bottom: 14px; }
+  .sec-head h2 { font-size: 19px; font-weight: 600; }
+  .sec-head .tag { font-size: 12px; color: var(--faint); font-family: var(--mono); }
+  .note { font-size: 12.5px; color: var(--muted); margin: 10px 0 14px; }
+  .note b { color: var(--text); font-weight: 600; }
+
+  /* ===== 数据流全景 ===== */
+  .flow-wrap { position: relative; background: var(--panel); border: 1px solid var(--border); border-radius: 8px; padding: 18px 16px 8px; overflow-x: auto; }
+  .flow-inner { position: relative; min-width: 860px; }
+  .flow-cols { display: flex; gap: 26px; justify-content: flex-start; align-items: flex-start; position: relative; z-index: 1; }
+  .flow-col { flex: 0 0 158px; }
+  .flow-colhead { font-size: 12px; color: var(--faint); font-family: var(--mono); letter-spacing: .08em; padding: 4px 2px 8px; border-bottom: 1px solid var(--border); margin-bottom: 10px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .flow-card {
+    background: var(--panel-2);
+    border: 1px solid var(--border);
+    border-left: 3px solid var(--blue);
+    border-radius: 5px;
+    padding: 8px 9px;
+    margin-bottom: 36px;
+    cursor: pointer;
+    transition: border-color .15s, transform .15s, box-shadow .15s;
+    position: relative;
+  }
+  .flow-card:hover { border-color: var(--blue); transform: translateY(-1px); box-shadow: 0 4px 14px rgba(0,0,0,.35); }
+  .flow-card.hl { border-color: var(--green); }
+  .flow-card .name { font-size: 12.5px; font-weight: 600; line-height: 1.35; }
+  .flow-card .cap { font-size: 11px; color: var(--faint); font-family: var(--mono); margin-top: 2px; }
+  .flow-card .badges { margin-top: 5px; display: flex; flex-wrap: wrap; gap: 4px; }
+  .badge { font-size: 10px; padding: 1px 5px; border-radius: 3px; font-family: var(--mono); }
+  .badge.db { background: rgba(224,164,88,.14); color: var(--amber); border: 1px solid rgba(224,164,88,.35); }
+  .badge.static { background: rgba(111,168,220,.14); color: var(--blue); border: 1px solid rgba(111,168,220,.35); }
+  .badge.hi { background: rgba(217,108,108,.14); color: var(--red); border: 1px solid rgba(217,108,108,.35); }
+  .portrow { display: flex; justify-content: space-between; gap: 6px; margin-top: 6px; }
+  .ports { display: flex; flex-direction: column; gap: 3px; flex: 1; min-width: 0; }
+  .ports.out { align-items: flex-end; }
+  .port {
+    font-size: 10px; font-family: var(--mono); color: var(--faint);
+    display: inline-flex; align-items: center; gap: 4px; white-space: nowrap;
+    max-width: 100%; overflow: hidden; text-overflow: ellipsis;
+  }
+  .port .dot { width: 6px; height: 6px; border-radius: 50%; flex: 0 0 6px; }
+  .port.matched .dot { background: var(--green); }
+  .port.open .dot { background: #3d5568; }
+  .flow-lines { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; z-index: 0; }
+  .flow-legend { display: flex; gap: 18px; flex-wrap: wrap; margin: 12px 2px 0; font-size: 12px; color: var(--muted); }
+  .flow-legend .sw { display: inline-block; width: 14px; height: 3px; border-radius: 2px; vertical-align: middle; margin-right: 6px; }
+  .flow-legend .dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; vertical-align: middle; margin-right: 6px; }
+
+  /* ===== 登记矩阵 ===== */
+  .matrix { background: var(--panel); border: 1px solid var(--border); border-radius: 8px; overflow-x: auto; }
+  table { width: 100%; border-collapse: collapse; font-size: 12.5px; min-width: 760px; }
+  th, td { text-align: left; padding: 8px 12px; border-bottom: 1px solid var(--border); }
+  th { color: var(--faint); font-weight: 600; font-size: 11.5px; letter-spacing: .05em; white-space: nowrap; background: var(--panel-2); }
+  td { vertical-align: top; }
+  tr:last-child td { border-bottom: none; }
+  .dom-grp td { background: rgba(111,168,220,.06); color: var(--blue); font-weight: 600; font-size: 12px; letter-spacing: .08em; padding: 6px 12px; }
+  .mono { font-family: var(--mono); font-size: 11.5px; }
+  .st { display: inline-block; font-size: 10.5px; padding: 1px 6px; border-radius: 3px; font-family: var(--mono); white-space: nowrap; }
+  .st.ok { background: rgba(82,224,138,.12); color: var(--green); border: 1px solid rgba(82,224,138,.3); }
+  .st.part { background: rgba(224,164,88,.12); color: var(--amber); border: 1px solid rgba(224,164,88,.3); }
+  .st.no { background: rgba(93,112,132,.14); color: var(--faint); border: 1px solid rgba(93,112,132,.3); }
+
+  /* ===== 对比条 ===== */
+  .bars { display: flex; flex-direction: column; gap: 12px; }
+  .bar-row { display: grid; grid-template-columns: 240px 1fr 56px; gap: 12px; align-items: center; }
+  .bar-row .bl { font-size: 12.5px; color: var(--muted); text-align: right; }
+  .bar-track { background: var(--panel-2); border-radius: 3px; height: 22px; position: relative; overflow: hidden; }
+  .bar-fill { height: 100%; border-radius: 3px; display: flex; align-items: center; justify-content: flex-end; padding-right: 8px; font-size: 11px; color: #06101c; font-family: var(--mono); font-weight: 700; min-width: 26px; transition: width .4s ease; }
+  .bar-row .bv { font-family: var(--mono); font-size: 13px; font-weight: 700; }
+  .bars-note { margin-top: 12px; font-size: 12px; color: var(--faint); }
+
+  /* ===== 迁移方案时间轴 ===== */
+  .roadmap { display: flex; flex-direction: column; gap: 0; }
+  .rm-step { display: grid; grid-template-columns: 120px 28px 1fr; gap: 0; }
+  .rm-phase { text-align: right; padding: 4px 14px 34px 0; font-family: var(--mono); font-size: 12px; color: var(--blue); }
+  .rm-phase .pnum { display: block; font-size: 22px; font-weight: 700; line-height: 1.2; }
+  .rm-axis { position: relative; }
+  .rm-axis::before { content: ""; position: absolute; left: 50%; top: 6px; bottom: 0; width: 2px; background: var(--border); transform: translateX(-50%); }
+  .rm-dot { position: absolute; left: 50%; top: 8px; transform: translateX(-50%); width: 12px; height: 12px; border-radius: 50%; background: var(--blue); border: 3px solid var(--bg); }
+  .rm-body { padding: 0 0 30px 18px; }
+  .rm-card { background: var(--panel); border: 1px solid var(--border); border-radius: 6px; padding: 12px 16px; }
+  .rm-card h3 { font-size: 15px; font-weight: 600; margin-bottom: 6px; }
+  .rm-card h3 .g { color: var(--green); }
+  .rm-card ul { margin: 8px 0 0 18px; color: var(--muted); font-size: 13px; }
+  .rm-card li { margin-bottom: 4px; }
+  .rm-card code { font-family: var(--mono); font-size: 11.5px; color: var(--blue); background: rgba(111,168,220,.1); padding: 1px 5px; border-radius: 3px; }
+  .rm-goal { margin-top: 8px; font-size: 12.5px; color: var(--green); }
+
+  /* ===== 页脚 ===== */
+  footer { margin-top: 52px; padding-top: 18px; border-top: 1px solid var(--border); font-size: 12px; color: var(--faint); }
+  footer p { margin-bottom: 4px; }
+
+  /* ===== 响应式 ===== */
+  @media (max-width: 900px) {
+    .metrics { grid-template-columns: repeat(3, 1fr); }
+    .bar-row { grid-template-columns: 150px 1fr 40px; }
+    .bar-row .bl { font-size: 11.5px; }
+  }
+  @media (max-width: 640px) {
+    header { padding-top: 30px; }
+    h1 { font-size: 23px; }
+    .metrics { grid-template-columns: repeat(2, 1fr); }
+    .flow-inner { min-width: 0; }
+    .flow-cols { flex-direction: column; gap: 16px; }
+    .flow-col { flex: 1 1 auto; }
+    .flow-lines { display: none; }
+    .rm-step { grid-template-columns: 72px 20px 1fr; }
+    .rm-phase { font-size: 10px; padding-right: 8px; }
+    .rm-phase .pnum { font-size: 17px; }
+    .bar-row { grid-template-columns: 1fr; gap: 4px; }
+    .bar-row .bl { text-align: left; }
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header>
+    <div class="kicker">DESKTOP CONTROL PLANE · 展示方案</div>
+    <h1>插件数据流全景 <span class="accent">·</span> 从登记到数据流的一页通</h1>
+    <p class="sub">把「节点 + 插件 + 数据流」所有节点集中到一张可迁移的展示页：24 个已登记插件、10 个规划蓝图、16 个集群、契约级数据流连线，以及三段式迁移进桌面端的路径。</p>
+    <div class="meta">数据快照：2026-09-09 主库 audit_network（local-dev）实查 + 桌面端前端代码核对 · 未改动项目代码</div>
+  </header>
+
+  <div class="metrics">
+    <div class="metric n-blue"><div class="num">24</div><div class="lbl">已登记插件 catalog.plugins</div></div>
+    <div class="metric n-blue"><div class="num">16</div><div class="lbl">集群目录（四轴）</div></div>
+    <div class="metric n-blue"><div class="num">10</div><div class="lbl">静态蓝图目录（M0 演示）</div></div>
+    <div class="metric n-amber"><div class="num">3</div><div class="lbl">落库拓扑蓝图</div></div>
+    <div class="metric n-green"><div class="num">1</div><div class="lbl">已配对数据流连线</div></div>
+    <div class="metric n-red"><div class="num">2</div><div class="lbl">图谱页 audit-l1 节点</div></div>
+  </div>
+
+  <!-- ===== 视图一：数据流全景 ===== -->
+  <section id="flow">
+    <div class="sec-head"><h2>插件数据流全景</h2><span class="tag">VIEW 01 · 契约级连线</span></div>
+    <p class="note">插件 = 节点；输入/输出契约 = 端口。绿色连线 = 输出契约命中另一插件输入契约（<b>document-content@1</b>，真实配对）；灰色端口 = 未对接（外部来源 / 待下游）。蓝框 = 仅存在于静态目录；<span style="color:var(--amber)">金标 DB</span> = 已在拓扑库登记。虚线 = 规划建议链（能力相邻、契约尚未对接，示意）。</p>
+    <div class="flow-wrap">
+      <div class="flow-inner" id="flowInner">
+        <svg class="flow-lines" id="flowLines" aria-hidden="true"></svg>
+        <div class="flow-cols" id="flowCols"></div>
+      </div>
+    </div>
+    <div class="flow-legend">
+      <span><span class="sw" style="background:var(--green)"></span>数据流（契约配对）</span>
+      <span><span class="sw" style="background:#3d5568;border-top:1px dashed #5a7084"></span>规划建议链（示意）</span>
+      <span><span class="dot" style="background:var(--green)"></span>已对接端口</span>
+      <span><span class="dot" style="background:#3d5568"></span>未对接端口</span>
+    </div>
+  </section>
+
+  <!-- ===== 视图二：登记矩阵 ===== -->
+  <section id="matrix">
+    <div class="sec-head"><h2>插件 × 蓝图 登记矩阵</h2><span class="tag">VIEW 02 · 24 插件逐一核对</span></div>
+    <p class="note">以 catalog.plugins（24 个 active）为插件主档，核对每个插件是否有对应规划蓝图（静态目录 / 拓扑库落库）。「近似」= 按能力名映射，需人工确认。</p>
+    <div class="matrix">
+      <table>
+        <thead><tr><th style="width:230px">插件（catalog.plugins）</th><th>域</th><th>静态蓝图</th><th>拓扑库落库</th><th>数据流契约</th><th>状态</th></tr></thead>
+        <tbody id="matrixBody"></tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- ===== 视图三：数据源对比 ===== -->
+  <section id="compare">
+    <div class="sec-head"><h2>数据源落差</h2><span class="tag">VIEW 03 · 理论 vs 落库 vs 展示</span></div>
+    <p class="note">同一个「插件数据流」概念在系统里存在四套数据，数量落差巨大——这正是图谱/数据流显得单调稀少的根因。</p>
+    <div class="bars" id="bars"></div>
+    <div class="bars-note">浅蓝 = 理论层（插件注册、静态演示目录）；橙 = 落库层（拓扑库实际登记）；红 = 图谱管理页实际展示（graph 域，与插件零交集）。</div>
+  </section>
+
+  <!-- ===== 视图四：迁移方案 ===== -->
+  <section id="roadmap">
+    <div class="sec-head"><h2>迁移进桌面端的三段路径</h2><span class="tag">VIEW 04 · 数据层 → API 层 → 展示层</span></div>
+    <div class="roadmap">
+      <div class="rm-step">
+        <div class="rm-phase"><span class="pnum">01</span>数据层统一</div>
+        <div class="rm-axis"><span class="rm-dot"></span></div>
+        <div class="rm-body">
+          <div class="rm-card">
+            <h3>以 <span class="g">catalog.plugins</span> 为插件主档，为 24 个插件补齐契约与蓝图</h3>
+            <ul>
+              <li>为每个插件定义输入/输出契约，写入 <code>topology.interface_contracts</code>（当前仅 2 条且未绑定蓝图）</li>
+              <li>逐个 <code>TopologyService.upsert</code> 生成 <code>topology.plugin_blueprints</code>（当前仅迁移种子 3 个：ledger-quality-slot / finding-draft-slot / research-note-slot）</li>
+              <li>统一蓝图 key 规范，消除双轨：静态目录 <code>audit-ledger-quality-slot</code> vs 落库 <code>ledger-quality-slot</code></li>
+            </ul>
+            <p class="rm-goal">目标：24 插件 → 24 蓝图，输入/输出契约齐全</p>
+          </div>
+        </div>
+      </div>
+      <div class="rm-step">
+        <div class="rm-phase"><span class="pnum">02</span>API 层扩展</div>
+        <div class="rm-axis"><span class="rm-dot"></span></div>
+        <div class="rm-body">
+          <div class="rm-card">
+            <h3>让后端能吐出完整数据流图</h3>
+            <ul>
+              <li><code>packages/plugin_topology/service.py</code> <code>list_blueprints()</code>（710-722 行）返回字段扩展：inputContracts / outputContracts / capabilities / memberships</li>
+              <li>新增聚合端点 <code>/api/v1/topology/dataflow</code>：蓝图 + 契约配对 + 边，一次返回完整图</li>
+              <li>图谱管理页跨域取数：新增 <code>/api/v1/graph/plugin-dataflow</code> 或复用在 graph 域投影</li>
+            </ul>
+            <p class="rm-goal">目标：前端零硬编码，画布数据全部来自 API</p>
+          </div>
+        </div>
+      </div>
+      <div class="rm-step">
+        <div class="rm-phase"><span class="pnum">03</span>展示层接入</div>
+        <div class="rm-axis"><span class="rm-dot"></span></div>
+        <div class="rm-body">
+          <div class="rm-card">
+            <h3>替换硬编码目录，复用本方案视图</h3>
+            <ul>
+              <li><code>desktop/src/components/PluginFlowGraph.tsx</code> 改由 dataflow 端点取数，替换 <code>desktop/src/model/pluginTopology.ts</code> 的 <code>pluginTopologyCatalog</code>（291-369 行硬编码 10 蓝图）</li>
+              <li><code>desktop/src/App.tsx</code>（1315-1324 行）蓝图数据源从 <code>pluginTopologyCatalog.blueprints</code> 切到 API 响应</li>
+              <li>图谱管理页新增「插件数据流」标签页，直接复用本方案的视图一/视图二</li>
+            </ul>
+            <p class="rm-goal">目标：图谱管理页与插件拓扑工作台数据同源；连线数 = 契约配对数（动态）</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <footer>
+    <p>数据口径：插件/蓝图/边/契约数量来自 2026-09-09 对主库 audit_network（local-dev 租户）的只读查询；静态蓝图目录与集群来自 desktop/src/model/pluginTopology.ts；插件登记来自 catalog.plugins。</p>
+    <p>「规划建议链」为按能力语义绘制的示意连线，非契约级配对；真实数据流连线仅 document-content@1 一条。</p>
+    <p>本页为独立展示方案，未修改任何项目代码；迁移实施需按 AGENTS.md 契约先行、迁移显式执行、读写带租户/trace_id/幂等键。</p>
+  </footer>
+
+</div>
+
+<script>
+(function () {
+  "use strict";
+
+  /* ===== 数据（2026-09-09 实查快照；迁移后替换为 API 取数） ===== */
+
+  var CLUSTERS = [
+    { key: "domain-knowledge", name: "知识工程", axis: "业务域" },
+    { key: "domain-financial-audit", name: "财务审计", axis: "业务域" },
+    { key: "domain-quant", name: "量化研究", axis: "业务域" },
+    { key: "domain-aiops", name: "智能运维", axis: "业务域" },
+    { key: "family-llm-rag", name: "LLM/RAG", axis: "能力族" },
+    { key: "family-kg-gnn", name: "知识图谱/GNN", axis: "能力族" },
+    { key: "family-cv", name: "文档视觉", axis: "能力族" },
+    { key: "family-streaming", name: "流式分析", axis: "能力族" },
+    { key: "family-thin", name: "轻量编排", axis: "能力族" },
+    { key: "runtime-local-cpu", name: "本地 CPU", axis: "资源池" },
+    { key: "runtime-local-gpu", name: "本地 GPU", axis: "资源池" },
+    { key: "runtime-long-running", name: "长运行任务", axis: "资源池" },
+    { key: "zone-internal", name: "内部资料", axis: "治理区" },
+    { key: "zone-audit-confidential", name: "审计保密", axis: "治理区" },
+    { key: "zone-restricted", name: "受限数据", axis: "治理区" },
+    { key: "zone-production-change", name: "生产变更", axis: "治理区" }
+  ];
+
+  /* 静态蓝图目录（desktop/src/model/pluginTopology.ts 316-367 行） */
+  var BLUEPRINTS = [
+    { id: "mineru-local-slot", name: "本地文档提取槽位", cap: "knowledge.extract.document", in: ["artifact-ref/pdf@1"], out: ["document-content@1"], grp: "domain-knowledge", risk: "read_only", db: false },
+    { id: "knowledge-chunk-validation-slot", name: "知识切分与校验槽位", cap: "knowledge.normalize.chunk", in: ["document-content@1"], out: ["knowledge-chunks@1"], grp: "domain-knowledge", risk: "read_only", db: false },
+    { id: "knowledge-hybrid-retrieval-slot", name: "混合检索槽位", cap: "knowledge.retrieve.hybrid", in: ["knowledge-query@1"], out: ["knowledge-hits@1"], grp: "domain-knowledge", risk: "read_only", db: false },
+    { id: "related-party-graph-analysis-slot", name: "关联方图谱分析槽位", cap: "graph.related_party.discover", in: ["released-graph-ref@1"], out: ["relationship-candidates@1"], grp: "domain-financial-audit", risk: "medium", db: false },
+    { id: "audit-ledger-quality-slot", name: "总账质量分析槽位", cap: "audit.ledger.validate", in: ["ledger-artifact-ref@1"], out: ["audit-quality-candidates@1"], grp: "domain-financial-audit", risk: "medium", db: true, dbKey: "ledger-quality-slot" },
+    { id: "evidence-lineage-slot", name: "证据血缘槽位", cap: "audit.evidence.lineage", in: ["evidence-ref@1"], out: ["evidence-lineage@1"], grp: "domain-financial-audit", risk: "read_only", db: false },
+    { id: "quant-simulated-backtest-slot", name: "量化模拟回测槽位", cap: "quant.backtest.simulate", in: ["market-snapshot-ref@1"], out: ["backtest-report@1"], grp: "domain-quant", risk: "medium", db: false },
+    { id: "aiops-alert-triage-slot", name: "告警归因槽位", cap: "aiops.alert.triage", in: ["alert-event@1"], out: ["incident-proposal@1"], grp: "domain-aiops", risk: "high", db: false },
+    { id: "workflow-plan-validation-slot", name: "工作流计划校验槽位", cap: "workflow.plan.validate", in: ["plugin-routing-plan@1"], out: ["plan-validation@1"], grp: "family-thin", risk: "read_only", db: false },
+    { id: "policy-route-simulation-slot", name: "路由策略模拟槽位", cap: "policy.route.simulate", in: ["plugin-routing-plan@1"], out: ["policy-simulation@1"], grp: "family-thin", risk: "read_only", db: false }
+  ];
+
+  /* 拓扑库落库（migrations 0037/0038 种子 + 0038 桥接） */
+  var DB_BLUEPRINTS = [
+    { key: "ledger-quality-slot", cap: "audit.ledger.validate" },
+    { key: "finding-draft-slot", cap: "audit.finding.draft" },
+    { key: "research-note-slot", cap: "quant.research-note.draft" }
+  ];
+  var DB_EDGES = [
+    { src: "ledger-quality-slot", tgt: "finding-draft-slot", rel: "depends_on" },
+    { src: "ledger-quality-slot", tgt: "research-note-slot", rel: "bridge" }
+  ];
+
+  /* catalog.plugins（24 active；blueprint 字段为按能力名对应，近似需确认） */
+  var PLUGINS = [
+    { key: "aiops.alert-correlation", name: "AIOps 告警关联（本地只读）", dom: "aiops", bp: null, bpDb: null },
+    { key: "aiops.alert-triage", name: "AIOps 告警归因（人工复核提案，只读）", dom: "aiops", bp: "aiops-alert-triage-slot", bpDb: null },
+    { key: "aiops.playbook-proposer", name: "AIOps 修复提案（影子草稿）", dom: "aiops", bp: null, bpDb: null },
+    { key: "aiops.postmortem-draft", name: "AIOps 复盘草稿（受审批输出）", dom: "aiops", bp: null, bpDb: null },
+    { key: "aiops.rca-ranker", name: "AIOps 根因候选排序（本地只读）", dom: "aiops", bp: null, bpDb: null },
+    { key: "aiops.recovery-verifier", name: "AIOps 恢复核验（不可变核验账本）", dom: "aiops", bp: null, bpDb: null },
+    { key: "aiops.ticket-draft", name: "AIOps 工单草稿（受审批输出）", dom: "aiops", bp: null, bpDb: null },
+    { key: "audit.evidence-lineage", name: "审计证据血缘（只读查询契约）", dom: "audit", bp: "evidence-lineage-slot", bpDb: null },
+    { key: "audit.finding-draft", name: "审计发现草稿（影子草稿）", dom: "audit", bp: null, bpDb: "finding-draft-slot" },
+    { key: "audit.investigation-plan", name: "审计调查计划（影子计划草稿）", dom: "audit", bp: null, bpDb: null },
+    { key: "audit.journal-anomaly", name: "审计日记账异常检测（本地只读）", dom: "audit", bp: null, bpDb: null },
+    { key: "audit.ledger-quality", name: "审计总账质量校验（本地只读）", dom: "audit", bp: "audit-ledger-quality-slot", bpDb: "ledger-quality-slot" },
+    { key: "audit.report-draft", name: "审计报告草稿（受审批输出）", dom: "audit", bp: null, bpDb: null },
+    { key: "audit.workpaper-export", name: "审计底稿导出（受审批输出）", dom: "audit", bp: null, bpDb: null },
+    { key: "knowledge.document-ingestion", name: "知识文档摄入（本地只读）", dom: "knowledge", bp: "mineru-local-slot", bpDb: null, approx: true },
+    { key: "knowledge.entity-relation-candidate", name: "知识实体关系候选抽取（本地只读）", dom: "knowledge", bp: null, bpDb: null },
+    { key: "knowledge.graph-proposal-builder", name: "图谱提案构建（影子 ChangeSet 草稿）", dom: "knowledge", bp: "related-party-graph-analysis-slot", bpDb: null, approx: true },
+    { key: "knowledge.retention-recommendation", name: "知识保留建议（受审批输出）", dom: "knowledge", bp: null, bpDb: null },
+    { key: "quant.experiment-evaluator", name: "量化实验评估（研究提案草稿）", dom: "quant", bp: null, bpDb: null },
+    { key: "quant.factor-compute", name: "量化因子计算（本地只读）", dom: "quant", bp: null, bpDb: null },
+    { key: "quant.research-note-draft", name: "量化研究结论草稿（受审批输出）", dom: "quant", bp: null, bpDb: "research-note-slot" },
+    { key: "quant.simulated-backtest", name: "量化模拟回测（非交易）", dom: "quant", bp: "quant-simulated-backtest-slot", bpDb: null },
+    { key: "quant.snapshot-guard", name: "量化数据快照守卫（点时校验）", dom: "quant", bp: null, bpDb: null },
+    { key: "audit.demo-plugin", name: "audit.demo-plugin（示例）", dom: "demo", bp: null, bpDb: null }
+  ];
+  var DOM_LABEL = { aiops: "智能运维", audit: "财务审计", knowledge: "知识工程", quant: "量化研究", demo: "示例" };
+  var GROUP_ORDER = ["domain-knowledge", "domain-financial-audit", "domain-quant", "domain-aiops", "family-thin"];
+  var GROUP_LABEL = {
+    "domain-knowledge": "知识工程",
+    "domain-financial-audit": "财务审计",
+    "domain-quant": "量化研究",
+    "domain-aiops": "智能运维",
+    "family-thin": "轻量编排"
+  };
+
+  var COMPARE = [
+    { name: "已登记插件 catalog.plugins", v: 24, c: "#6fa8dc", kind: "theory" },
+    { name: "静态蓝图目录 pluginTopologyCatalog", v: 10, c: "#6fa8dc", kind: "theory" },
+    { name: "静态集群目录（四轴）", v: 16, c: "#6fa8dc", kind: "theory" },
+    { name: "落库拓扑蓝图 plugin_blueprints", v: 3, c: "#e0a458", kind: "db" },
+    { name: "落库数据流边 topology_edges", v: 2, c: "#e0a458", kind: "db" },
+    { name: "接口契约 interface_contracts", v: 2, c: "#e0a458", kind: "db" },
+    { name: "图谱页 audit-l1 节点（graph 域）", v: 2, c: "#d96c6c", kind: "view" }
+  ];
+
+  /* ===== 工具 ===== */
+  function el(tag, cls, html) {
+    var n = document.createElement(tag);
+    if (cls) n.className = cls;
+    if (html !== undefined) n.innerHTML = html;
+    return n;
+  }
+
+  /* ===== 视图一：数据流全景 ===== */
+  function renderFlow() {
+    var colsWrap = document.getElementById("flowCols");
+    colsWrap.innerHTML = "";
+    var groups = GROUP_ORDER.map(function (key) {
+      return { key: key, items: BLUEPRINTS.filter(function (b) { return b.grp === key; }) };
+    }).filter(function (g) { return g.items.length; });
+
+    groups.forEach(function (group) {
+      var col = el("div", "flow-col");
+      col.appendChild(el("div", "flow-colhead", GROUP_LABEL[group.key]));
+      group.items.forEach(function (bp) {
+        var card = el("div", "flow-card");
+        card.dataset.id = bp.id;
+        var badges = "";
+        if (bp.db) badges += '<span class="badge db">DB ' + (bp.dbKey || "") + "</span>";
+        else badges += '<span class="badge static">静态目录</span>';
+        if (bp.risk === "high") badges += '<span class="badge hi">high</span>';
+        card.innerHTML =
+          '<div class="name"></div><div class="cap"></div><div class="badges">' + badges + "</div>" +
+          '<div class="portrow"><span class="ports"></span><span class="ports out"></span></div>';
+        card.querySelector(".name").textContent = bp.name;
+        card.querySelector(".cap").textContent = bp.cap;
+        var pin = card.querySelectorAll(".ports")[0];
+        var pout = card.querySelectorAll(".ports")[1];
+        bp.in.forEach(function (c) { pin.appendChild(portEl("in", bp.id, c)); });
+        bp.out.forEach(function (c) { pout.appendChild(portEl("out", bp.id, c)); });
+        col.appendChild(card);
+      });
+      colsWrap.appendChild(col);
+    });
+    drawFlowLines();
+  }
+
+  function portEl(kind, bpId, contract) {
+    var matched = isMatched(kind, bpId, contract);
+    var p = el("span", "port " + (matched ? "matched" : "open"));
+    p.dataset.port = kind + ":" + bpId + ":" + contract;
+    p.dataset.kind = kind;
+    p.innerHTML = '<i class="dot"></i>';
+    p.appendChild(document.createTextNode(contract));
+    return p;
+  }
+
+  function isMatched(kind, bpId, contract) {
+    return BLUEPRINTS.some(function (candidate) {
+      if (candidate.id === bpId) return false;
+      return kind === "out"
+        ? candidate.in.indexOf(contract) >= 0
+        : candidate.out.indexOf(contract) >= 0;
+    });
+  }
+
+  function drawFlowLines() {
+    var svg = document.getElementById("flowLines");
+    var inner = document.getElementById("flowInner");
+    var wrap = inner.parentElement;
+    if (wrap.clientWidth < 860) { svg.innerHTML = ""; return; }
+    var rect = inner.getBoundingClientRect();
+    var outPts = {}, inPts = {};
+    inner.querySelectorAll("[data-port]").forEach(function (node) {
+      var key = node.dataset.port;
+      var r = node.getBoundingClientRect();
+      var pt = { x: r.left - rect.left + r.width / 2, y: r.top - rect.top + r.height / 2 };
+      if (node.dataset.kind === "out") outPts[key] = pt; else inPts[key] = pt;
+    });
+    var parts = [];
+
+    function cardRectOf(id) {
+      var card = inner.querySelector('.flow-card[data-id="' + id + '"]');
+      if (!card) return null;
+      var r = card.getBoundingClientRect();
+      return { top: r.top - rect.top, bottom: r.bottom - rect.top, left: r.left - rect.left, right: r.right - rect.left };
+    }
+
+    BLUEPRINTS.forEach(function (bp) {
+      bp.out.forEach(function (contract) {
+        var consumer = BLUEPRINTS.find(function (c) { return c.id !== bp.id && c.in.indexOf(contract) >= 0; });
+        if (!consumer) return;
+        var from = outPts["out:" + bp.id + ":" + contract];
+        var to = inPts["in:" + consumer.id + ":" + contract];
+        if (!from || !to) return;
+        if (bp.grp === consumer.grp) {
+          /* 同列：竖直箭头，走卡片间隙 */
+          var a = cardRectOf(bp.id), b = cardRectOf(consumer.id);
+          if (!a || !b) return;
+          var x = (a.left + a.right) / 2;
+          var y1 = a.bottom, y2 = b.top;
+          parts.push('<line x1="' + x + '" y1="' + y1 + '" x2="' + x + '" y2="' + y2 + '" stroke="#52e08a" stroke-width="1.6" data-line="' + bp.id + '" />');
+          parts.push('<text x="' + (x + 7) + '" y="' + ((y1 + y2) / 2 + 3) + '" text-anchor="start" font-size="9.5" fill="#9fe8bd" style="paint-order:stroke;stroke:#070b12;stroke-width:3" font-family="Cascadia Mono,Consolas,monospace">' + contract + "</text>");
+        } else {
+          /* 跨列：贝塞尔 */
+          var dx = Math.max(40, (to.x - from.x) / 2);
+          parts.push('<path d="M ' + from.x + ' ' + from.y + " C " + (from.x + dx) + " " + from.y + ", " + (to.x - dx) + " " + to.y + ", " + to.x + " " + to.y + '" fill="none" stroke="#52e08a" stroke-width="1.6" data-line="' + bp.id + '" />');
+          parts.push('<text x="' + ((from.x + to.x) / 2) + '" y="' + ((from.y + to.y) / 2 - 4) + '" text-anchor="middle" font-size="10" fill="#9fe8bd" style="paint-order:stroke;stroke:#070b12;stroke-width:3" font-family="Cascadia Mono,Consolas,monospace">' + contract + "</text>");
+        }
+      });
+    });
+    /* 规划建议链（示意）：同域相邻能力，虚线橙灰 */
+    var suggestions = [
+      { src: "knowledge-chunk-validation-slot", tgt: "knowledge-hybrid-retrieval-slot" }
+    ];
+    suggestions.forEach(function (s) {
+      var srcBp = BLUEPRINTS.find(function (b) { return b.id === s.src; });
+      var tgtBp = BLUEPRINTS.find(function (b) { return b.id === s.tgt; });
+      if (srcBp.grp === tgtBp.grp) {
+        var a = cardRectOf(s.src), b = cardRectOf(s.tgt);
+        if (!a || !b) return;
+        var x = (a.left + a.right) / 2;
+        parts.push('<line x1="' + x + '" y1="' + a.bottom + '" x2="' + x + '" y2="' + b.top + '" stroke="#5a7084" stroke-width="1.2" stroke-dasharray="4 4" opacity="0.8" data-line="suggest" />');
+        return;
+      }
+      var from = srcBp && outPts["out:" + s.src + ":" + (srcBp.out[0] || "")];
+      var to = tgtBp && inPts["in:" + s.tgt + ":" + (tgtBp.in[0] || "")];
+      if (!from || !to) return;
+      var dx = Math.max(40, (to.x - from.x) / 2);
+      parts.push('<path d="M ' + from.x + ' ' + from.y + " C " + (from.x + dx) + " " + from.y + ", " + (to.x - dx) + " " + to.y + ", " + to.x + " " + to.y + '" fill="none" stroke="#5a7084" stroke-width="1.2" stroke-dasharray="4 4" opacity="0.8" data-line="suggest" />');
+    });
+    svg.setAttribute("viewBox", "0 0 " + rect.width + " " + rect.height);
+    svg.innerHTML = parts.join("");
+  }
+
+  /* 卡片 hover 高亮连线 */
+  function bindFlowHover() {
+    var cards = document.querySelectorAll(".flow-card");
+    cards.forEach(function (card) {
+      card.addEventListener("mouseenter", function () {
+        var id = card.dataset.id;
+        document.querySelectorAll(".flow-card").forEach(function (c) { c.classList.remove("hl"); });
+        document.querySelectorAll(".flow-lines line, .flow-lines path").forEach(function (p) {
+          var on = p.dataset.line === id;
+          if (p.dataset.line === "suggest" && (id === "knowledge-chunk-validation-slot" || id === "knowledge-hybrid-retrieval-slot")) on = true;
+          p.style.opacity = on ? "1" : "0.12";
+        });
+        card.classList.add("hl");
+      });
+      card.addEventListener("mouseleave", function () {
+        document.querySelectorAll(".flow-card").forEach(function (c) { c.classList.remove("hl"); });
+        document.querySelectorAll(".flow-lines line, .flow-lines path").forEach(function (p) { p.style.opacity = "1"; });
+      });
+    });
+  }
+
+  /* ===== 视图二：登记矩阵 ===== */
+  function renderMatrix() {
+    var body = document.getElementById("matrixBody");
+    body.innerHTML = "";
+    var doms = ["aiops", "audit", "knowledge", "quant", "demo"];
+    doms.forEach(function (dom) {
+      var grp = el("tr", "dom-grp");
+      grp.innerHTML = '<td colspan="6">' + DOM_LABEL[dom] + "</td>";
+      body.appendChild(grp);
+      PLUGINS.filter(function (p) { return p.dom === dom; }).forEach(function (p) {
+        var tr = el("tr");
+        var bpName = p.bp ? bpNameOf(p.bp) : "—";
+        var dbName = p.bpDb ? p.bpDb : "—";
+        var status, stCls, stTxt;
+        if (p.bp && p.bpDb) { status = "双轨登记"; stCls = "part"; }
+        else if (p.bp) { status = "仅静态目录"; stCls = "part"; }
+        else if (p.bpDb) { status = "仅拓扑库"; stCls = "part"; }
+        else { status = "未登记蓝图"; stCls = "no"; }
+        if (p.approx) stTxt = status + "（近似）"; else stTxt = status;
+        tr.innerHTML =
+          "<td><div class='mono'>" + p.key + "</div><div style='color:var(--muted);font-size:11px'>" + p.name + "</div></td>" +
+          "<td>" + DOM_LABEL[p.dom] + "</td>" +
+          "<td class='mono'>" + (p.bp ? bpName : "—") + "</td>" +
+          "<td class='mono'>" + dbName + "</td>" +
+          "<td class='mono'>" + (p.bp ? contractSummary(p.bp) : "—") + "</td>" +
+          '<td><span class="st ' + stCls + '">' + stTxt + "</span></td>";
+        body.appendChild(tr);
+      });
+    });
+  }
+
+  function bpNameOf(id) {
+    var bp = BLUEPRINTS.find(function (b) { return b.id === id; });
+    return bp ? bp.name : id;
+  }
+  function contractSummary(id) {
+    var bp = BLUEPRINTS.find(function (b) { return b.id === id; });
+    if (!bp) return "—";
+    return bp.in.join(",") + " → " + bp.out.join(",");
+  }
+
+  /* ===== 视图三：对比条 ===== */
+  function renderBars() {
+    var wrap = document.getElementById("bars");
+    wrap.innerHTML = "";
+    var max = 24;
+    COMPARE.forEach(function (row) {
+      var r = el("div", "bar-row");
+      r.innerHTML = '<div class="bl"></div><div class="bar-track"></div><div class="bv"></div>';
+      r.querySelector(".bl").textContent = row.name;
+      r.querySelector(".bv").textContent = row.v;
+      var fill = el("div", "bar-fill");
+      fill.style.width = Math.max(3, Math.round(row.v / max * 100)) + "%";
+      fill.style.background = row.c;
+      fill.textContent = row.v > 4 ? row.v : "";
+      r.querySelector(".bar-track").appendChild(fill);
+      wrap.appendChild(r);
+    });
+  }
+
+  /* ===== 初始化 ===== */
+  renderFlow();
+  bindFlowHover();
+  renderMatrix();
+  renderBars();
+  window.addEventListener("resize", drawFlowLines);
+})();
+</script>
+</body>
+</html>

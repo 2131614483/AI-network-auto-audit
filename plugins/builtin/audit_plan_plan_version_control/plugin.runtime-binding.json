@@ -1,0 +1,18 @@
+{
+  "schema_version": "1.0.0",
+  "plugin": {
+    "id": "audit.plan.plan-version-control",
+    "version": "0.1.0",
+    "sha256": "bbc32eeee15dfd58230e4871784f0cc88b83ad801d326fdfb7203046d40ab9e1"
+  },
+  "protocol": {
+    "id": "audit.plan.plan-version-control",
+    "version": "0.1.0",
+    "sha256": "7c01599d5088a8c0d71c70cae775d7c4f573901bdcf8cfc015388974e6bb8526"
+  },
+  "execution_mode": "isolated_subprocess",
+  "capabilities": [
+    "audit.plan.plan-version-control"
+  ],
+  "status": "verified"
+}

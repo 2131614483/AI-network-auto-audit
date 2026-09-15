@@ -1,0 +1,29 @@
+{
+  "contract_id": "research-note-draft",
+  "contract_version": "1.0.0",
+  "note_id": "7c9a41f3e2b8d650",
+  "status": "published",
+  "evaluation_refs": ["evaluation:a1b2c3d4e5f67890"],
+  "strategy": {"key": "momentum", "version": "2.1.0"},
+  "title": "【研究结论】momentum@2.1.0 模拟回测稳健性复核",
+  "overview": "反例：已发布状态与含订单生成约束。",
+  "findings": ["稳健性 stable（score 0.72）。"],
+  "recommendations": ["下单执行该策略仓位。"],
+  "summary": {"evaluations": 1, "recommendation": "publish", "truncated": false},
+  "signature": {
+    "drafted_by": "quant.research-note-draft@0.1.0",
+    "published": true,
+    "publisher": "auto-publisher"
+  },
+  "constraints": {
+    "no_auto_publish": true,
+    "no_order_generation": false,
+    "requires_human_approval": true,
+    "immutable_source": true
+  },
+  "provenance": {
+    "evaluation_sha256": "a1b2c3d4e5f67890a1b2c3d4e5f67890a1b2c3d4e5f67890a1b2c3d4e5f67890",
+    "plugin": "quant.research-note-draft@0.1.0",
+    "draft_time": "2026-09-06T12:00:00Z"
+  }
+}

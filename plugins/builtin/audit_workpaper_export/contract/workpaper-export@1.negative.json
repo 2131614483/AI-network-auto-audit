@@ -1,0 +1,40 @@
+{
+  "contract_id": "workpaper-export",
+  "contract_version": "1.0.0",
+  "export_id": "5f6d7a8b9c0d1e2f",
+  "export_kind": "workpaper",
+  "status": "published",
+  "engagement_id": "4c8e2a6d-b5f1-4d9a-a37e-8b0c2d4f6e1a",
+  "engagement_name": "反例：已发布状态与可覆盖约束",
+  "sections": [
+    {
+      "section_id": "0a1b2c3d4e5f6789",
+      "finding_id": "0f2c4e6a-8d59-4b7c-a21e-7d9f0b3a6c52",
+      "title": "采购凭证金额越界（单笔超阈值）",
+      "severity": "high",
+      "claim_id": "2c4e6a8d-59f3-4b7c-a21e-7d9f0b3a6c52",
+      "claim": "凭证 PO-202609-0017 金额越界。",
+      "reviewer_label": "审计-张三",
+      "evidence_refs": ["file:///G:/数据/expense_ledger.csv"],
+      "confirmed_at": "2026-09-05T10:30:00+08:00"
+    }
+  ],
+  "summary": {
+    "findings": 1,
+    "high": 1,
+    "medium": 0,
+    "low": 0,
+    "evidence_refs": 1,
+    "truncated": false
+  },
+  "constraints": {
+    "no_overwrite": false,
+    "requires_human_approval": true,
+    "immutable_source": true
+  },
+  "provenance": {
+    "source_sha256": "a1b2c3d4e5f67890a1b2c3d4e5f67890a1b2c3d4e5f67890a1b2c3d4e5f67890",
+    "plugin": "audit.workpaper-export@0.1.0",
+    "export_time": "2026-09-06T00:00:00Z"
+  }
+}

@@ -1,0 +1,18 @@
+{
+  "schema_version": "1.0.0",
+  "plugin": {
+    "id": "audit.report.report-frame-build",
+    "version": "0.1.0",
+    "sha256": "6d38681e65b8bb841c61716c45adf1f71ebc98c49a8aa0e2052c454a9b5fa0ec"
+  },
+  "protocol": {
+    "id": "audit.report.report-frame-build",
+    "version": "0.1.0",
+    "sha256": "1d2c6f471687e8874ea12e01a25e69147414f1cf60e76502d1876e1112b0f3e4"
+  },
+  "execution_mode": "isolated_subprocess",
+  "capabilities": [
+    "audit.report.report-frame-build"
+  ],
+  "status": "verified"
+}

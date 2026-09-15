@@ -1,0 +1,18 @@
+{
+  "schema_version": "1.0.0",
+  "plugin": {
+    "id": "audit.remedy.remedy-dispatch",
+    "version": "0.1.0",
+    "sha256": "9ca0c6133df30a5d7f92f6ebcd65f7d70d64b9a04065ef01c573d5a75f2d9158"
+  },
+  "protocol": {
+    "id": "audit.remedy.remedy-dispatch",
+    "version": "0.1.0",
+    "sha256": "3141899b89c1d9436beac719e2e76b3689bf6385edc9190451d1ceac0d81b3f9"
+  },
+  "execution_mode": "isolated_subprocess",
+  "capabilities": [
+    "audit.remedy.remedy-dispatch"
+  ],
+  "status": "verified"
+}

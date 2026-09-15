@@ -1,0 +1,10 @@
+{
+  "contract_id": "alert-event",
+  "contract_version": "1.0.0",
+  "event_id": "fault-001-20260905-002",
+  "source": "telemetry.equipment.sensor-12",
+  "occurred_at": "not-a-timestamp",
+  "severity": "explosive",
+  "fingerprint": "tooshort",
+  "summary": ""
+}

@@ -1,0 +1,18 @@
+{
+  "schema_version": "1.0.0",
+  "plugin": {
+    "id": "audit.risk.process-gap-detect",
+    "version": "0.1.0",
+    "sha256": "679a5d7e32f318f2b4edccc85950c3fa3e29292d19ff0278ab48d0c06bb4e0ef"
+  },
+  "protocol": {
+    "id": "audit.risk.process-gap-detect",
+    "version": "0.1.0",
+    "sha256": "b64a710c93cf8e19609297008cfd69c56707cfca5f689dfba844973821166060"
+  },
+  "execution_mode": "isolated_subprocess",
+  "capabilities": [
+    "audit.risk.process-gap-detect"
+  ],
+  "status": "verified"
+}

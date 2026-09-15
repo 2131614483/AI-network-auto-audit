@@ -1,0 +1,30 @@
+{
+  "contract_id": "finding-set",
+  "contract_version": "1.0.0",
+  "engagement_id": "4c8e2a6d-b5f1-4d9a-a37e-8b0c2d4f6e1a",
+  "engagement_name": "BCSA 大案例 01 - 2026-09 底稿导出验收",
+  "findings": [
+    {
+      "finding_id": "0f2c4e6a-8d59-4b7c-a21e-7d9f0b3a6c52",
+      "title": "采购凭证金额越界（单笔超阈值）",
+      "severity": "high",
+      "status": "confirmed",
+      "claim_id": "2c4e6a8d-59f3-4b7c-a21e-7d9f0b3a6c52",
+      "claim": "凭证 PO-202609-0017 金额 1,280,000 超出同供应商 90 天均值 12 倍且无审批留痕。",
+      "reviewer_label": "审计-张三",
+      "evidence_refs": ["file:///G:/数据/expense_ledger.csv", "file:///G:/数据/审批台账.xlsx"],
+      "confirmed_at": "2026-09-05T10:30:00+08:00"
+    },
+    {
+      "finding_id": "1a3b5c7d-9e0f-4a1b-8c2d-3e4f5a6b7c8d",
+      "title": "凭证日期早于合同签署日期",
+      "severity": "medium",
+      "status": "confirmed",
+      "claim_id": "3b2d4f6a-8c1e-4a5b-9d7e-1f2a3b4c5d6e",
+      "claim": "凭证 PO-202609-0033 日期早于对应合同签署日期 11 天，需补充业务说明。",
+      "reviewer_label": "审计-李四",
+      "evidence_refs": ["file:///G:/数据/contract_index.json"],
+      "confirmed_at": "2026-09-05T11:05:00+08:00"
+    }
+  ]
+}

@@ -1,0 +1,44 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://audit.local/contracts/incident-candidate-set.schema.json",
+  "title": "IncidentCandidateSet",
+  "description": "告警关联产出的事件候选集合：每条候选聚合同一时间窗与分组键下的告警，带严重度、计数、置信度与证据；候选不等同于已确认事件。",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["contract_id", "contract_version", "alert_set_sha256", "summary", "candidates"],
+  "properties": {
+    "contract_id": {"const": "incident-candidate-set"},
+    "contract_version": {"const": "1.0.0"},
+    "alert_set_sha256": {"type": "string", "pattern": "^[A-Fa-f0-9]{64}$"},
+    "window_minutes": {"type": "integer", "minimum": 1, "maximum": 10080},
+    "summary": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["alerts_processed", "candidate_count"],
+      "properties": {
+        "alerts_processed": {"type": "integer", "minimum": 0},
+        "candidate_count": {"type": "integer", "minimum": 0},
+        "truncated": {"type": "boolean"}
+      }
+    },
+    "candidates": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["incident_id", "correlation_key", "alert_refs", "first_seen", "last_seen", "severity", "count", "confidence", "evidence"],
+        "properties": {
+          "incident_id": {"type": "string", "minLength": 1, "maxLength": 255},
+          "correlation_key": {"type": "string", "minLength": 1, "maxLength": 512},
+          "alert_refs": {"type": "array", "minItems": 1, "items": {"type": "string", "minLength": 1, "maxLength": 255}},
+          "first_seen": {"type": "string", "format": "date-time"},
+          "last_seen": {"type": "string", "format": "date-time"},
+          "severity": {"type": "string", "enum": ["low", "medium", "high"]},
+          "count": {"type": "integer", "minimum": 1},
+          "confidence": {"type": "number", "minimum": 0, "maximum": 1},
+          "evidence": {"type": "object", "additionalProperties": true}
+        }
+      }
+    }
+  }
+}

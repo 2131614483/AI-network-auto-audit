@@ -1,0 +1,45 @@
+{
+ "id": "audit.report.report-multi-review",
+ "version": "0.1.0",
+ "name": "报告多级审核（契约声明）",
+ "runtime": "python",
+ "entrypoint": "plugins.builtin.audit_report_report_multi_review.runtime:handle",
+ "capabilities": [
+  "audit.report.report-multi-review"
+ ],
+ "inputs": {
+  "capability": "audit.report.report-multi-review",
+  "schema": "dataset-validation.schema.json",
+  "content_type": "application/json"
+ },
+ "outputs": {
+  "capability": "audit.report.report-multi-review",
+  "schema": "report-draft.schema.json",
+  "content_type": "application/json"
+ },
+ "side_effects": "read_only",
+ "idempotency": "input_sha256 + capability_version",
+ "permissions": {
+  "data_read": [
+   "audit.report.report-multi-review.read"
+  ],
+  "data_write": [],
+  "network": "none",
+  "secrets": []
+ },
+ "resources": {
+  "cpu": 1,
+  "memory_mb": 256,
+  "gpu": false,
+  "timeout_seconds": 300
+ },
+ "data_classification": "audit_confidential",
+ "evidence": {
+  "preserve_inputs": true,
+  "code_hash_required": true
+ },
+ "tests": {
+  "contract": "tests/contract/test_audit_report_report_multi_review_contract.py",
+  "golden": "tests/unit/test_audit_report_report_multi_review_runtime.py"
+ }
+}

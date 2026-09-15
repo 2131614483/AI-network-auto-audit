@@ -1,0 +1,91 @@
+{
+ "protocol_version": "1.0.0",
+ "id": "audit.mandate.project-library",
+ "version": "0.1.0",
+ "name": "项目库管理",
+ "description": "存储备选与立项项目全生命周期；上游评审通过项目，下游输出至计划编制，并同步全流程各阶段状态（网状）。",
+ "kind": "analysis",
+ "domains": [
+  "audit",
+  "compliance"
+ ],
+ "lifecycle": "verified",
+ "compatibility": {
+  "host_protocol": ">=1.0.0 <2.0.0",
+  "adapters": [
+   "python"
+  ],
+  "fallback_behavior": "human_review"
+ },
+ "capabilities": [
+  {
+   "id": "audit.mandate.project-library",
+   "summary": "项目库管理：存储备选与立项项目全生命周期；上游评审通过项目，下游输出至计划编制，并同步全流程各阶段状态（网状）。",
+   "side_effects": "read_only",
+   "idempotency": "input_sha256 + capability_version",
+   "inputs": [
+    {
+     "contract_id": "scored-proposal",
+     "version": "1.0.0",
+     "format": "artifact_ref",
+     "delivery": "reference",
+     "classification": "audit_confidential",
+     "schema_ref": "metric-series.schema.json",
+     "max_bytes": 16777216
+    }
+   ],
+   "outputs": [
+    {
+     "contract_id": "project-snapshot",
+     "version": "1.0.0",
+     "format": "json",
+     "delivery": "request_response",
+     "classification": "audit_confidential",
+     "schema_ref": "dataset-validation.schema.json",
+     "max_bytes": 4194304
+    }
+   ]
+  }
+ ],
+ "governance": {
+  "default_data_classification": "audit_confidential",
+  "permissions": {
+   "data_read": [
+    "audit.mandate.project-library.read"
+   ],
+   "data_write": [],
+   "network": "none",
+   "secret_refs": []
+  },
+  "policy": {
+   "gateway_required": true,
+   "approval_required": false,
+   "evidence_required": true
+  }
+ },
+ "resources": {
+  "cpu": 1,
+  "memory_mb": 256,
+  "gpu": "none",
+  "timeout_seconds": 300
+ },
+ "observability": {
+  "trace_required": true,
+  "emits": [
+   "structured_log",
+   "artifact_ref",
+   "audit_event"
+  ],
+  "health": "declared_only"
+ },
+ "provenance": {
+  "source_refs": [
+   "docs/audit-plugin-network-100.md#23",
+   "docs/插件开发与接入标准-UPP-v1.0.md",
+   "plugins/builtin/audit_mandate_project_library/runtime.py"
+  ]
+ },
+ "ui": {
+  "mode": "none"
+ }
+}

@@ -1,0 +1,50 @@
+{
+  "contract_id": "recovery-verification",
+  "contract_version": "1.0.0",
+  "verification_id": "3e8b5f2a1c9d4e7f",
+  "baseline_sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+  "observed_sha256": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+  "status": "unknown",
+  "reference_time": "2026-09-05T09:45:00+00:00",
+  "summary": {
+    "baseline_points": 72,
+    "observed_points": 72,
+    "probes_checked": 2,
+    "probes_passed": 2,
+    "verdict": "recovered",
+    "truncated": false
+  },
+  "comparison": {
+    "baseline_mean": 0.0028,
+    "observed_mean": 0.0031,
+    "relative_delta": 0.107143,
+    "threshold_ratio": 1.5,
+    "within_threshold": true,
+    "metrics": [
+      {
+        "metric": "http_error_rate",
+        "baseline": 0.0028,
+        "observed": 0.0031,
+        "delta": 0.0003,
+        "within_threshold": true
+      }
+    ]
+  },
+  "slo": {
+    "availability_target": 0.99,
+    "observed_availability": 0.9969,
+    "error_budget_remaining": 0.69,
+    "met": true,
+    "probes": [
+      {"probe": "http_health", "value": 200, "expected": 200, "passed": true, "basis": "probe[1] lower-is-better"},
+      {"probe": "metric_error_rate", "value": 0.0031, "expected": 0.01, "passed": true, "basis": "probe[2] lower-is-better"}
+    ]
+  },
+  "evidence_refs": ["aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"],
+  "constraints": {
+    "no_execution": true,
+    "no_circuit_breaker_change": true,
+    "no_change_request": true,
+    "ledger_immutable": true
+  }
+}

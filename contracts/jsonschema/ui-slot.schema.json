@@ -1,0 +1,8 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://audit.local/contracts/ui-slot.schema.json",
+  "title": "UISlot",
+  "description": "主应用允许插件追加内容的稳定插槽；插件不能覆盖系统页面。",
+  "type": "string",
+  "enum": ["global.navigation", "workspace.navigation", "workspace.tools", "dashboard.cards", "entity.tabs", "detail.actions", "settings.sections"]
+}

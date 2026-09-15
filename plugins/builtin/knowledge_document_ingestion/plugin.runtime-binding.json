@@ -1,0 +1,18 @@
+{
+  "schema_version": "1.0.0",
+  "plugin": {
+    "id": "knowledge.document-ingestion",
+    "version": "0.1.0",
+    "sha256": "f65aeaf8167fdaff77a90880196c63b52ebe9069637450f676cb8eec66e5439c"
+  },
+  "protocol": {
+    "id": "knowledge.document-ingestion",
+    "version": "0.1.0",
+    "sha256": "29c9800b759166cf0a19fd5512ca1e6635e497371bef152a6b164fb6b9501b7b"
+  },
+  "execution_mode": "isolated_subprocess",
+  "capabilities": [
+    "knowledge.extract.document"
+  ],
+  "status": "verified"
+}

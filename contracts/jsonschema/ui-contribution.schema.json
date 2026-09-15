@@ -1,0 +1,43 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://audit.local/contracts/ui-contribution.schema.json",
+  "title": "UIContribution",
+  "description": "框架无关的插件 GUI 声明，未知可选字段应由客户端忽略并安全降级。",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "navigation", "views", "actions", "i18n"],
+  "properties": {
+    "schema_version": {"type": "string", "pattern": "^(0|[1-9][0-9]*)\\.(0|[1-9][0-9]*)\\.(0|[1-9][0-9]*)$"},
+    "navigation": {"type": "array", "items": {"$ref": "#/$defs/navigation"}},
+    "views": {"type": "array", "items": {"$ref": "#/$defs/view"}},
+    "queries": {"type": "array", "items": {"$ref": "ui-query.schema.json"}},
+    "actions": {"type": "array", "items": {"$ref": "ui-action.schema.json"}},
+    "settings_schema": {"type": "object", "required": ["type"], "properties": {"type": {"const": "object"}}, "additionalProperties": true},
+    "i18n": {"type": "array", "minItems": 1, "uniqueItems": true, "items": {"type": "string", "pattern": "^[a-z]{2,3}(?:-[A-Z]{2})?$"}}
+  },
+  "$defs": {
+    "navigation": {
+      "type": "object", "additionalProperties": false,
+      "required": ["slot", "title_key", "route"],
+      "properties": {
+        "slot": {"$ref": "ui-slot.schema.json"},
+        "title_key": {"type": "string", "minLength": 1},
+        "icon": {"type": "string", "maxLength": 100},
+        "route": {"type": "string", "pattern": "^/[^?#]*$"},
+        "permission": {"type": "string"}
+      }
+    },
+    "view": {
+      "type": "object", "additionalProperties": false,
+      "required": ["id", "renderer", "data_source"],
+      "properties": {
+        "id": {"type": "string", "pattern": "^[a-z][a-z0-9._-]*$"},
+        "renderer": {"oneOf": [{"type": "string", "enum": ["markdown", "data-table", "form", "chart", "graph", "card", "json"]}, {"$ref": "renderer-descriptor.schema.json"}]},
+        "data_source": {"type": "string", "pattern": "^[a-z][a-z0-9]*(?:[._-][a-z0-9]+)+$"},
+        "data_contract": {"type": "string"},
+        "config_schema": {"type": "string"},
+        "slot": {"$ref": "ui-slot.schema.json"}
+      }
+    }
+  }
+}

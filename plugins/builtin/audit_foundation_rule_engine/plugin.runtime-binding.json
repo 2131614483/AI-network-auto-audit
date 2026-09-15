@@ -1,0 +1,18 @@
+{
+  "schema_version": "1.0.0",
+  "plugin": {
+    "id": "audit.foundation.rule-engine",
+    "version": "0.1.0",
+    "sha256": "c60e5c4e2cf32e83cef11fa0394ada3d01d0311e1cd97b214f273084c2623a7b"
+  },
+  "protocol": {
+    "id": "audit.foundation.rule-engine",
+    "version": "0.1.0",
+    "sha256": "225a30322a041d6a85d8d1775011b91c52be76746b7fa8db517dac8f20df1843"
+  },
+  "execution_mode": "isolated_subprocess",
+  "capabilities": [
+    "audit.foundation.rule-engine"
+  ],
+  "status": "verified"
+}

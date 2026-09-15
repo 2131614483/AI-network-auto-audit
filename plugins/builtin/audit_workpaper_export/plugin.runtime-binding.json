@@ -1,0 +1,18 @@
+{
+  "schema_version": "1.0.0",
+  "plugin": {
+    "id": "audit.workpaper-export",
+    "version": "0.1.0",
+    "sha256": "cc960e21db4030c271f36c44d47936cf6f5487c8b83635d66235c0d6df776748"
+  },
+  "protocol": {
+    "id": "audit.workpaper-export",
+    "version": "0.1.0",
+    "sha256": "5add6fb56f7637b272e13773b23cacdaa23a312a380728b4a1d8ef46eaecb73d"
+  },
+  "execution_mode": "isolated_subprocess",
+  "capabilities": [
+    "audit.workpaper.export"
+  ],
+  "status": "verified"
+}

@@ -1,0 +1,18 @@
+{
+  "schema_version": "1.0.0",
+  "plugin": {
+    "id": "audit.foundation.quality-check",
+    "version": "0.1.0",
+    "sha256": "9efc80f751bb3ffe4d59bfddf85fe919707832c162fb95dc8b5e5b9746a76cf6"
+  },
+  "protocol": {
+    "id": "audit.foundation.quality-check",
+    "version": "0.1.0",
+    "sha256": "089fc26a54784cb79b280cc0d5e2b1fe0dbf3cfa3866d36b39cb273b76ae16d9"
+  },
+  "execution_mode": "isolated_subprocess",
+  "capabilities": [
+    "audit.foundation.quality-check"
+  ],
+  "status": "verified"
+}

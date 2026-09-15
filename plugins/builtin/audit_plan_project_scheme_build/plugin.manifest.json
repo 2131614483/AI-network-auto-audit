@@ -1,0 +1,45 @@
+{
+ "id": "audit.plan.project-scheme-build",
+ "version": "0.1.0",
+ "name": "项目审计方案编制（契约声明）",
+ "runtime": "python",
+ "entrypoint": "plugins.builtin.audit_plan_project_scheme_build.runtime:handle",
+ "capabilities": [
+  "audit.plan.project-scheme-build"
+ ],
+ "inputs": {
+  "capability": "audit.plan.project-scheme-build",
+  "schema": "metric-series.schema.json",
+  "content_type": "application/json"
+ },
+ "outputs": {
+  "capability": "audit.plan.project-scheme-build",
+  "schema": "document-content.schema.json",
+  "content_type": "application/json"
+ },
+ "side_effects": "read_only",
+ "idempotency": "input_sha256 + capability_version",
+ "permissions": {
+  "data_read": [
+   "audit.plan.project-scheme-build.read"
+  ],
+  "data_write": [],
+  "network": "none",
+  "secrets": []
+ },
+ "resources": {
+  "cpu": 1,
+  "memory_mb": 256,
+  "gpu": false,
+  "timeout_seconds": 300
+ },
+ "data_classification": "audit_confidential",
+ "evidence": {
+  "preserve_inputs": true,
+  "code_hash_required": true
+ },
+ "tests": {
+  "contract": "tests/contract/test_audit_plan_project_scheme_build_contract.py",
+  "golden": "tests/unit/test_audit_plan_project_scheme_build_runtime.py"
+ }
+}

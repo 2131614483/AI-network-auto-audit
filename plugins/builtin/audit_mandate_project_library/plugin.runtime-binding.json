@@ -1,0 +1,18 @@
+{
+  "schema_version": "1.0.0",
+  "plugin": {
+    "id": "audit.mandate.project-library",
+    "version": "0.1.0",
+    "sha256": "9a11f3e1d5496ff0d9955f9a9b7275a4a83025c243794d7a3cdef4fe9a2dd1e2"
+  },
+  "protocol": {
+    "id": "audit.mandate.project-library",
+    "version": "0.1.0",
+    "sha256": "6c8c67e4b5e01337304ffb12e3499a4413c9d6170af66da7f205c4f66211c09d"
+  },
+  "execution_mode": "isolated_subprocess",
+  "capabilities": [
+    "audit.mandate.project-library"
+  ],
+  "status": "verified"
+}

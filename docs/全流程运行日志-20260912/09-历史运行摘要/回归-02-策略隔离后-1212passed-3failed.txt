@@ -1,0 +1,50 @@
+    def test_trace_locate_includes_log_event_query(monkeypatch) -> None:
+        _SPOOL_ROOT.mkdir(parents=True, exist_ok=True)
+        spool = SegmentedSpool(_SPOOL_ROOT)
+        trace_id = str(uuid4())
+        for i in range(1, 4):
+            spool.append("cw2-api", 1, [_env("cw2-api", i, f"trace-line-{i}", trace_id=trace_id)])
+        spool.seal("cw2-api", 1, last_seq=3)
+>       spool.close()
+
+tests\integration\test_cw2_full_log_ai.py:163: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+packages\observability\log_spool.py:285: in close
+    self._rotate(writer, key)
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+self = <packages.observability.log_spool.SegmentedSpool object at 0x000002ABF22A2240>
+writer = <packages.observability.log_spool._SegmentWriter object at 0x000002ABF22A04A0>
+key = ('cw2-api', 1)
+
+    def _rotate(self, writer: _SegmentWriter, key: tuple[str, int]) -> None:
+        # 1) seal the hot segment: flush + fsync
+        writer.sync()
+        # 2) verify: content sha must match what we accumulated while writing
+        disk_sha = hashlib.sha256(writer.path.read_bytes()).hexdigest()
+        if disk_sha != writer.sha.hexdigest():
+>           raise SpoolWriteError(f"segment {writer.segment_id} failed content verification")
+E           packages.observability.log_spool.SpoolWriteError: segment cw2-api-e1-s0001 failed content verification
+
+packages\observability\log_spool.py:308: SpoolWriteError
+============================== warnings summary ===============================
+.venv\Lib\site-packages\fastapi\testclient.py:1
+  D:\pythonpro\audit_network\.venv\Lib\site-packages\fastapi\testclient.py:1: StarletteDeprecationWarning: Using `httpx` with `starlette.testclient` is deprecated; install `httpx2` instead.
+    from starlette.testclient import TestClient as TestClient  # noqa
+
+.venv\Lib\site-packages\starlette\testclient.py:53
+  D:\pythonpro\audit_network\.venv\Lib\site-packages\starlette\testclient.py:53: DeprecationWarning: The anyio.abc.BlockingPortal alias is deprecated, use anyio.from_thread.BlockingPortal instead.
+    _PortalFactoryType = Callable[[], AbstractContextManager[anyio.abc.BlockingPortal]]
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ===========================
+SKIPPED [1] tests\integration\test_cw5_ai_planning.py:272: set AUDIT_NETWORK_RUN_OLLAMA_TESTS=1 to run the local-model smoke (slow, real inference)
+SKIPPED [1] tests\integration\test_plugin_topology_isolated_integration.py:166: isolated drill already recorded; rerun after test-db rebuild
+SKIPPED [1] tests\integration\test_rich_media_mineru.py:45: set AUDIT_NETWORK_RUN_MINERU_TESTS=1 to run real MinerU integration
+SKIPPED [1] tests\integration\test_rich_media_queue_mineru.py:43: set AUDIT_NETWORK_RUN_MINERU_TESTS=1 to run real MinerU queue integration
+SKIPPED [1] tests\integration\test_worker.py:31: external worker consumed the shared test queue
+SKIPPED [1] tests\integration\test_worker.py:58: external worker consumed the shared test event before the failure callback
+FAILED tests/e2e/test_self_healing_e2e.py::test_crashed_worker_lease_is_recovered_and_task_redrives_to_completed
+FAILED tests/e2e/test_trace_locate.py::test_trace_locate_returns_data_rows_and_log_locations
+FAILED tests/integration/test_cw2_full_log_ai.py::test_trace_locate_includes_log_event_query
+3 failed, 1212 passed, 6 skipped, 2 warnings in 2560.88s (0:42:40)

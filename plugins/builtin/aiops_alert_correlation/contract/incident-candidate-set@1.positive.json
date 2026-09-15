@@ -1,0 +1,20 @@
+{
+  "contract_id": "incident-candidate-set",
+  "contract_version": "1.0.0",
+  "alert_set_sha256": "a1b2c3d4e5f67890a1b2c3d4e5f67890a1b2c3d4e5f67890a1b2c3d4e5f67890",
+  "window_minutes": 60,
+  "summary": {"alerts_processed": 36, "candidate_count": 2, "truncated": false},
+  "candidates": [
+    {
+      "incident_id": "INC-0001",
+      "correlation_key": "affected_system=溶剂浓度|equipment_type=Type-II",
+      "alert_refs": ["FT_BCSA_big_01_001", "FT_BCSA_big_01_002"],
+      "first_seen": "2025-08-18T15:28:50.376773",
+      "last_seen": "2025-08-18T16:01:10.112233",
+      "severity": "medium",
+      "count": 2,
+      "confidence": 0.6,
+      "evidence": {"window_minutes": 60, "grouping_keys": ["affected_system", "equipment_type"], "source_sha256": "a1b2c3d4e5f67890a1b2c3d4e5f67890a1b2c3d4e5f67890a1b2c3d4e5f67890"}
+    }
+  ]
+}

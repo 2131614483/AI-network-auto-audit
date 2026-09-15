@@ -1,0 +1,31 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://audit.local/contracts/execution-ledger.schema.json",
+  "title": "ExecutionLedgerEntry",
+  "description": "调用链逐节点执行账本投影（M4/M5/M6）：mode 为 simulated 或 isolated；输出只允许 Refs + SHA256（isolated 记录真实输出 artifact refs），禁止正文 payload；账本不可覆盖、不可硬删；M6 起账本行可携带 run_id 归属到一次链级执行运行。",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["execution_id", "chain_key", "slot_key", "ordinal", "mode", "status", "output_refs", "output_checksum", "input_refs", "policy_ref", "trace_id"],
+  "properties": {
+    "execution_id": {"type": "string", "pattern": "^exec-[a-z0-9]{16}$"},
+    "chain_key": {"type": "string", "pattern": "^chain-[a-z0-9]{16}$"},
+    "run_id": {"anyOf": [{"type": "string", "format": "uuid"}, {"type": "null"}]},
+    "slot_key": {"type": "string", "pattern": "^[a-z][a-z0-9_]*(?:[._-][a-z0-9]+)*$"},
+    "ordinal": {"type": "integer", "minimum": 0},
+    "mode": {"enum": ["simulated", "isolated"]},
+    "input_refs": {"type": "array", "maxItems": 64, "uniqueItems": true, "items": {"type": "string", "minLength": 1, "maxLength": 180}},
+    "output_refs": {"type": "array", "maxItems": 64, "uniqueItems": true, "items": {"type": "string", "minLength": 1, "maxLength": 180}},
+    "output_contract": {"type": "string", "maxLength": 180},
+    "output_checksum": {"type": "string", "pattern": "^[a-f0-9]{64}$"},
+    "status": {"type": "string", "enum": ["pending", "succeeded", "failed"]},
+    "policy_ref": {"type": "string", "maxLength": 180},
+    "trace_id": {"type": "string", "format": "uuid"},
+    "started_at": {"anyOf": [{"type": "string", "format": "date-time"}, {"type": "null"}]},
+    "finished_at": {"anyOf": [{"type": "string", "format": "date-time"}, {"type": "null"}]},
+    "plugin_id": {"type": "string", "maxLength": 180},
+    "plugin_version": {"type": "string", "maxLength": 64},
+    "runtime_code_sha256": {"type": "string", "pattern": "^[a-f0-9]{64}$"},
+    "input_sha256": {"type": "string", "pattern": "^[a-f0-9]{64}$"},
+    "output_artifact_refs": {"type": "array", "maxItems": 64, "uniqueItems": true, "items": {"type": "object", "additionalProperties": false, "required": ["uri", "sha256", "media_type"], "properties": {"uri": {"type": "string", "minLength": 1, "maxLength": 400}, "sha256": {"type": "string", "pattern": "^[a-f0-9]{64}$"}, "media_type": {"type": "string", "minLength": 1, "maxLength": 64}}}}
+  }
+}

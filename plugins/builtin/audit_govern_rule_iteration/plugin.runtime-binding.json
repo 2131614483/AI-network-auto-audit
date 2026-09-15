@@ -1,0 +1,18 @@
+{
+  "schema_version": "1.0.0",
+  "plugin": {
+    "id": "audit.govern.rule-iteration",
+    "version": "0.1.0",
+    "sha256": "cb7594cdab966b379e96f40cadb80a7203de5d291ec3db8d16307dfa42d0a66c"
+  },
+  "protocol": {
+    "id": "audit.govern.rule-iteration",
+    "version": "0.1.0",
+    "sha256": "1a42b9132ce77ce220ae839acff896af74bf98c5dcc3b1f1fb7b21c33f6e22d2"
+  },
+  "execution_mode": "isolated_subprocess",
+  "capabilities": [
+    "audit.govern.rule-iteration"
+  ],
+  "status": "verified"
+}

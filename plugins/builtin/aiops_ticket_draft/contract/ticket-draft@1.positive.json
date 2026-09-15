@@ -1,0 +1,35 @@
+{
+  "contract_id": "ticket-draft",
+  "contract_version": "1.0.0",
+  "ticket_id": "0a3f6e2b9d1845c7",
+  "status": "draft",
+  "target_system": "jira",
+  "title": "【P1】BCSA_big_01/equipment-12 温度传感器越限（疑似过温停机）",
+  "description": "温度传感器越限且连续三分钟无心跳，建议人工确认是否过温停机。\n\n优先级映射：critical → P1。\n\n参考票据：incident-9a1b2c3d4e5f6789。\n\n证据：\n- file:///G:/数据/04-审计数据集与基准/PCCA-Benchmark/benchmark_cases/bigcase/BCSA/BCSA_big_01/fault_tickets.json",
+  "priority": "P1",
+  "incident_refs": ["incident:9a1b2c3d4e5f6789"],
+  "evidence_refs": ["file:///G:/数据/04-审计数据集与基准/PCCA-Benchmark/benchmark_cases/bigcase/BCSA/BCSA_big_01/fault_tickets.json"],
+  "summary": {
+    "incidents": 1,
+    "priority": "P1",
+    "evidence_refs": 1,
+    "truncated": false
+  },
+  "signature": {
+    "drafted_by": "aiops.ticket-draft@0.1.0",
+    "sent": false,
+    "sender": null
+  },
+  "constraints": {
+    "no_auto_send": true,
+    "requires_target_whitelist": true,
+    "requires_human_approval": true,
+    "immutable_source": true
+  },
+  "provenance": {
+    "source_sha256": "a1b2c3d4e5f67890a1b2c3d4e5f67890a1b2c3d4e5f67890a1b2c3d4e5f67890",
+    "target_system": "jira",
+    "plugin": "aiops.ticket-draft@0.1.0",
+    "draft_time": "2026-09-06T12:00:00Z"
+  }
+}

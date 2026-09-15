@@ -1,0 +1,14 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://audit.local/contracts/topology-chain-request.schema.json",
+  "title": "TopologyChainMaterializeRequest",
+  "description": "物化一条调用链的服务请求载荷：必须携带幂等键并锁定一个 plan_only 路由计划；输出引用 invocation-chain。",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["plan_key", "idempotency_key"],
+  "properties": {
+    "plan_key": {"type": "string", "pattern": "^plan-[a-z0-9]{16}$"},
+    "idempotency_key": {"type": "string", "minLength": 1, "maxLength": 255},
+    "reason": {"type": "string", "maxLength": 500}
+  }
+}

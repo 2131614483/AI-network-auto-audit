@@ -1,0 +1,18 @@
+{
+  "schema_version": "1.0.0",
+  "plugin": {
+    "id": "audit.mandate.team-forming",
+    "version": "0.1.0",
+    "sha256": "d01b1d25e4948b521811a4f28bd40c4c3d48d52b4ead44ad679731b1e5ae7b92"
+  },
+  "protocol": {
+    "id": "audit.mandate.team-forming",
+    "version": "0.1.0",
+    "sha256": "b0f3e74a38ff78dc88934a3d02a06059faf66af18db9f6bc65e1f872031cc6d3"
+  },
+  "execution_mode": "isolated_subprocess",
+  "capabilities": [
+    "audit.mandate.team-forming"
+  ],
+  "status": "verified"
+}

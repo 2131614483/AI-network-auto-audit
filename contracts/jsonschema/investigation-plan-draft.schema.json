@@ -1,0 +1,81 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://audit.local/contracts/investigation-plan-draft.schema.json",
+  "title": "InvestigationPlanDraft",
+  "description": "由日记账异常候选集合与可选证据索引构建的审计调查计划草稿：确定性调查步骤、待补证据清单与反证假设清单。草稿不确认任何 Finding、不修改证据，须经独立 QA 或人工复核后才进入审计计划草稿。",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["contract_id", "contract_version", "anomaly_set_sha256", "plan_id", "period", "rule_pack_sha256", "steps", "evidence_gaps", "counter_hypotheses", "summary"],
+  "properties": {
+    "contract_id": {"const": "investigation-plan-draft"},
+    "contract_version": {"const": "1.0.0"},
+    "anomaly_set_sha256": {"type": "string", "pattern": "^[A-Fa-f0-9]{64}$"},
+    "evidence_bundle_sha256": {"type": "string", "pattern": "^[A-Fa-f0-9]{64}$"},
+    "plan_id": {"type": "string", "pattern": "^[A-Fa-f0-9]{16}$"},
+    "period": {"type": "string", "pattern": "^[0-9]{4}-(0[1-9]|1[0-2])$"},
+    "rule_pack_sha256": {"type": "string", "pattern": "^[A-Fa-f0-9]{64}$"},
+    "steps": {
+      "type": "array",
+      "maxItems": 64,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["step_id", "order", "rule_key", "action", "target_refs", "rationale"],
+        "properties": {
+          "step_id": {"type": "string", "pattern": "^[A-Fa-f0-9]{16}$"},
+          "order": {"type": "integer", "minimum": 1},
+          "rule_key": {"type": "string", "enum": ["invalid_date", "outlier_amount", "negative_amount", "round_amount", "duplicate_row", "missing_amount"]},
+          "action": {"type": "string", "minLength": 1, "maxLength": 1024},
+          "target_refs": {"type": "array", "maxItems": 200, "items": {"type": "string", "minLength": 1, "maxLength": 512}},
+          "required_evidence": {"type": "array", "maxItems": 16, "items": {"type": "string", "minLength": 1, "maxLength": 256}},
+          "rationale": {"type": "string", "minLength": 1, "maxLength": 1024}
+        }
+      }
+    },
+    "evidence_gaps": {
+      "type": "array",
+      "maxItems": 64,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["gap_id", "evidence_type", "purpose", "rule_keys"],
+        "properties": {
+          "gap_id": {"type": "string", "pattern": "^[A-Fa-f0-9]{16}$"},
+          "evidence_type": {"type": "string", "minLength": 1, "maxLength": 256},
+          "purpose": {"type": "string", "minLength": 1, "maxLength": 512},
+          "rule_keys": {"type": "array", "items": {"type": "string", "enum": ["invalid_date", "outlier_amount", "negative_amount", "round_amount", "duplicate_row", "missing_amount"]}, "maxItems": 6}
+        }
+      }
+    },
+    "counter_hypotheses": {
+      "type": "array",
+      "maxItems": 64,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["hypothesis_id", "hypothesis", "rule_key", "verify_with", "severity"],
+        "properties": {
+          "hypothesis_id": {"type": "string", "pattern": "^[A-Fa-f0-9]{16}$"},
+          "hypothesis": {"type": "string", "minLength": 1, "maxLength": 1024},
+          "rule_key": {"type": "string", "enum": ["invalid_date", "outlier_amount", "negative_amount", "round_amount", "duplicate_row", "missing_amount"]},
+          "verify_with": {"type": "array", "maxItems": 16, "items": {"type": "string", "minLength": 1, "maxLength": 256}},
+          "severity": {"type": "string", "enum": ["low", "medium", "high"]}
+        }
+      }
+    },
+    "summary": {
+      "type": "object",
+      "additionalProperties": true,
+      "required": ["covered_candidates", "covered_rules", "steps", "evidence_gaps", "counter_hypotheses", "truncated"],
+      "properties": {
+        "covered_candidates": {"type": "integer", "minimum": 0},
+        "covered_rules": {"type": "integer", "minimum": 0},
+        "steps": {"type": "integer", "minimum": 0},
+        "evidence_gaps": {"type": "integer", "minimum": 0},
+        "counter_hypotheses": {"type": "integer", "minimum": 0},
+        "truncated": {"type": "boolean"},
+        "unknown_rule_count": {"type": "integer", "minimum": 0}
+      }
+    }
+  }
+}

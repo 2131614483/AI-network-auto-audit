@@ -1,0 +1,72 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://audit.local/contracts/workpaper-export.schema.json",
+  "title": "WorkpaperExport",
+  "description": "受审批输出的可追溯底稿导出：基于已确认 Finding 集合生成确定性的底稿工件草稿。导出永不覆盖历史报告（no_overwrite），落库由治理服务在人工审批后以独立身份完成；插件自身只读。",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["contract_id", "contract_version", "export_id", "export_kind", "status", "engagement_id", "engagement_name", "sections", "summary", "constraints", "provenance"],
+  "properties": {
+    "contract_id": {"const": "workpaper-export"},
+    "contract_version": {"const": "1.0.0"},
+    "export_id": {"type": "string", "pattern": "^[A-Fa-f0-9]{16}$"},
+    "export_kind": {"const": "workpaper"},
+    "status": {"const": "draft"},
+    "engagement_id": {"type": "string", "format": "uuid"},
+    "engagement_name": {"type": "string", "minLength": 1, "maxLength": 255},
+    "sections": {
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 500,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["section_id", "finding_id", "title", "severity", "claim_id", "claim", "reviewer_label", "evidence_refs", "confirmed_at"],
+        "properties": {
+          "section_id": {"type": "string", "pattern": "^[A-Fa-f0-9]{16}$"},
+          "finding_id": {"type": "string", "format": "uuid"},
+          "title": {"type": "string", "minLength": 1, "maxLength": 512},
+          "severity": {"type": "string", "enum": ["low", "medium", "high"]},
+          "claim_id": {"type": "string", "format": "uuid"},
+          "claim": {"type": "string", "minLength": 1, "maxLength": 2048},
+          "reviewer_label": {"type": "string", "minLength": 1, "maxLength": 255},
+          "evidence_refs": {"type": "array", "maxItems": 64, "items": {"type": "string", "minLength": 1, "maxLength": 2048}},
+          "confirmed_at": {"type": "string", "minLength": 10, "maxLength": 64}
+        }
+      }
+    },
+    "summary": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["findings", "high", "medium", "low", "evidence_refs", "truncated"],
+      "properties": {
+        "findings": {"type": "integer", "minimum": 0},
+        "high": {"type": "integer", "minimum": 0},
+        "medium": {"type": "integer", "minimum": 0},
+        "low": {"type": "integer", "minimum": 0},
+        "evidence_refs": {"type": "integer", "minimum": 0},
+        "truncated": {"type": "boolean"}
+      }
+    },
+    "constraints": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["no_overwrite", "requires_human_approval", "immutable_source"],
+      "properties": {
+        "no_overwrite": {"const": true},
+        "requires_human_approval": {"const": true},
+        "immutable_source": {"const": true}
+      }
+    },
+    "provenance": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["source_sha256", "plugin", "export_time"],
+      "properties": {
+        "source_sha256": {"type": "string", "pattern": "^[A-Fa-f0-9]{64}$"},
+        "plugin": {"const": "audit.workpaper-export@0.1.0"},
+        "export_time": {"type": "string", "minLength": 10, "maxLength": 64}
+      }
+    }
+  }
+}

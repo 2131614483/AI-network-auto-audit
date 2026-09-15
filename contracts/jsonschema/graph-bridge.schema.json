@@ -1,0 +1,17 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://audit.local/contracts/graph-bridge.schema.json",
+  "title": "RegisteredGraphBridge",
+  "description": "跨图访问的唯一许可载体；桥接不是任意边，必须登记在两个图空间之间。",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["source_space_key", "target_space_key", "source_node_id", "target_node_id", "relation_type", "weight"],
+  "properties": {
+    "source_space_key": {"type": "string", "pattern": "^[a-z][a-z0-9._-]*$"},
+    "target_space_key": {"type": "string", "pattern": "^[a-z][a-z0-9._-]*$"},
+    "source_node_id": {"type": "string", "format": "uuid"},
+    "target_node_id": {"type": "string", "format": "uuid"},
+    "relation_type": {"enum": ["artifact_ref", "capability_contract", "released_graph_ref", "health_signal"]},
+    "weight": {"type": "number", "minimum": 0, "maximum": 1}
+  }
+}

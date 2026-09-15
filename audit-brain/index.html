@@ -1,0 +1,1023 @@
+﻿<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>审计插件大脑 · 100 插件树状组网与数据接口流</title>
+<style>
+  :root {
+    --bg: #070b12;
+    --panel: #0d1520;
+    --panel-2: #111c2b;
+    --border: #1d2c3d;
+    --text: #e8eef5;
+    --muted: #8ba0b5;
+    --faint: #5a7084;
+    --blue: #6fa8dc;
+    --green: #52e08a;
+    --amber: #e0a458;
+    --red: #d96c6c;
+    --purple: #b48ce0;
+    --mono: "Cascadia Mono", Consolas, "SFMono-Regular", Menlo, monospace;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: "Microsoft YaHei", "PingFang SC", "Noto Sans CJK SC", system-ui, sans-serif;
+    font-size: 14px;
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+  }
+  .wrap { max-width: 1280px; margin: 0 auto; padding: 0 20px 80px; }
+
+  header { padding: 40px 0 16px; border-bottom: 1px solid var(--border); }
+  .kicker { font-size: 12px; letter-spacing: .14em; color: var(--purple); margin-bottom: 10px; }
+  h1 { font-size: 27px; font-weight: 700; }
+  h1 .accent { color: var(--green); }
+  .sub { color: var(--muted); margin-top: 8px; max-width: 900px; }
+  .meta { margin-top: 10px; font-size: 12px; color: var(--faint); font-family: var(--mono); }
+
+  .metrics { display: grid; grid-template-columns: repeat(6, 1fr); gap: 10px; margin: 18px 0 4px; }
+  .metric { background: var(--panel); border: 1px solid var(--border); border-radius: 6px; padding: 10px 14px; }
+  .metric .num { font-size: 24px; font-weight: 700; font-family: var(--mono); line-height: 1.2; }
+  .metric .lbl { font-size: 11.5px; color: var(--muted); margin-top: 2px; }
+  .metric.n-green .num { color: var(--green); }
+  .metric.n-blue .num { color: var(--blue); }
+  .metric.n-purple .num { color: var(--purple); }
+  .metric.n-amber .num { color: var(--amber); }
+  .metric.n-red .num { color: var(--red); }
+
+  section { margin-top: 36px; }
+  .sec-head { display: flex; align-items: baseline; gap: 12px; margin-bottom: 10px; flex-wrap: wrap; }
+  .sec-head h2 { font-size: 19px; font-weight: 600; }
+  .sec-head .tag { font-size: 12px; color: var(--faint); font-family: var(--mono); }
+  .note { font-size: 12.5px; color: var(--muted); margin: 8px 0 12px; }
+  .note b { color: var(--text); font-weight: 600; }
+
+  .flow-wrap { background: var(--panel); border: 1px solid var(--border); border-radius: 8px; padding: 10px 10px 8px; }
+  .flow-toolbar { display: flex; align-items: center; gap: 10px; padding: 2px 4px 8px; flex-wrap: wrap; }
+  .ft-hint { font-size: 11.5px; color: var(--faint); flex: 1; min-width: 180px; }
+  .ft-zoom { font-family: var(--mono); font-size: 12px; color: var(--blue); min-width: 44px; text-align: right; }
+  .ft-btn {
+    background: var(--panel-2); color: var(--muted); border: 1px solid var(--border);
+    border-radius: 4px; font-size: 11.5px; padding: 3px 10px; cursor: pointer; font-family: inherit;
+  }
+  .ft-btn:hover { color: var(--text); border-color: var(--blue); }
+  .canvas-viewport {
+    position: relative; height: 640px; overflow: hidden;
+    background: #05080e;
+    cursor: grab; touch-action: none; user-select: none;
+    border-radius: 6px;
+  }
+  .canvas-viewport.panning { cursor: grabbing; }
+  .canvas-layer {
+    position: absolute; left: 0; top: 0; width: 4000px; height: 2900px;
+    transform-origin: 0 0;
+    will-change: transform;
+  }
+  .canvas-grid {
+    position: absolute; left: 0; top: 0; width: 4000px; height: 2900px;
+    background-image: radial-gradient(circle, #1c2a3a 1px, transparent 1px);
+    background-size: 28px 28px;
+    background-position: -1px -1px;
+  }
+  .canvas-lines { position: absolute; left: 0; top: 0; width: 4000px; height: 2900px; overflow: visible; z-index: 1; pointer-events: none; }
+  .canvas-nodes { position: absolute; left: 0; top: 0; width: 0; height: 0; z-index: 2; }
+
+  /* 节点卡片 */
+  .ab-node {
+    position: absolute; width: 122px;
+    background: var(--panel-2);
+    border: 1px solid var(--border);
+    border-left: 3px solid var(--blue);
+    border-radius: 4px;
+    padding: 4px 6px;
+    cursor: move;
+    transition: box-shadow .15s;
+    touch-action: none;
+  }
+  .ab-node:hover { border-color: var(--blue); box-shadow: 0 4px 14px rgba(0,0,0,.45); }
+  .ab-node.dragging { box-shadow: 0 8px 26px rgba(0,0,0,.55); z-index: 5; }
+  .ab-node.hl { border-color: var(--green); }
+  .ab-node .nm { font-size: 10.5px; font-weight: 600; line-height: 1.3; }
+  .ab-node .tag { font-size: 9px; color: var(--faint); font-family: var(--mono); margin-top: 1px; }
+  .ab-node .ctrlb {
+    position: absolute; top: 2px; right: 3px;
+    font-size: 8.5px; color: var(--red); font-weight: 700; font-family: var(--mono);
+    opacity: 0; transition: opacity .15s;
+  }
+  .ab-node.ctrl .ctrlb { opacity: 1; }
+  .ab-node.ctrl { border-left-color: var(--red); }
+  .pen-ctrl .ab-node .ctrlb { opacity: .75; }
+
+  .ab-node.root { width: 156px; height: 58px; border: 2px solid var(--green); background: rgba(82,224,138,.08); }
+  .ab-node.root .nm { font-size: 14px; }
+  .ab-node.layer { width: 158px; height: 48px; border-left-color: var(--purple); background: rgba(180,140,224,.07); }
+  .ab-node.layer .nm { font-size: 12px; }
+  .ab-node.stage { width: 158px; border-left-color: var(--blue); background: rgba(111,168,220,.07); }
+  .ab-node.stage .nm { font-size: 11.5px; }
+  .ab-node.l-base { border-left-color: var(--purple); }
+  .ab-node.l-gov { border-left-color: var(--amber); }
+  .ab-node.l-base.ctrl { border-left-color: var(--red); }
+  .ab-node.judge {
+    width: 118px; height: 60px; border-radius: 0;
+    border: 1.5px solid var(--amber);
+    background: rgba(224,164,88,.1);
+    clip-path: polygon(50% 0, 100% 50%, 50% 100%, 0 50%);
+    display: flex; align-items: center; justify-content: center;
+    padding: 0;
+  }
+  .ab-node.judge .nm { text-align: center; font-size: 10.5px; color: var(--amber); padding: 0 16px; }
+  .ab-node.judge .tag { display: none; }
+
+  .legend { display: flex; gap: 12px; flex-wrap: wrap; margin: 10px 2px 2px; font-size: 12px; color: var(--muted); align-items: center; }
+  .lg-item { display: inline-flex; align-items: center; gap: 6px; cursor: pointer; user-select: none; }
+  .lg-item .sw { display: inline-block; width: 16px; height: 3px; border-radius: 2px; }
+  .lg-item .chk { width: 13px; height: 13px; border: 1px solid var(--faint); border-radius: 3px; background: var(--panel-2); position: relative; }
+  .lg-item.on .chk::after { content: ""; position: absolute; left: 3px; top: 3px; width: 5px; height: 5px; border-radius: 1px; background: var(--green); }
+  .lg-item .sw.dot { width: 10px; height: 10px; border-radius: 50%; }
+
+  /* ===== 视图切换 ===== */
+  .tabs { display: flex; gap: 8px; margin: 26px 0 14px; }
+  .tab-btn {
+    background: var(--panel-2); color: var(--muted); border: 1px solid var(--border);
+    border-radius: 5px; font-size: 13px; padding: 6px 16px; cursor: pointer; font-family: inherit;
+  }
+  .tab-btn.on { color: var(--text); border-color: var(--green); background: rgba(82,224,138,.1); }
+
+  /* ===== 接口批量设计 ===== */
+  .iface-panel { background: var(--panel); border: 1px solid var(--border); border-radius: 8px; padding: 14px 16px; }
+  .filter-row { display: flex; gap: 12px; flex-wrap: wrap; margin-bottom: 12px; align-items: center; }
+  .filter-row select, .filter-row input {
+    background: var(--panel-2); color: var(--text); border: 1px solid var(--border);
+    border-radius: 4px; font-size: 12.5px; padding: 5px 10px; font-family: inherit;
+  }
+  .filter-row input { min-width: 220px; }
+  .filter-row .fc { font-size: 12px; color: var(--faint); font-family: var(--mono); }
+  .iface-table { width: 100%; border-collapse: collapse; font-size: 12px; min-width: 1080px; }
+  .iface-table th, .iface-table td { text-align: left; padding: 7px 10px; border-bottom: 1px solid var(--border); vertical-align: top; }
+  .iface-table th { color: var(--faint); font-weight: 600; font-size: 11px; letter-spacing: .05em; background: var(--panel-2); white-space: nowrap; }
+  .iface-table tr:last-child td { border-bottom: none; }
+  .iface-table .mono2 { font-family: var(--mono); font-size: 11px; }
+  .iface-table .grp { display: inline-block; font-size: 10.5px; padding: 1px 7px; border-radius: 3px; font-family: var(--mono); white-space: nowrap; }
+  .g-lixiang { background: rgba(111,168,220,.14); color: var(--blue); border: 1px solid rgba(111,168,220,.35); }
+  .g-fengxian { background: rgba(217,108,108,.14); color: var(--red); border: 1px solid rgba(217,108,108,.35); }
+  .g-jihua { background: rgba(82,224,138,.12); color: var(--green); border: 1px solid rgba(82,224,138,.3); }
+  .g-shishi { background: rgba(224,164,88,.14); color: var(--amber); border: 1px solid rgba(224,164,88,.35); }
+  .g-zhengju { background: rgba(180,140,224,.14); color: var(--purple); border: 1px solid rgba(180,140,224,.35); }
+  .g-dingxing { background: rgba(111,168,220,.2); color: #9fc6ec; border: 1px solid rgba(111,168,220,.45); }
+  .g-baogao { background: rgba(154,167,181,.16); color: #c3ccd6; border: 1px solid rgba(154,167,181,.4); }
+  .g-zhenggai { background: rgba(224,164,88,.22); color: #f0c17e; border: 1px solid rgba(224,164,88,.45); }
+  .g-zhili { background: rgba(82,224,138,.2); color: #9fe8bd; border: 1px solid rgba(82,224,138,.4); }
+  .iface-table .trig { font-size: 11px; color: var(--faint); white-space: nowrap; }
+  .iface-table .dir { color: var(--muted); font-size: 11.5px; }
+  .iface-table .fields { color: var(--muted); font-size: 11px; line-height: 1.55; }
+  .iface-table .note2 { color: var(--faint); font-size: 11px; }
+  .iface-count { font-size: 12.5px; color: var(--muted); margin-bottom: 10px; }
+  .iface-count b { color: var(--green); font-family: var(--mono); }
+  .iface-scroll { overflow-x: auto; }
+
+  footer { margin-top: 44px; padding-top: 16px; border-top: 1px solid var(--border); font-size: 12px; color: var(--faint); }
+  footer p { margin-bottom: 4px; }
+
+  @media (max-width: 900px) { .metrics { grid-template-columns: repeat(3, 1fr); } }
+  @media (max-width: 640px) {
+    header { padding-top: 24px; }
+    h1 { font-size: 21px; }
+    .metrics { grid-template-columns: repeat(2, 1fr); }
+    .canvas-viewport { height: 520px; }
+    .ab-node { width: 108px; }
+    .ab-node.judge { width: 104px; height: 54px; }
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header>
+    <div class="kicker">AUDIT BRAIN NETWORK · 树状组网 V2</div>
+    <h1>审计插件大脑 <span class="accent">·</span> 树状组网 + 判断关系 + 数据接口流</h1>
+    <p class="sub">100 个插件全部挂入一棵树：根=审计大脑，下分治理优化层 / 核心业务循环层（8 阶段子树）/ 数据支撑层。主链实线=流程流转（带数据接口契约），菱形=判断节点（是/否分支，否统一归档回流），灰虚线=汇聚数据输入流，蓝虚线=跨层能力调用。</p>
+    <div class="meta">方案来源：用户提供的 100 插件循环网络设计 · 树状重组 + 判断点 + 接口契约设计 · 未改动项目代码</div>
+  </header>
+
+  <div class="metrics">
+    <div class="metric n-green"><div class="num">100</div><div class="lbl">插件总数（全部在树上）</div></div>
+    <div class="metric n-amber"><div class="num">10</div><div class="lbl">判断节点（是/否分支）</div></div>
+    <div class="metric n-purple"><div class="num">18</div><div class="lbl">数据支撑层（公共叶子）</div></div>
+    <div class="metric n-blue"><div class="num">76</div><div class="lbl">核心业务循环层（8 子树）</div></div>
+    <div class="metric n-green"><div class="num">6</div><div class="lbl">治理优化层（闭环迭代）</div></div>
+    <div class="metric n-blue"><div class="num">70+</div><div class="lbl">数据接口契约（audit.*）</div></div>
+  </div>
+
+  <section id="flow">
+    <div class="sec-head"><h2>插件大脑树状组网</h2><span class="tag">VIEW 01 · 树 + 判断 + 接口流 · 无限画布</span></div>
+    <p class="note">拖拽空白平移 · 滚轮缩放 · 拖动节点重新排布 · 连线自动跟随。图例即图层开关：<b>主流程</b>（树边+阶段主干+闭环）与<b>判断分支</b>（红边+是/否）默认开；可打开<b>数据输入流</b>（汇聚灰虚线）、<b>接口标签</b>（边上契约名）、<b>跨层调用</b>（业务⇢支撑）、<b>管控穿透</b>（⊣）。</p>
+    <div class="flow-wrap">
+      <div class="flow-toolbar">
+        <span class="ft-hint" id="hintBar">树状组网 · 每个节点唯一父节点，无游离</span>
+        <span class="ft-zoom" id="zoomLabel">100%</span>
+        <button type="button" class="ft-btn" id="btnFit">适应视图</button>
+        <button type="button" class="ft-btn" id="btnReset">重置布局</button>
+      </div>
+      <div class="canvas-viewport" id="canvasViewport">
+        <div class="canvas-layer" id="canvasLayer">
+          <div class="canvas-grid" id="canvasGrid"></div>
+          <svg class="canvas-lines" id="canvasLines" aria-hidden="true"></svg>
+          <div class="canvas-nodes" id="canvasNodes"></div>
+        </div>
+      </div>
+    </div>
+    <div class="legend">
+      <span class="lg-item on" data-layer="main"><span class="sw" style="background:var(--green)"></span><span class="chk"></span>主流程（树边+主干+闭环）</span>
+      <span class="lg-item on" data-layer="judge"><span class="sw" style="background:var(--red)"></span><span class="chk"></span>判断分支（是/否）</span>
+      <span class="lg-item" data-layer="input"><span class="sw" style="background:#8ba0b5;border-top:1px dashed #8ba0b5"></span><span class="chk"></span>数据输入流（汇聚）</span>
+      <span class="lg-item on" data-layer="iface"><span class="sw" style="background:transparent;border-bottom:1px dotted #8ba0b5"></span><span class="chk"></span>接口标签（audit.*）</span>
+      <span class="lg-item" data-layer="cross"><span class="sw" style="background:var(--blue);border-top:1px dashed var(--blue)"></span><span class="chk"></span>跨层调用 ⇢</span>
+      <span class="lg-item" data-layer="ctrl"><span class="sw dot" style="background:var(--red)"></span><span class="chk"></span>管控穿透 ⊣</span>
+    </div>
+  </section>
+
+  <!-- ===== 视图切换 ===== -->
+  <div class="tabs">
+    <button type="button" class="tab-btn on" id="tabV1">视图一 · 树状组网</button>
+    <button type="button" class="tab-btn" id="tabV2">视图二 · 接口批量设计</button>
+  </div>
+
+  <!-- ===== 视图二：接口批量设计 ===== -->
+  <section id="ifaceView" style="display:none">
+    <div class="sec-head"><h2>接口批量设计</h2><span class="tag">VIEW 02 · 94 个数据接口 · 树边派生</span></div>
+    <p class="note">由树状组网的所有数据流边批量派生接口定义：每条接口含<b>契约名 / 名称 / 方向 / 触发 / 输入输出字段 / 用途</b>。字段按语义组模板批量生成（立项 / 风险 / 计划 / 实施 / 证据 / 定性 / 报告 / 整改 / 治理）。</p>
+    <div class="iface-panel">
+      <div class="filter-row">
+        <select id="grpFilter"><option value="">全部语义组</option></select>
+        <select id="kindFilter"><option value="">全部类型</option><option value="main">流程流转</option><option value="judge">判断分支</option><option value="input">数据输入流</option></select>
+        <input type="text" id="kwFilter" placeholder="搜索接口名 / 契约名 / 节点…">
+        <span class="fc" id="ifaceCount"></span>
+      </div>
+      <div class="iface-scroll">
+        <table class="iface-table">
+          <thead><tr>
+            <th style="width:190px">接口契约</th><th style="width:110px">名称</th><th style="width:230px">方向（源 → 目标）</th>
+            <th style="width:76px">语义组</th><th style="width:96px">触发</th><th>输入 / 输出字段</th><th style="width:170px">用途</th>
+          </tr></thead>
+          <tbody id="ifaceBody"></tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+
+  <footer>
+    <p>树状组网：根=审计大脑；治理层（6）→ 业务层（76，8 阶段子树）→ 支撑层（18 公共叶子）；每个节点唯一主父，汇聚点以「数据输入流」灰虚线表达，判断「否」统一归档回流至根，不产生游离节点。</p>
+    <p>数据接口契约按「域.动作@版本」命名（如 audit.approved-project@1），为方案设计建议；「跨层调用」「管控穿透」按方案代表性关系绘制。</p>
+  </footer>
+
+</div>
+
+<script>
+(function () {
+  "use strict";
+
+  /* ===== 节点元信息 ===== */
+  var NODE_META = {
+    root: { n: "审计大脑", k: "root" },
+    gov: { n: "治理优化层", k: "layer" },
+    biz: { n: "核心业务循环层", k: "layer" },
+    base: { n: "数据支撑层", k: "layer" },
+    g1: { n: "审计项目质量评分", k: "plugin", L: "gov" },
+    g2: { n: "审计成效量化评估", k: "plugin", L: "gov" },
+    g3: { n: "典型案例库更新", k: "plugin", L: "gov" },
+    g4: { n: "问题趋势分析", k: "plugin", L: "gov" },
+    g5: { n: "规则库迭代优化", k: "plugin", L: "gov" },
+    g6: { n: "审计方法沉淀", k: "plugin", L: "gov" },
+    b01: { n: "多源数据采集", k: "plugin", L: "base" },
+    b02: { n: "财务数据清洗", k: "plugin", L: "base" },
+    b03: { n: "业务数据标准化", k: "plugin", L: "base" },
+    b04: { n: "主数据映射", k: "plugin", L: "base" },
+    b05: { n: "数据血缘追踪", k: "plugin", L: "base" },
+    b06: { n: "元数据管理", k: "plugin", L: "base" },
+    b07: { n: "数据质量校验", k: "plugin", L: "base" },
+    b08: { n: "标签体系管理", k: "plugin", L: "base" },
+    b09: { n: "统一指标计算", k: "plugin", L: "base" },
+    b10: { n: "全文检索引擎", k: "plugin", L: "base" },
+    b11: { n: "OCR 识别", k: "plugin", L: "base" },
+    b12: { n: "自然语言处理", k: "plugin", L: "base" },
+    b13: { n: "规则引擎配置", k: "plugin", L: "base" },
+    b14: { n: "可视化分析", k: "plugin", L: "base" },
+    b15: { n: "数据脱敏", k: "plugin", L: "base", ctrl: true },
+    b16: { n: "数据加密存储", k: "plugin", L: "base", ctrl: true },
+    b17: { n: "工作流引擎", k: "plugin", L: "base", ctrl: true },
+    b18: { n: "权限管控", k: "plugin", L: "base", ctrl: true },
+    s1: { n: "阶段01 · 立项与准备", k: "stage", st: 1 },
+    s2: { n: "阶段02 · 风险识别与评估", k: "stage", st: 2 },
+    s3: { n: "阶段03 · 计划与资源调度", k: "stage", st: 3 },
+    s4: { n: "阶段04 · 现场审计实施", k: "stage", st: 4 },
+    s5: { n: "阶段05 · 证据与底稿管理", k: "stage", st: 5 },
+    s6: { n: "阶段06 · 问题核查与定性", k: "stage", st: 6 },
+    s7: { n: "阶段07 · 报告与成果输出", k: "stage", st: 7 },
+    s8: { n: "阶段08 · 整改跟踪与闭环", k: "stage", st: 8 },
+    j1: { n: "立项评审通过？", k: "judge" },
+    j2: { n: "资料齐全？", k: "judge" },
+    j3: { n: "存在高风险？", k: "judge" },
+    j4: { n: "存在资源冲突？", k: "judge" },
+    j5: { n: "需延期？", k: "judge" },
+    j6: { n: "证据真实？", k: "judge" },
+    j7: { n: "三级复核通过？", k: "judge" },
+    j8: { n: "定性成立？", k: "judge" },
+    j9: { n: "报告审核通过？", k: "judge" },
+    j10: { n: "整改逾期？", k: "judge" },
+    j11: { n: "整改有效？", k: "judge" },
+    "s4-12": { n: "审计日志自动记录", k: "plugin", L: "biz", ctrl: true }
+  };
+  var PLUGINS = [
+    "s1-01","s1-02","s1-03","s1-04","s1-05","s1-06","s1-07","s1-08","s1-09","s1-10",
+    "s2-01","s2-02","s2-03","s2-04","s2-05","s2-06","s2-07","s2-08","s2-09","s2-10","s2-11",
+    "s3-01","s3-02","s3-03","s3-04","s3-05","s3-06","s3-07","s3-08","s3-09",
+    "s4-01","s4-02","s4-03","s4-04","s4-05","s4-06","s4-07","s4-08","s4-09","s4-10","s4-11","s4-12","s4-13","s4-14",
+    "s5-01","s5-02","s5-03","s5-04","s5-05","s5-06","s5-07","s5-08","s5-09","s5-10",
+    "s6-01","s6-02","s6-03","s6-04","s6-05","s6-06","s6-07","s6-08",
+    "s7-01","s7-02","s7-03","s7-04","s7-05","s7-06","s7-07",
+    "s8-01","s8-02","s8-03","s8-04","s8-05","s8-06","s8-07"
+  ];
+  var PLUGIN_NAME = {
+    "s1-01":"审计需求征集","s1-02":"战略目标对齐","s1-03":"年度立项申报","s1-04":"立项评审打分",
+    "s1-05":"项目库管理","s1-06":"项目优先级排序","s1-07":"审计通知书生成","s1-08":"被审单位资料报送",
+    "s1-09":"前置资料预检","s1-10":"项目组建与分工",
+    "s2-01":"宏观政策风险扫描","s2-02":"行业风险对标","s2-03":"内控流程风险测绘","s2-04":"财务异常指标预警",
+    "s2-05":"业务流程断点识别","s2-06":"舞弊风险特征匹配","s2-07":"风险矩阵生成","s2-08":"风险等级赋值",
+    "s2-09":"高风险领域定位","s2-10":"风险热图绘制","s2-11":"风险应对建议生成",
+    "s3-01":"年度审计计划编制","s3-02":"项目审计方案编制","s3-03":"审计程序模板匹配","s3-04":"审计抽样",
+    "s3-05":"样本量自动计算","s3-06":"审计人员排班","s3-07":"工时预算管理","s3-08":"资源冲突检测","s3-09":"计划版本管控",
+    "s4-01":"现场签到与轨迹","s4-02":"审计底稿编制","s4-03":"凭证穿透查询","s4-04":"往来款函证",
+    "s4-05":"存货监盘","s4-06":"固定资产盘点","s4-07":"访谈记录管理","s4-08":"会议纪要自动整理",
+    "s4-09":"跨部门数据协查","s4-10":"疑点实时标记","s4-11":"现场取证拍照上传","s4-12":"审计日志自动记录",
+    "s4-13":"进度实时填报","s4-14":"延期申请审批",
+    "s5-01":"证据分类归档","s5-02":"证据真实性校验","s5-03":"底稿勾稽关系校验","s5-04":"底稿三级复核",
+    "s5-05":"底稿版本对比","s5-06":"证据索引关联","s5-07":"底稿模板更新","s5-08":"电子签章",
+    "s5-09":"底稿借阅审批","s5-10":"底稿加密存储",
+    "s6-01":"审计疑点汇总","s6-02":"问题性质判定","s6-03":"违规条款匹配","s6-04":"问题金额计算",
+    "s6-05":"责任主体认定","s6-06":"问题分级分类","s6-07":"被审单位意见反馈","s6-08":"问题定性复核",
+    "s7-01":"报告框架自动生成","s7-02":"问题描述自动撰写","s7-03":"审计建议匹配","s7-04":"报告数据校验",
+    "s7-05":"报告多级审核","s7-06":"审计成果提炼","s7-07":"公告信息脱敏发布",
+    "s8-01":"整改任务派单","s8-02":"整改方案审核","s8-03":"整改进度跟踪","s8-04":"整改成效验证",
+    "s8-05":"逾期整改预警","s8-06":"整改销号管理","s8-07":"整改结果公示"
+  };
+  /* ===== 树主边（main=进树的流程边；judge=判断否分支，不入树） ===== */
+  var TREE_EDGES = [
+    ["root", "gov", null, "main"], ["root", "biz", null, "main"], ["root", "base", null, "main"],
+    ["gov", "g1", null, "main"], ["g1", "g2", "audit.quality-score@1", "main"],
+    ["g2", "g3", "audit.value-report@1", "main"], ["g3", "g4", "audit.case-base@1", "main"],
+    ["g4", "g5", "audit.trend-report@1", "main"], ["g5", "g6", "audit.rule-update@1", "main"],
+    ["biz", "s1", null, "main"], ["biz", "s2", null, "main"], ["biz", "s3", null, "main"],
+    ["biz", "s4", null, "main"], ["biz", "s5", null, "main"], ["biz", "s6", null, "main"],
+    ["biz", "s7", null, "main"], ["biz", "s8", null, "main"],
+    /* 阶段1 */
+    ["s1", "s1-01", null, "main"], ["s1-01", "s1-02", "audit.requirement@1", "main"],
+    ["s1-02", "s1-03", "audit.alignment@1", "main"], ["s1-03", "s1-04", "audit.proposal@1", "main"],
+    ["s1-04", "j1", "audit.proposal-scored@1", "main"],
+    ["j1", "s1-05", "audit.approved-project@1", "main", "是"],
+    ["j1", "root", "audit.rejected-project@1", "judge", "否"],
+    ["s1-05", "s1-06", "audit.project-pool@1", "main"], ["s1-06", "s1-10", "audit.prioritized-project@1", "main"],
+    ["s1-05", "s1-07", "audit.project-master@1", "main"], ["s1-07", "s1-08", "audit.notice@1", "main"],
+    ["s1-08", "s1-09", "audit.raw-material@1", "main"], ["s1-09", "j2", "audit.material-check@1", "main"],
+    ["j2", "root", "audit.material-deficiency@1", "judge", "否"],
+    /* 阶段2 */
+    ["s2", "s2-01", null, "main"], ["s2", "s2-02", null, "main"], ["s2", "s2-03", null, "main"],
+    ["s2", "s2-04", null, "main"], ["s2", "s2-05", null, "main"], ["s2", "s2-06", null, "main"],
+    ["s2", "s2-07", null, "main"], ["s2-07", "s2-08", "audit.risk-matrix@1", "main"],
+    ["s2-08", "j3", "audit.risk-rated@1", "main"],
+    ["j3", "s2-09", "audit.high-risk@1", "main", "是"], ["j3", "root", "audit.low-risk@1", "judge", "否"],
+    ["s2-09", "s2-10", "audit.risk-domain@1", "main"], ["s2-09", "s2-11", "audit.high-risk-domain@1", "main"],
+    /* 阶段3 */
+    ["s3", "s3-01", null, "main"], ["s3-01", "s3-02", "audit.annual-plan@1", "main"],
+    ["s3-02", "s3-03", "audit.project-scheme@1", "main"], ["s3-03", "s3-04", "audit.audit-program@1", "main"],
+    ["s3-04", "s3-05", "audit.sample-method@1", "main"], ["s3-05", "s3-06", "audit.sample-size@1", "main"],
+    ["s3-06", "j4", "audit.schedule@1", "main"],
+    ["j4", "s3-07", "audit.schedule-ok@1", "main", "否"], ["j4", "s3-08", "audit.resource-conflict@1", "main", "是"],
+    ["s3-07", "s3-09", "audit.budget@1", "main"],
+    /* 阶段4：分支头并列挂阶段下 */
+    ["s4", "s4-01", null, "main"], ["s4", "s4-03", null, "main"], ["s4", "s4-04", null, "main"],
+    ["s4", "s4-05", null, "main"], ["s4", "s4-06", null, "main"], ["s4", "s4-07", null, "main"],
+    ["s4", "s4-09", null, "main"], ["s4", "s4-10", null, "main"], ["s4", "s4-12", null, "main"],
+    ["s4", "s4-13", null, "main"],
+    ["s4-01", "s4-02", "audit.attendance@1", "main"], ["s4-07", "s4-08", "audit.interview-note@1", "main"],
+    ["s4-09", "s4-11", "audit.data-inquiry@1", "main"], ["s4-10", "s4-13", "audit.anomaly-flag@1", "main"],
+    ["s4-13", "j5", "audit.progress@1", "main"],
+    ["j5", "s4-14", "audit.extension-request@1", "main", "是"], ["j5", "root", "audit.progress-ok@1", "judge", "否"],
+    /* 阶段5 */
+    ["s5", "s5-01", null, "main"], ["s5-01", "s5-02", "audit.evidence-filed@1", "main"],
+    ["s5-02", "j6", "audit.evidence-checked@1", "main"],
+    ["j6", "s5-06", "audit.evidence-valid@1", "main", "是"], ["j6", "root", "audit.evidence-doubt@1", "judge", "否"],
+    ["s5-02", "s5-03", "audit.evidence-linked@1", "main"], ["s5-03", "s5-04", "audit.workpaper-consistency@1", "main"],
+    ["s5-04", "j7", "audit.workpaper-reviewed@1", "main"],
+    ["j7", "s5-08", "audit.review-pass@1", "main", "是"], ["j7", "s5-05", "audit.review-reject@1", "main", "否"],
+    ["s5-08", "s5-10", "audit.signed-workpaper@1", "main"], ["s5-10", "s5-09", "audit.encrypted-archive@1", "main"],
+    ["s5-04", "s5-07", "audit.template-sync@1", "main"],
+    /* 阶段6 */
+    ["s6", "s6-01", null, "main"], ["s6-01", "s6-02", "audit.anomaly-summary@1", "main"],
+    ["s6-02", "s6-03", "audit.issue-type@1", "main"], ["s6-03", "s6-04", "audit.regulatory-match@1", "main"],
+    ["s6-04", "s6-06", "audit.issue-amount@1", "main"], ["s6-06", "s6-05", "audit.issue-severity@1", "main"],
+    ["s6-05", "s6-07", "audit.responsibility@1", "main"], ["s6-07", "s6-08", "audit.opinion@1", "main"],
+    ["s6-08", "j8", "audit.issue-final@1", "main"], ["j8", "root", "audit.issue-reopen@1", "judge", "否"],
+    /* 阶段7 */
+    ["s7", "s7-01", null, "main"], ["s7-01", "s7-02", "audit.report-framework@1", "main"],
+    ["s7-02", "s7-03", "audit.issue-description@1", "main"], ["s7-03", "s7-04", "audit.recommendation@1", "main"],
+    ["s7-04", "s7-05", "audit.report-data-checked@1", "main"], ["s7-05", "j9", "audit.report-reviewed@1", "main"],
+    ["j9", "s7-06", "audit.report-approve@1", "main", "是"], ["j9", "root", "audit.report-reject@1", "judge", "否"],
+    ["s7-06", "s7-07", "audit.achievement@1", "main"],
+    /* 阶段8 */
+    ["s8", "s8-01", null, "main"], ["s8-01", "s8-02", "audit.remediation-task@1", "main"],
+    ["s8-02", "s8-03", "audit.remediation-plan@1", "main"], ["s8-03", "j10", "audit.remediation-progress@1", "main"],
+    ["j10", "s8-05", "audit.overdue-warning@1", "main", "是"],
+    ["s8-03", "s8-04", "audit.remediation-report@1", "main"], ["s8-04", "j11", "audit.remediation-verified@1", "main"],
+    ["j11", "s8-06", "audit.remediation-effective@1", "main", "是"],
+    ["j11", "root", "audit.remediation-ineffective@1", "judge", "否"],
+    ["s8-06", "s8-07", "audit.remediation-closed@1", "main"],
+    /* 支撑层 */
+    ["base", "b01", null, "main"], ["base", "b02", null, "main"], ["base", "b03", null, "main"],
+    ["base", "b04", null, "main"], ["base", "b05", null, "main"], ["base", "b06", null, "main"],
+    ["base", "b07", null, "main"], ["base", "b08", null, "main"], ["base", "b09", null, "main"],
+    ["base", "b10", null, "main"], ["base", "b11", null, "main"], ["base", "b12", null, "main"],
+    ["base", "b13", null, "main"], ["base", "b14", null, "main"], ["base", "b15", null, "main"],
+    ["base", "b16", null, "main"], ["base", "b17", null, "main"], ["base", "b18", null, "main"]
+  ];
+  /* 汇聚数据输入流（灰虚线，带接口契约） */
+  var INPUT_EDGES = [
+    ["j2", "s1-10", "audit.validated-material@1"],
+    ["s2-01", "s2-07", "audit.policy-risk@1"], ["s2-02", "s2-07", "audit.industry-risk@1"],
+    ["s2-03", "s2-07", "audit.control-risk@1"], ["s2-04", "s2-07", "audit.fin-risk@1"],
+    ["s2-05", "s2-07", "audit.process-risk@1"], ["s2-06", "s2-07", "audit.fraud-risk@1"],
+    ["s3-08", "s3-09", "audit.conflict-warning@1"],
+    ["s4-03", "s4-02", "audit.voucher-detail@1"], ["s4-04", "s4-02", "audit.confirmation@1"],
+    ["s4-05", "s4-02", "audit.inventory-count@1"], ["s4-06", "s4-02", "audit.asset-count@1"],
+    ["s4-08", "s4-02", "audit.meeting-minutes@1"], ["s4-11", "s4-02", "audit.site-evidence@1"],
+    ["s5-05", "s5-03", "audit.workpaper-v2@1"], ["s5-07", "s5-04", "audit.template-latest@1"]
+  ];
+  /* 跨层能力调用（业务/治理 ⇢ 支撑） */
+  var CROSS_EDGES = [
+    ["s1-06", "b09"], ["s1-07", "b12"], ["s1-09", "b07"],
+    ["s2-01", "b13"], ["s2-04", "b09"], ["s2-10", "b14"], ["s2-11", "b12"],
+    ["s3-05", "b09"], ["s3-09", "b17"],
+    ["s4-03", "b01"], ["s4-04", "b17"], ["s4-07", "b12"], ["s4-08", "b12"], ["s4-11", "b11"],
+    ["s5-01", "b08"], ["s5-02", "b05"], ["s5-03", "b13"], ["s5-04", "b17"], ["s5-09", "b18"], ["s5-10", "b16"],
+    ["s6-03", "b13"], ["s6-04", "b02"], ["s6-05", "b04"], ["s6-07", "b17"],
+    ["s7-02", "b12"], ["s7-04", "b07"], ["s7-07", "b15"],
+    ["s8-01", "b17"], ["s8-04", "b05"], ["s8-07", "b15"],
+    ["g1", "b14"], ["g2", "b09"], ["g3", "b08"], ["g4", "b14"]
+  ];
+  /* 阶段主干（绿粗）：s1→s2→…→s8 + 闭环 s8→gov→s1 */
+  var TRUNK = [
+    ["s1", "s2"], ["s2", "s3"], ["s3", "s4"], ["s4", "s5"], ["s5", "s6"],
+    ["s6", "s7"], ["s7", "s8"], ["s8", "gov"], ["gov", "s1"]
+  ];
+  var STAGE_NAME = { 1: "立项与准备", 2: "风险识别与评估", 3: "计划与资源调度", 4: "现场审计实施", 5: "证据与底稿管理", 6: "问题核查与定性", 7: "报告与成果输出", 8: "整改跟踪与闭环" };
+
+  /* ===== 画布状态 ===== */
+  var view = { tx: 60, ty: 30, scale: 1 };
+  var nodePos = {};
+  var dragNode = null, dragOff = null;
+  var layers = { main: true, judge: true, input: false, iface: true, cross: false, ctrl: false };
+  var childrenOf = {};
+  var NODE_W = 122, NODE_H = 36, XGAP = 240, YGAP = 54, X0 = 40, Y0 = 40;
+
+  /* ===== 树布局（根在左，depth→x，叶子→y） ===== */
+  function buildChildren() {
+    childrenOf = {};
+    TREE_EDGES.forEach(function (e) {
+      if (e[3] !== "main") return;
+      (childrenOf[e[0]] = childrenOf[e[0]] || []).push(e[1]);
+    });
+  }
+  function tidy(id, depth) {
+    var kids = childrenOf[id] || [];
+    nodePos[id] = nodePos[id] || {};
+    nodePos[id].x = X0 + depth * XGAP;
+    nodePos[id].d = depth;
+    if (!kids.length) {
+      nodePos[id].y = leafCursor * YGAP + Y0;
+      leafCursor++;
+    } else {
+      var i, first, last;
+      kids.forEach(function (k) { tidy(k, depth + 1); });
+      first = nodePos[kids[0]].y; last = nodePos[kids[kids.length - 1]].y;
+      nodePos[id].y = (first + last) / 2;
+    }
+  }
+  var leafCursor = 0;
+  function layoutNodes() {
+    buildChildren();
+    leafCursor = 0;
+    tidy("root", 0);
+  }
+
+  /* ===== 渲染 ===== */
+  function el(tag, cls, html) {
+    var n = document.createElement(tag);
+    if (cls) n.className = cls;
+    if (html !== undefined) n.innerHTML = html;
+    return n;
+  }
+  function render() {
+    var nodesEl = document.getElementById("canvasNodes");
+    nodesEl.innerHTML = "";
+    var ids = ["root"];
+    var seen = {};
+    (function walk(id) {
+      (childrenOf[id] || []).forEach(function (c) { if (!seen[c]) { seen[c] = 1; ids.push(c); } });
+      (childrenOf[id] || []).forEach(walk);
+    })("root");
+    TREE_EDGES.forEach(function (e) { if (e[3] === "judge" && !seen[e[1]]) { seen[e[1]] = 1; ids.push(e[1]); } });
+    PLUGINS.forEach(function (p) { if (!seen[p]) { seen[p] = 1; ids.push(p); } });
+    Object.keys(NODE_META).forEach(function (k) { if (!seen[k]) { seen[k] = 1; ids.push(k); } });
+    ids.forEach(function (id) {
+      var meta = NODE_META[id] || { n: PLUGIN_NAME[id] || id, k: "plugin" };
+      if (meta.k === "plugin" && !meta.n) meta.n = PLUGIN_NAME[id] || id;
+      var card = el("div", "ab-node " + nodeCls(meta) + (meta.ctrl ? " ctrl" : ""));
+      card.dataset.id = id;
+      var tagTxt = tagOf(id, meta);
+      card.innerHTML = '<div class="nm"></div>' + (tagTxt ? '<div class="tag">' + tagTxt + "</div>" : "") + '<span class="ctrlb">⊣</span>';
+      card.querySelector(".nm").textContent = meta.n || PLUGIN_NAME[id] || id;
+      var pos = nodePos[id];
+      if (!pos) return;
+      card.style.left = pos.x + "px";
+      card.style.top = pos.y + "px";
+      card.title = (meta.n || id) + (tagTxt ? " · " + tagTxt : "") + (meta.ctrl ? " · 管控穿透（⊣ 全程生效）" : "");
+      nodesEl.appendChild(card);
+    });
+  }
+  function nodeCls(m) {
+    if (m.k === "root") return "root";
+    if (m.k === "layer") return "layer";
+    if (m.k === "stage") return "stage";
+    if (m.k === "judge") return "judge";
+    return "l-" + (m.L || "biz");
+  }
+  function tagOf(id, m) {
+    if (m.k === "layer") return id === "gov" ? "治理层" : (id === "biz" ? "业务层" : "支撑层");
+    if (m.k === "stage") return "阶段" + m.st;
+    if (m.k === "plugin") return m.L === "gov" ? "治理层" : (m.L === "base" ? "支撑层" : "阶段" + (id.slice(1, 2)));
+    return "";
+  }
+
+  function applyView() {
+    var layer = document.getElementById("canvasLayer");
+    layer.style.transform = "translate(" + view.tx + "px," + view.ty + "px) scale(" + view.scale + ")";
+    document.getElementById("zoomLabel").textContent = Math.round(view.scale * 100) + "%";
+  }
+  function layerPoints() {
+    var layer = document.getElementById("canvasLayer");
+    var lr = layer.getBoundingClientRect();
+    var s = view.scale;
+    var out = {};
+    Object.keys(nodePos).forEach(function (id) {
+      var card = document.querySelector('#canvasNodes .ab-node[data-id="' + id + '"]');
+      if (!card) return;
+      var r = card.getBoundingClientRect();
+      out[id] = {
+        l: (r.left - lr.left) / s, t: (r.top - lr.top) / s,
+        r: (r.right - lr.left) / s, b: (r.bottom - lr.top) / s,
+        cx: (r.left - lr.left) / s + r.width / 2 / s,
+        cy: (r.top - lr.top) / s + r.height / 2 / s
+      };
+    });
+    return out;
+  }
+  /* ===== 连线 ===== */
+  function curve(p1, p2, bend) {
+    var dx = Math.max(30, Math.abs(p2.x - p1.x) / 2);
+    if (bend) dx = bend;
+    return "M " + p1.x + " " + p1.y + " C " + (p1.x + dx) + " " + p1.y + ", " + (p2.x - dx) + " " + p2.y + ", " + p2.x + " " + p2.y;
+  }
+  function drawLines() {
+    var svg = document.getElementById("canvasLines");
+    var pts = layerPoints();
+    var parts = [
+      '<defs><marker id="mG" viewBox="0 0 10 10" refX="8.5" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M 0 0 L 10 5 L 0 10 z" fill="#52e08a"/></marker><marker id="mR" viewBox="0 0 10 10" refX="8.5" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M 0 0 L 10 5 L 0 10 z" fill="#d96c6c"/></marker><marker id="mB" viewBox="0 0 10 10" refX="8.5" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M 0 0 L 10 5 L 0 10 z" fill="#6fa8dc"/></marker><marker id="mS" viewBox="0 0 10 10" refX="8.5" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M 0 0 L 10 5 L 0 10 z" fill="#8ba0b5"/></marker></defs>'
+    ];
+    /* 树主边（流程） */
+    if (layers.main) {
+      TREE_EDGES.forEach(function (e) {
+        if (e[3] !== "main") return;
+        var p1 = pts[e[0]], p2 = pts[e[1]];
+        if (!p1 || !p2) return;
+        parts.push('<path class="ln main" data-rel="' + e[0] + ">" + e[1] + '" d="' + curve({ x: p1.r, y: p1.cy }, { x: p2.l, y: p2.cy }) + '" fill="none" stroke="#52e08a" stroke-width="1.4" marker-end="url(#mG)" />');
+        if (layers.iface && e[2]) {
+          parts.push('<text class="lb iflb" data-rel="' + e[0] + ">" + e[1] + '" x="' + ((p1.r + p2.l) / 2) + '" y="' + ((p1.cy + p2.cy) / 2 - 5) + '" text-anchor="middle" font-size="8.5" fill="#7fbf9b" style="paint-order:stroke;stroke:#05080e;stroke-width:3" font-family="Cascadia Mono,Consolas,monospace">' + e[2] + "</text>");
+        }
+      });
+    }
+    /* 判断分支（红 + 是/否） */
+    if (layers.judge) {
+      TREE_EDGES.forEach(function (e) {
+        if (e[3] !== "judge") return;
+        var p1 = pts[e[0]], p2 = pts[e[1]];
+        if (!p1 || !p2) return;
+        var d = curve({ x: p1.cx, y: p1.b }, { x: p2.l - 6, y: p2.b - 4 }, Math.max(60, Math.abs(p2.x - p1.x) / 2 + 40));
+        parts.push('<path class="ln judge" data-rel="' + e[0] + ">root" + '" d="' + d + '" fill="none" stroke="#d96c6c" stroke-width="1.3" stroke-dasharray="6 4" marker-end="url(#mR)" />');
+        parts.push('<text class="lb jdlb" x="' + ((p1.cx + p2.l) / 2) + '" y="' + ((p1.b + p2.b) / 2 - 8) + '" text-anchor="middle" font-size="9" fill="#e8917f" style="paint-order:stroke;stroke:#05080e;stroke-width:3" font-family="Cascadia Mono,Consolas,monospace">否 · ' + e[2] + "</text>");
+      });
+      /* 判断「是」分支标签 */
+      TREE_EDGES.forEach(function (e) {
+        if (e[3] !== "main" || !e[4]) return;
+        var p1 = pts[e[0]], p2 = pts[e[1]];
+        if (!p1 || !p2) return;
+        parts.push('<text class="lb jdlb" x="' + ((p1.r + p2.l) / 2) + '" y="' + ((p1.cy + p2.cy) / 2 - 13) + '" text-anchor="middle" font-size="9.5" fill="#e0a458" style="paint-order:stroke;stroke:#05080e;stroke-width:3" font-family="Cascadia Mono,Consolas,monospace">' + e[4] + " →</text>");
+      });
+    }
+    /* 数据输入流（汇聚灰虚线） */
+    if (layers.input) {
+      INPUT_EDGES.forEach(function (e) {
+        var p1 = pts[e[0]], p2 = pts[e[1]];
+        if (!p1 || !p2) return;
+        parts.push('<path class="ln in" data-rel="' + e[0] + ">" + e[1] + '" d="' + curve({ x: p1.r, y: p1.cy }, { x: p2.l, y: p2.cy }) + '" fill="none" stroke="#8ba0b5" stroke-width="1.1" stroke-dasharray="4 3" marker-end="url(#mS)" />');
+        parts.push('<text class="lb" x="' + ((p1.r + p2.l) / 2) + '" y="' + ((p1.cy + p2.cy) / 2 - 5) + '" text-anchor="middle" font-size="8" fill="#8ba0b5" style="paint-order:stroke;stroke:#05080e;stroke-width:3" font-family="Cascadia Mono,Consolas,monospace">' + e[2] + "</text>");
+      });
+    }
+    /* 阶段主干 + 闭环 */
+    if (layers.main) {
+      TRUNK.forEach(function (e, i) {
+        var p1 = pts[e[0]], p2 = pts[e[1]];
+        if (!p1 || !p2) return;
+        if (e[0] === "s8" && e[1] === "gov") {
+          var d8 = "M " + p1.r + " " + p1.cy + " C " + (p1.r + 260) + " " + p1.cy + ", " + p2.r + " " + (p2.cy - 220) + ", " + p2.r + " " + p2.cy;
+          parts.push('<path class="ln trunk" data-rel="t' + i + '" d="' + d8 + '" fill="none" stroke="#52e08a" stroke-width="2.4" marker-end="url(#mG)" />');
+          parts.push('<text class="lb" x="' + ((p1.r + p2.r) / 2 + 60) + '" y="' + ((p1.cy + p2.cy) / 2) + '" text-anchor="middle" font-size="10" fill="#9fe8bd" style="paint-order:stroke;stroke:#05080e;stroke-width:3" font-family="Cascadia Mono,Consolas,monospace">整改 ⟹ 治理</text>');
+          return;
+        }
+        if (e[0] === "gov" && e[1] === "s1") {
+          var d1 = "M " + p1.l + " " + p1.cy + " C " + (p1.l - 260) + " " + p1.cy + ", " + p2.l + " " + (p2.cy + 220) + ", " + p2.l + " " + p2.cy;
+          parts.push('<path class="ln trunk" data-rel="t' + i + '" d="' + d1 + '" fill="none" stroke="#52e08a" stroke-width="2.4" marker-end="url(#mG)" />');
+          parts.push('<text class="lb" x="' + ((p1.l + p2.l) / 2 - 60) + '" y="' + ((p1.cy + p2.cy) / 2) + '" text-anchor="middle" font-size="10" fill="#9fe8bd" style="paint-order:stroke;stroke:#05080e;stroke-width:3" font-family="Cascadia Mono,Consolas,monospace">闭环回流 ⟹ 立项</text>');
+          return;
+        }
+        var pa = { x: p1.r + 8, y: p1.cy }, pb = { x: p2.l - 8, y: p2.cy };
+        parts.push('<path class="ln trunk" data-rel="t' + i + '" d="' + curve(pa, pb) + '" fill="none" stroke="#52e08a" stroke-width="2.4" marker-end="url(#mG)" />');
+        parts.push('<text class="lb" x="' + ((pa.x + pb.x) / 2) + '" y="' + ((pa.y + pb.y) / 2 - 6) + '" text-anchor="middle" font-size="9" fill="#7fbf9b" style="paint-order:stroke;stroke:#05080e;stroke-width:3" font-family="Cascadia Mono,Consolas,monospace">阶段' + e[0].slice(1) + " ⟹</text>");
+      });
+    }
+    /* 跨层调用 */
+    if (layers.cross) {
+      CROSS_EDGES.forEach(function (e) {
+        var p1 = pts[e[0]], p2 = pts[e[1]];
+        if (!p1 || !p2) return;
+        parts.push('<path class="ln cross" data-rel="' + e[0] + ">" + e[1] + '" d="M ' + p1.cx + " " + p1.b + " L " + p2.cx + " " + p2.t + '" fill="none" stroke="#6fa8dc" stroke-width="1" stroke-dasharray="4 3" opacity="0.7" marker-end="url(#mB)" />');
+      });
+    }
+    svg.innerHTML = parts.join("");
+  }
+
+  /* ===== 交互 ===== */
+  function bindCanvas() {
+    var vp = document.getElementById("canvasViewport");
+    var nodesEl = document.getElementById("canvasNodes");
+    var panning = false, panStart = null;
+    vp.addEventListener("pointerdown", function (e) {
+      if (e.target.closest(".ab-node")) return;
+      panning = true;
+      panStart = { x: e.clientX, y: e.clientY, tx: view.tx, ty: view.ty };
+      vp.classList.add("panning");
+      vp.setPointerCapture(e.pointerId);
+      e.preventDefault();
+    });
+    vp.addEventListener("pointermove", function (e) {
+      if (panning && panStart) {
+        view.tx = panStart.tx + (e.clientX - panStart.x);
+        view.ty = panStart.ty + (e.clientY - panStart.y);
+        applyView();
+      }
+    });
+    function endPan() { panning = false; panStart = null; vp.classList.remove("panning"); }
+    vp.addEventListener("pointerup", endPan);
+    vp.addEventListener("pointercancel", endPan);
+    vp.addEventListener("wheel", function (e) {
+      e.preventDefault();
+      var rect = vp.getBoundingClientRect();
+      var mx = e.clientX - rect.left, my = e.clientY - rect.top;
+      var ns = Math.min(2.5, Math.max(0.12, view.scale * Math.exp(-e.deltaY * 0.0012)));
+      var k = ns / view.scale;
+      view.tx = mx - (mx - view.tx) * k;
+      view.ty = my - (my - view.ty) * k;
+      view.scale = ns;
+      applyView();
+    }, { passive: false });
+
+    nodesEl.addEventListener("pointerdown", function (e) {
+      var card = e.target.closest(".ab-node");
+      if (!card) return;
+      e.stopPropagation();
+      card.setPointerCapture(e.pointerId);
+      var cRect = card.getBoundingClientRect();
+      dragNode = card.dataset.id;
+      dragOff = { x: (e.clientX - cRect.left) / view.scale, y: (e.clientY - cRect.top) / view.scale };
+      card.classList.add("dragging");
+      e.preventDefault();
+    });
+    nodesEl.addEventListener("pointermove", function (e) {
+      if (!dragNode) return;
+      var p = nodePos[dragNode];
+      p.x = (e.clientX - view.tx) / view.scale - dragOff.x;
+      p.y = (e.clientY - view.ty) / view.scale - dragOff.y;
+      var card = document.querySelector(".ab-node.dragging");
+      if (card) { card.style.left = p.x + "px"; card.style.top = p.y + "px"; }
+      drawLines();
+    });
+    nodesEl.addEventListener("pointerup", endNodeDrag);
+    nodesEl.addEventListener("pointercancel", endNodeDrag);
+    document.getElementById("btnFit").addEventListener("click", fitView);
+    document.getElementById("btnReset").addEventListener("click", function () {
+      layoutNodes();
+      render();
+      view = { tx: 60, ty: 30, scale: 1 };
+      applyView();
+      drawLines();
+    });
+  }
+  function endNodeDrag() {
+    if (!dragNode) return;
+    var c = document.querySelector(".ab-node.dragging");
+    if (c) c.classList.remove("dragging");
+    dragNode = null; dragOff = null;
+  }
+  function fitView() {
+    var vp = document.getElementById("canvasViewport");
+    var vw = vp.clientWidth, vh = vp.clientHeight;
+    var minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
+    Object.keys(nodePos).forEach(function (id) {
+      var p = nodePos[id];
+      minX = Math.min(minX, p.x); minY = Math.min(minY, p.y);
+      maxX = Math.max(maxX, p.x); maxY = Math.max(maxY, p.y);
+    });
+    var bw = maxX - minX + NODE_W + 80, bh = maxY - minY + NODE_H + 80;
+    view.scale = Math.min(1, Math.max(0.1, Math.min(vw / bw, vh / bh)));
+    view.tx = (vw - bw * view.scale) / 2 - minX * view.scale;
+    view.ty = (vh - bh * view.scale) / 2 - minY * view.scale;
+    applyView();
+  }
+  function bindLegend() {
+    document.querySelectorAll(".lg-item").forEach(function (item) {
+      item.addEventListener("click", function () {
+        var k = item.dataset.layer;
+        layers[k] = !layers[k];
+        item.classList.toggle("on", layers[k]);
+        if (k === "ctrl") document.getElementById("canvasNodes").classList.toggle("pen-ctrl", layers.ctrl);
+        drawLines();
+      });
+    });
+  }
+  function bindHover() {
+    var svg = document.getElementById("canvasLines");
+    document.querySelectorAll(".ab-node").forEach(function (card) {
+      card.addEventListener("pointerenter", function () {
+        var id = card.dataset.id;
+        var rel = {};
+        TREE_EDGES.forEach(function (e) {
+          if (e[0] === id) rel[e[0] + ">" + e[1]] = 1;
+          if (e[1] === id && e[3] === "main") rel[e[0] + ">" + e[1]] = 1;
+          if (e[1] === id && e[3] === "judge") rel[e[0] + ">root"] = 1;
+        });
+        INPUT_EDGES.forEach(function (e) { if (e[0] === id || e[1] === id) rel[e[0] + ">" + e[1]] = 1; });
+        CROSS_EDGES.forEach(function (e) { if (e[0] === id || e[1] === id) rel[e[0] + ">" + e[1]] = 1; });
+        var isCtrl = NODE_META[id] && NODE_META[id].ctrl;
+        document.querySelectorAll(".ab-node").forEach(function (c) {
+          c.classList.remove("hl");
+          if (isCtrl && layers.ctrl) c.classList.add("hl");
+        });
+        svg.querySelectorAll(".ln, .lb").forEach(function (p) {
+          var on = p.dataset.rel ? rel[p.dataset.rel] : false;
+          if (isCtrl && layers.ctrl) on = true;
+          p.style.opacity = on ? "1" : "0.06";
+        });
+        var m = NODE_META[id];
+        document.getElementById("hintBar").textContent = m
+          ? (m.n || id) + (m.k === "judge" ? "（判断：是/否 分流）" : "") + (isCtrl && layers.ctrl ? " · ⊣ 穿透全部节点" : "")
+          : id;
+      });
+      card.addEventListener("pointerleave", function () {
+        document.querySelectorAll(".ab-node").forEach(function (c) { c.classList.remove("hl"); });
+        svg.querySelectorAll(".ln, .lb").forEach(function (p) { p.style.opacity = "1"; });
+        document.getElementById("hintBar").textContent = "树状组网 · 每个节点唯一父节点，无游离";
+      });
+    });
+  }
+
+  /* ===== 接口批量设计：元数据（名称 / 语义组 / 用途） ===== */
+  var IFACE_META = {
+    /* 立项 */
+    "audit.requirement@1": ["需求征集", "立项", "需求征集结果与标签"],
+    "audit.alignment@1": ["战略对齐", "立项", "对齐结果与优先级建议"],
+    "audit.proposal@1": ["立项申报", "立项", "立项申请材料"],
+    "audit.proposal-scored@1": ["评审打分", "立项", "评审打分结果"],
+    "audit.approved-project@1": ["立项通过", "立项", "评审通过项目（入库）"],
+    "audit.project-pool@1": ["项目库", "立项", "项目池清单"],
+    "audit.prioritized-project@1": ["优先级排序", "立项", "排序后项目"],
+    "audit.project-master@1": ["立项主档", "立项", "正式立项项目主档"],
+    "audit.notice@1": ["通知书", "立项", "审计通知书"],
+    "audit.raw-material@1": ["原始资料", "立项", "被审单位报送资料"],
+    "audit.material-check@1": ["资料预检", "立项", "预检结果"],
+    "audit.rejected-project@1": ["立项驳回", "立项", "驳回原因归档回流"],
+    "audit.material-deficiency@1": ["资料缺漏", "立项", "缺漏清单退回"],
+    "audit.validated-material@1": ["资料合格", "立项", "预检通过资料（→组建）"],
+    /* 风险 */
+    "audit.risk-matrix@1": ["风险矩阵", "风险", "风险影响-概率矩阵"],
+    "audit.risk-rated@1": ["风险定级", "风险", "风险等级赋值"],
+    "audit.high-risk@1": ["高风险清单", "风险", "高风险点清单"],
+    "audit.risk-domain@1": ["风险分布", "风险", "风险热图数据"],
+    "audit.high-risk-domain@1": ["高风险领域", "风险", "高风险领域与审计重点"],
+    "audit.low-risk@1": ["低风险归档", "风险", "低风险归档回流"],
+    "audit.policy-risk@1": ["政策风险信号", "风险", "宏观政策风险扫描结果"],
+    "audit.industry-risk@1": ["行业风险信号", "风险", "行业对标风险"],
+    "audit.control-risk@1": ["内控风险信号", "风险", "内控测绘结果"],
+    "audit.fin-risk@1": ["财务风险信号", "风险", "财务指标异常"],
+    "audit.process-risk@1": ["流程风险信号", "风险", "业务断点识别"],
+    "audit.fraud-risk@1": ["舞弊风险信号", "风险", "舞弊特征匹配"],
+    /* 计划 */
+    "audit.annual-plan@1": ["年度计划", "计划", "年度审计计划"],
+    "audit.project-scheme@1": ["项目方案", "计划", "项目审计方案"],
+    "audit.audit-program@1": ["审计程序", "计划", "匹配的审计程序"],
+    "audit.sample-method@1": ["抽样方法", "计划", "抽样方案"],
+    "audit.sample-size@1": ["样本清单", "计划", "样本量计算结果"],
+    "audit.schedule@1": ["排班表", "计划", "人员排班"],
+    "audit.schedule-ok@1": ["排班确认", "计划", "无冲突排班"],
+    "audit.resource-conflict@1": ["资源冲突", "计划", "冲突预警"],
+    "audit.budget@1": ["工时预算", "计划", "工时与成本预算"],
+    "audit.conflict-warning@1": ["冲突告警", "计划", "冲突检测告警（→版本管控）"],
+    /* 实施 */
+    "audit.attendance@1": ["出勤轨迹", "实施", "签到与轨迹记录"],
+    "audit.interview-note@1": ["访谈记录", "实施", "访谈记录"],
+    "audit.data-inquiry@1": ["数据协查", "实施", "跨部门数据调取"],
+    "audit.anomaly-flag@1": ["疑点标记", "实施", "疑点分类标记"],
+    "audit.progress@1": ["进度上报", "实施", "进度与工时"],
+    "audit.extension-request@1": ["延期申请", "实施", "延期审批申请"],
+    "audit.progress-ok@1": ["无需延期", "实施", "进度正常确认"],
+    "audit.voucher-detail@1": ["凭证明细", "实施", "凭证穿透查询结果（→底稿）"],
+    "audit.confirmation@1": ["函证结果", "实施", "往来款函证结果（→底稿）"],
+    "audit.inventory-count@1": ["存货盘点", "实施", "监盘结果（→底稿）"],
+    "audit.asset-count@1": ["资产盘点", "实施", "固定资产盘点（→底稿）"],
+    "audit.meeting-minutes@1": ["会议纪要", "实施", "纪要提炼（→底稿）"],
+    "audit.site-evidence@1": ["现场取证", "实施", "取证照片与说明（→底稿）"],
+    /* 证据 */
+    "audit.evidence-filed@1": ["证据归档", "证据", "分类归档证据"],
+    "audit.evidence-checked@1": ["证据校验", "证据", "真实性校验结果"],
+    "audit.evidence-valid@1": ["有效证据", "证据", "校验通过证据"],
+    "audit.evidence-linked@1": ["证据链接", "证据", "底稿-证据索引"],
+    "audit.workpaper-consistency@1": ["勾稽校验", "证据", "底稿勾稽结果"],
+    "audit.workpaper-reviewed@1": ["三级复核", "证据", "复核意见"],
+    "audit.review-pass@1": ["复核通过", "证据", "复核通过确认"],
+    "audit.review-reject@1": ["复核驳回", "证据", "驳回与修改意见"],
+    "audit.signed-workpaper@1": ["电子签章", "证据", "已签章底稿"],
+    "audit.encrypted-archive@1": ["加密归档", "证据", "加密底稿档案"],
+    "audit.template-sync@1": ["模板同步", "证据", "最新底稿模板"],
+    "audit.evidence-doubt@1": ["证据存疑", "证据", "存疑证据复核"],
+    "audit.workpaper-v2@1": ["底稿修订", "证据", "驳回后修订版（→勾稽）"],
+    "audit.template-latest@1": ["模板更新", "证据", "最新模板（→三级复核）"],
+    /* 定性 */
+    "audit.anomaly-summary@1": ["疑点汇总", "定性", "疑点汇总清单"],
+    "audit.issue-type@1": ["问题定性", "定性", "问题类型判定"],
+    "audit.regulatory-match@1": ["条款匹配", "定性", "违规条款匹配"],
+    "audit.issue-amount@1": ["金额计算", "定性", "问题金额核算"],
+    "audit.issue-severity@1": ["问题分级", "定性", "分级分类结果"],
+    "audit.responsibility@1": ["责任认定", "定性", "责任主体"],
+    "audit.opinion@1": ["意见反馈", "定性", "被审单位反馈"],
+    "audit.issue-final@1": ["定性复核", "定性", "最终定性"],
+    "audit.issue-reopen@1": ["定性不成立", "定性", "退回补充核实"],
+    /* 报告 */
+    "audit.report-framework@1": ["报告框架", "报告", "报告框架"],
+    "audit.issue-description@1": ["问题描述", "报告", "标准化问题描述"],
+    "audit.recommendation@1": ["审计建议", "报告", "建议匹配结果"],
+    "audit.report-data-checked@1": ["数据校验", "报告", "报告数据校验"],
+    "audit.report-reviewed@1": ["报告审核", "报告", "多级审核意见"],
+    "audit.report-approve@1": ["审核通过", "报告", "报告签发"],
+    "audit.achievement@1": ["成果提炼", "报告", "审计成果摘要"],
+    "audit.report-reject@1": ["报告驳回", "报告", "驳回意见"],
+    /* 整改 */
+    "audit.remediation-task@1": ["整改派单", "整改", "整改任务分解"],
+    "audit.remediation-plan@1": ["整改方案", "整改", "整改方案与计划"],
+    "audit.remediation-progress@1": ["整改进度", "整改", "进度跟踪数据"],
+    "audit.overdue-warning@1": ["逾期预警", "整改", "逾期告警"],
+    "audit.remediation-report@1": ["整改报告", "整改", "整改执行报告"],
+    "audit.remediation-verified@1": ["成效验证", "整改", "整改验证结果"],
+    "audit.remediation-effective@1": ["验证通过", "整改", "验证通过确认"],
+    "audit.remediation-closed@1": ["整改销号", "整改", "销号与公示"],
+    "audit.remediation-ineffective@1": ["整改无效", "整改", "继续整改"],
+    /* 治理 */
+    "audit.quality-score@1": ["质量评分", "治理", "项目质量评分"],
+    "audit.value-report@1": ["成效评估", "治理", "审计价值评估"],
+    "audit.case-base@1": ["案例入库", "治理", "典型案例沉淀"],
+    "audit.trend-report@1": ["趋势分析", "治理", "问题趋势报告"],
+    "audit.rule-update@1": ["规则迭代", "治理", "规则模型更新"]
+  };
+  /* 语义组字段模板（批量生成输入/输出字段） */
+  var GROUP_FIELDS = {
+    "立项": ["reqId 需求/项目编号", "title 标题", "applyOrg 申请单位", "priority 优先级", "status 状态", "ts 时间戳"],
+    "风险": ["riskId 风险编号", "domain 领域", "score 评分", "level 等级", "evidenceRef 证据引用"],
+    "计划": ["planId 计划编号", "programRef 程序引用", "sampleSize 样本量", "budgetHours 工时", "version 版本"],
+    "实施": ["workpaperId 底稿编号", "materialRef 材料引用", "result 结果", "owner 负责人", "evidenceRef 证据引用"],
+    "证据": ["docRef 文档引用", "version 版本", "checksum 校验和", "reviewer 复核人", "reviewStatus 复核状态"],
+    "定性": ["issueId 问题编号", "type 类型", "clauseRef 条款引用", "amount 金额", "responsibility 责任主体"],
+    "报告": ["reportId 报告编号", "issueIds 问题清单", "summary 摘要", "version 版本", "approver 审批人"],
+    "整改": ["taskId 任务编号", "planRef 方案引用", "deadline 期限", "status 状态", "verifyRef 验证引用"],
+    "治理": ["reportId 评估编号", "metrics 指标", "trend 趋势", "ruleVersion 规则版本", "methodRef 方法引用"]
+  };
+
+  /* 派生接口列表（全部数据流边） */
+  function buildIfaces() {
+    var list = [];
+    function push(iface, src, dst, kind, label) {
+      if (!iface) return;
+      list.push({ iface: iface, src: src, dst: dst, kind: kind, label: label || "" });
+    }
+    TREE_EDGES.forEach(function (e) {
+      if (e[3] === "main") push(e[2], e[0], e[1], "main", e[4]);
+      if (e[3] === "judge") push(e[2], e[0], e[1], "judge", "否");
+    });
+    INPUT_EDGES.forEach(function (e) { push(e[2], e[0], e[1], "input", ""); });
+    return list;
+  }
+  function ifaceNodeName(id) {
+    if (NODE_META[id]) return NODE_META[id].n;
+    return PLUGIN_NAME[id] || id;
+  }
+  function renderIfaces() {
+    var list = buildIfaces();
+    var grpSel = document.getElementById("grpFilter");
+    var grps = ["立项", "风险", "计划", "实施", "证据", "定性", "报告", "整改", "治理"];
+    grps.forEach(function (g) {
+      var opt = el("option");
+      opt.value = g; opt.textContent = g;
+      grpSel.appendChild(opt);
+    });
+    function draw() {
+      var gf = grpSel.value, kf = document.getElementById("kindFilter").value;
+      var kw = (document.getElementById("kwFilter").value || "").trim().toLowerCase();
+      var rows = list.filter(function (it) {
+        var meta = IFACE_META[it.iface] || ["", "", ""];
+        if (gf && meta[1] !== gf) return false;
+        if (kf && it.kind !== kf) return false;
+        if (kw) {
+          var hay = (it.iface + " " + meta[0] + " " + meta[2] + " " + ifaceNodeName(it.src) + " " + ifaceNodeName(it.dst)).toLowerCase();
+          if (hay.indexOf(kw) < 0) return false;
+        }
+        return true;
+      });
+      var body = document.getElementById("ifaceBody");
+      body.innerHTML = "";
+      rows.forEach(function (it) {
+        var meta = IFACE_META[it.iface] || [it.iface, "其他", ""];
+        var grp = meta[1];
+        var trig = it.kind === "judge" ? "判断：否" : (it.kind === "input" ? "数据输入" : (it.label ? "判断：" + it.label : "流程"));
+        var tr = el("tr");
+        tr.innerHTML =
+          "<td class='mono2' style='color:#9fe8bd'>" + it.iface + "</td>" +
+          "<td style='font-weight:600'>" + meta[0] + "</td>" +
+          "<td class='dir'>" + ifaceNodeName(it.src) + " → " + ifaceNodeName(it.dst) + "</td>" +
+          "<td><span class='grp g-" + grpCls(grp) + "'>" + grp + "</span></td>" +
+          "<td><span class='trig'>" + trig + "</span></td>" +
+          "<td class='fields'>" + (GROUP_FIELDS[grp] || GROUP_FIELDS["治理"]).join(" · ") + "</td>" +
+          "<td class='note2'>" + meta[2] + "</td>";
+        body.appendChild(tr);
+      });
+      document.getElementById("ifaceCount").textContent = "共 " + rows.length + " / " + list.length + " 条";
+    }
+    grpSel.addEventListener("change", draw);
+    document.getElementById("kindFilter").addEventListener("change", draw);
+    document.getElementById("kwFilter").addEventListener("input", draw);
+    draw();
+  }
+  function grpCls(g) {
+    return { "立项": "lixiang", "风险": "fengxian", "计划": "jihua", "实施": "shishi", "证据": "zhengju", "定性": "dingxing", "报告": "baogao", "整改": "zhenggai", "治理": "zhili" }[g] || "zhili";
+  }
+  function bindTabs() {
+    var v1 = document.getElementById("flow"), v2 = document.getElementById("ifaceView");
+    document.getElementById("tabV1").addEventListener("click", function () {
+      v1.style.display = ""; v2.style.display = "none";
+      document.getElementById("tabV1").classList.add("on");
+      document.getElementById("tabV2").classList.remove("on");
+      setTimeout(fitView, 0);
+    });
+    document.getElementById("tabV2").addEventListener("click", function () {
+      v1.style.display = "none"; v2.style.display = "";
+      document.getElementById("tabV2").classList.add("on");
+      document.getElementById("tabV1").classList.remove("on");
+    });
+    if (location.hash === "#iface") document.getElementById("tabV2").click();
+  }
+
+  /* ===== 启动 ===== */
+  layoutNodes();
+  render();
+  applyView();
+  bindCanvas();
+  bindLegend();
+  bindHover();
+  fitView();
+  drawLines();
+  renderIfaces();
+  bindTabs();
+  window.addEventListener("resize", drawLines);
+})();
+</script>
+</body>
+</html>
+
+

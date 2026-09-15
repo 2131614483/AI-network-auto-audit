@@ -1,0 +1,18 @@
+{
+  "schema_version": "1.0.0",
+  "plugin": {
+    "id": "audit.govern.project-quality-score",
+    "version": "0.1.0",
+    "sha256": "6d907fff682e96255b0f042c967c228d4c12f0a63c8fb596ba6af7f8bfc95f44"
+  },
+  "protocol": {
+    "id": "audit.govern.project-quality-score",
+    "version": "0.1.0",
+    "sha256": "9d2e0ab657bcfb88ab7bf801e5042bb31afeafa7ad1113a7e55cdb5250dd7268"
+  },
+  "execution_mode": "isolated_subprocess",
+  "capabilities": [
+    "audit.govern.project-quality-score"
+  ],
+  "status": "verified"
+}

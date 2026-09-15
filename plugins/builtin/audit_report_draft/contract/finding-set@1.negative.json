@@ -1,0 +1,19 @@
+{
+  "contract_id": "finding-set",
+  "contract_version": "1.0.0",
+  "engagement_id": "4c8e2a6d-b5f1-4d9a-a37e-8b0c2d4f6e1a",
+  "engagement_name": "反例：包含未确认与非法严重度",
+  "findings": [
+    {
+      "finding_id": "0f2c4e6a-8d59-4b7c-a21e-7d9f0b3a6c52",
+      "title": "仍处于提案阶段的发现",
+      "severity": "explosive",
+      "status": "proposed",
+      "claim_id": "2c4e6a8d-59f3-4b7c-a21e-7d9f0b3a6c52",
+      "claim": "未确认的发现不得进入底稿导出。",
+      "reviewer_label": "审计-张三",
+      "evidence_refs": ["file:///G:/数据/expense_ledger.csv"],
+      "confirmed_at": "2026-09-05T10:30:00+08:00"
+    }
+  ]
+}

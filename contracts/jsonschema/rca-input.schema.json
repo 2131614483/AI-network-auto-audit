@@ -1,0 +1,19 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://audit.local/contracts/rca-input.schema.json",
+  "title": "RcaInput",
+  "description": "根因候选排序输入：指向不可变的事故/告警事件集、因果拓扑图与可选变更记录；内容不嵌入控制面消息。",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["contract_id", "contract_version", "incident_set", "topology_graph", "max_candidates"],
+  "properties": {
+    "contract_id": {"const": "rca-input"},
+    "contract_version": {"const": "1.0.0"},
+    "incident_set": {"$ref": "artifact-ref.schema.json"},
+    "topology_graph": {"$ref": "artifact-ref.schema.json"},
+    "change_log": {"$ref": "artifact-ref.schema.json"},
+    "window_minutes": {"type": "integer", "minimum": 1, "maximum": 10080},
+    "max_candidates": {"type": "integer", "minimum": 1, "maximum": 100},
+    "max_hops": {"type": "integer", "minimum": 1, "maximum": 3}
+  }
+}

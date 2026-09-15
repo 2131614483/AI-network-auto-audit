@@ -1,0 +1,18 @@
+{
+  "schema_version": "1.0.0",
+  "plugin": {
+    "id": "audit.foundation.master-mapping",
+    "version": "0.1.0",
+    "sha256": "f7f406e90188db0f03073c127b4700d2f2f1151ae47c3b7b11a1181ca8477b15"
+  },
+  "protocol": {
+    "id": "audit.foundation.master-mapping",
+    "version": "0.1.0",
+    "sha256": "d214bad1084020bffd1da67096b9317cb0a445be3096c38645c3909b3577c8d5"
+  },
+  "execution_mode": "isolated_subprocess",
+  "capabilities": [
+    "audit.foundation.master-mapping"
+  ],
+  "status": "verified"
+}

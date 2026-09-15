@@ -1,0 +1,18 @@
+{
+  "schema_version": "1.0.0",
+  "plugin": {
+    "id": "audit.field.cross-dept-inquiry",
+    "version": "0.1.0",
+    "sha256": "07772cda4fe01e49733a9fe6257ce1ceb9d6a8d6bc6983df29c41b6779f57a7c"
+  },
+  "protocol": {
+    "id": "audit.field.cross-dept-inquiry",
+    "version": "0.1.0",
+    "sha256": "8b0f34d8dd8c40d673b244771ab36865e5b3da852ec0107612d5d2025ba125ff"
+  },
+  "execution_mode": "isolated_subprocess",
+  "capabilities": [
+    "audit.field.cross-dept-inquiry"
+  ],
+  "status": "verified"
+}

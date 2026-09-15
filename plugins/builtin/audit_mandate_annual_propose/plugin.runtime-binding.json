@@ -1,0 +1,18 @@
+{
+  "schema_version": "1.0.0",
+  "plugin": {
+    "id": "audit.mandate.annual-propose",
+    "version": "0.1.0",
+    "sha256": "aad317e3c1a13ea8b0d5d31cc68456908ec41bbd66fb5e5ac778eb2af3b840de"
+  },
+  "protocol": {
+    "id": "audit.mandate.annual-propose",
+    "version": "0.1.0",
+    "sha256": "9b954f162049d4608a824032b7bfcc93601f0a290c8f1283d0e651f78de803d1"
+  },
+  "execution_mode": "isolated_subprocess",
+  "capabilities": [
+    "audit.mandate.annual-propose"
+  ],
+  "status": "verified"
+}

@@ -1,0 +1,18 @@
+{
+  "schema_version": "1.0.0",
+  "plugin": {
+    "id": "audit.evidence.workpaper-reconcile",
+    "version": "0.1.0",
+    "sha256": "ce5273a3250c9c2c84fa3f8d9482f27c853cdf1310b47050811ad1a3f0b5fd67"
+  },
+  "protocol": {
+    "id": "audit.evidence.workpaper-reconcile",
+    "version": "0.1.0",
+    "sha256": "22797b197807a23e88485c85c7eee7942d86d5497d5780345ce94def64596f7b"
+  },
+  "execution_mode": "isolated_subprocess",
+  "capabilities": [
+    "audit.evidence.workpaper-reconcile"
+  ],
+  "status": "verified"
+}

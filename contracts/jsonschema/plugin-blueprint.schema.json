@@ -1,0 +1,73 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://audit.local/contracts/plugin-blueprint.schema.json",
+  "title": "PluginBlueprint",
+  "description": "L1/L2 插件槽位蓝图。它不是 PluginManifest：不允许 entrypoint、运行时、安装包或执行权限。",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["id", "name", "cluster_memberships", "lifecycle", "maturity", "capabilities", "input_contracts", "output_contracts", "risk_class", "source_refs"],
+  "properties": {
+    "id": {"type": "string", "pattern": "^[a-z][a-z0-9]*(?:[._-][a-z0-9]+)*$", "maxLength": 160},
+    "name": {"type": "string", "minLength": 1, "maxLength": 200},
+    "cluster_memberships": {
+      "type": "array",
+      "minItems": 1,
+      "uniqueItems": true,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["cluster_id", "role"],
+        "properties": {
+          "cluster_id": {"type": "string", "pattern": "^[a-z][a-z0-9]*(?:[._-][a-z0-9]+)*$"},
+          "role": {"type": "string", "enum": ["primary", "business", "capability", "runtime", "governance", "fallback"]}
+        }
+      }
+    },
+    "lifecycle": {"const": "planned"},
+    "maturity": {"type": "string", "enum": ["idea", "contracted", "prototype", "verified"]},
+    "capabilities": {
+      "type": "array",
+      "minItems": 1,
+      "uniqueItems": true,
+      "items": {"type": "string", "pattern": "^[a-z][a-z0-9]*(?:[._-][a-z0-9]+)+$"}
+    },
+    "input_contracts": {"type": "array", "uniqueItems": true, "items": {"$ref": "#/$defs/interface-contract"}},
+    "output_contracts": {"type": "array", "uniqueItems": true, "items": {"$ref": "#/$defs/interface-contract"}},
+    "risk_class": {"type": "string", "enum": ["read_only", "low", "medium", "high", "critical"]},
+    "depends_on": {"type": "array", "uniqueItems": true, "items": {"type": "string", "pattern": "^[a-z][a-z0-9]*(?:[._-][a-z0-9]+)*$"}},
+    "selection_hints": {"type": "array", "uniqueItems": true, "items": {"type": "string", "maxLength": 160}},
+    "bridge_contracts": {"type": "array", "uniqueItems": true, "items": {"type": "string", "maxLength": 180}},
+    "scenario_tags": {"type": "array", "uniqueItems": true, "items": {"type": "string", "maxLength": 120}},
+    "preferred_runtime_family": {"type": "string", "enum": ["thin", "ml_nlp", "llm_rag", "kg_gnn", "cv", "blockchain", "federation", "rpa", "streaming"]},
+    "source_refs": {
+      "type": "array",
+      "minItems": 1,
+      "uniqueItems": true,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["kind", "uri"],
+        "properties": {
+          "kind": {"type": "string", "enum": ["design_document", "contract", "manual"]},
+          "uri": {"type": "string", "minLength": 1, "maxLength": 1024},
+          "sha256": {"type": "string", "pattern": "^[A-Fa-f0-9]{64}$"}
+        }
+      }
+    }
+  },
+  "$defs": {
+    "interface-contract": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["contract_id", "version", "format", "delivery", "data_classification"],
+      "properties": {
+        "contract_id": {"type": "string", "pattern": "^[a-z][a-z0-9]*(?:[._-][a-z0-9]+)*$"},
+        "version": {"type": "string", "pattern": "^(0|[1-9][0-9]*)\\.(0|[1-9][0-9]*)\\.(0|[1-9][0-9]*)(?:-[0-9A-Za-z.-]+)?$"},
+        "format": {"type": "string", "enum": ["json", "jsonl", "parquet", "event_stream", "graph_ref", "artifact_ref"]},
+        "delivery": {"type": "string", "enum": ["reference", "artifact_ref", "request_response", "event"]},
+        "data_classification": {"type": "string", "enum": ["public", "internal", "audit_confidential", "restricted"]},
+        "required_fields": {"type": "array", "uniqueItems": true, "items": {"type": "string", "minLength": 1, "maxLength": 120}}
+      }
+    }
+  }
+}

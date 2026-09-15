@@ -1,0 +1,18 @@
+{
+  "schema_version": "1.0.0",
+  "plugin": {
+    "id": "audit.report.notice-mask-publish",
+    "version": "0.1.0",
+    "sha256": "a093d784378feafadede2e453b6337d80cef7fe435a8255d1f3af6ce8f304dda"
+  },
+  "protocol": {
+    "id": "audit.report.notice-mask-publish",
+    "version": "0.1.0",
+    "sha256": "6c15f7f17c66885851275e06f1dbeb9cf6aed60b554596b535438361fa5c0601"
+  },
+  "execution_mode": "isolated_subprocess",
+  "capabilities": [
+    "audit.report.notice-mask-publish"
+  ],
+  "status": "verified"
+}

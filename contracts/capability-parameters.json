@@ -1,0 +1,27 @@
+{
+  "schema_version": "1.0.0",
+  "reviewed_by": "declared defaults (audit/AIOps operations)",
+  "note": "能力运行参数。这些是**声明的运营取值**，不是从契约推断出来的 —— 容器从不读 IRNode.parameters，所以没有别的地方能承载它们，而把阈值硬编码进代码等于把运营策略藏起来。每条都有取值范围依据（见各运行时的常量）。",
+  "parameters": {
+    "aiops.alert.correlate": {
+      "window_minutes": 60,
+      "max_candidates": 50,
+      "_range": "window_minutes 1..10080；max_candidates 1..1000"
+    },
+    "aiops.rca.rank": {
+      "max_candidates": 50,
+      "max_hops": 2,
+      "_range": "max_candidates 1..100；max_hops 1..3"
+    },
+    "aiops.remediation.propose": {
+      "max_playbooks": 5,
+      "canary_scope": "subset_10pct",
+      "_range": "max_playbooks 1..20；canary_scope ∈ single_node | subset_10pct | low_traffic"
+    },
+    "aiops.recovery.verify": {
+      "availability_target": 0.99,
+      "threshold_ratio": 1.0,
+      "_range": "availability_target 0..1；threshold_ratio 0..10"
+    }
+  }
+}

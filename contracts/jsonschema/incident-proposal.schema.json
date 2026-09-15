@@ -1,0 +1,39 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://audit.local/contracts/incident-proposal.schema.json",
+  "title": "IncidentProposal",
+  "description": "告警归因后生成的人工复核事件提案：聚合键、严重度、受影响系统与证据定位。提案不创建 Incident、不触发 Playbook、不连接基础设施。",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["contract_id", "contract_version", "proposal_id", "alert_fingerprint", "status", "triage", "constraints"],
+  "properties": {
+    "contract_id": {"const": "incident-proposal"},
+    "contract_version": {"const": "1.0.0"},
+    "proposal_id": {"type": "string", "pattern": "^[A-Fa-f0-9]{16}$"},
+    "alert_fingerprint": {"type": "string", "pattern": "^[A-Fa-f0-9]{64}$"},
+    "status": {"const": "proposed"},
+    "triage": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["grouping_key", "severity", "affected_system", "summary", "review_reason"],
+      "properties": {
+        "grouping_key": {"type": "string", "minLength": 1, "maxLength": 255},
+        "severity": {"type": "string", "enum": ["critical", "high", "medium", "low"]},
+        "affected_system": {"type": "string", "minLength": 1, "maxLength": 255},
+        "summary": {"type": "string", "minLength": 1, "maxLength": 1024},
+        "evidence_refs": {"type": "array", "maxItems": 64, "items": {"type": "string", "minLength": 1, "maxLength": 2048}},
+        "review_reason": {"type": "string", "minLength": 1, "maxLength": 512}
+      }
+    },
+    "constraints": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["no_execution", "no_playbook", "requires_human_approval"],
+      "properties": {
+        "no_execution": {"const": true},
+        "no_playbook": {"const": true},
+        "requires_human_approval": {"const": true}
+      }
+    }
+  }
+}

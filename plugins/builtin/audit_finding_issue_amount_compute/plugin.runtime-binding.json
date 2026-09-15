@@ -1,0 +1,18 @@
+{
+  "schema_version": "1.0.0",
+  "plugin": {
+    "id": "audit.finding.issue-amount-compute",
+    "version": "0.1.0",
+    "sha256": "008bd831fef3f9990222152e0ff29f23b142442390168e70a9491f0c5fbc119a"
+  },
+  "protocol": {
+    "id": "audit.finding.issue-amount-compute",
+    "version": "0.1.0",
+    "sha256": "0c645d0e9e37d57baf250553af92a663887660796e23e00bfaf15b0418036ebc"
+  },
+  "execution_mode": "isolated_subprocess",
+  "capabilities": [
+    "audit.finding.issue-amount-compute"
+  ],
+  "status": "verified"
+}

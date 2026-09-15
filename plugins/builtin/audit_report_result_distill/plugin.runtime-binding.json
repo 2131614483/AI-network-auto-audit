@@ -1,0 +1,18 @@
+{
+  "schema_version": "1.0.0",
+  "plugin": {
+    "id": "audit.report.result-distill",
+    "version": "0.1.0",
+    "sha256": "32bcb02d89f70a694e7f4f6e86eae71c19537627df52acdef8e7c10c2bc8024f"
+  },
+  "protocol": {
+    "id": "audit.report.result-distill",
+    "version": "0.1.0",
+    "sha256": "225c4eea9bedeaadabea19b23f2fb3410fc45802fc04f306680ed74a1e8d04cc"
+  },
+  "execution_mode": "isolated_subprocess",
+  "capabilities": [
+    "audit.report.result-distill"
+  ],
+  "status": "verified"
+}

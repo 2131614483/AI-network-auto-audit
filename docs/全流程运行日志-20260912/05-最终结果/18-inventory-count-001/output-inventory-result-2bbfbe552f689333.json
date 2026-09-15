@@ -1,0 +1,24 @@
+{
+  "checks": [
+    {
+      "check_id": "columns",
+      "message": "账实差异 1 项",
+      "status": "fail"
+    }
+  ],
+  "contract_id": "dataset-validation",
+  "contract_version": "1.0.0",
+  "snapshot_sha256": "3edee6a29e07f69709f53fa9814431e416cdd2be80e6c000e5ff01f745d9d0a3",
+  "summary": {
+    "checked_columns": 2,
+    "checked_rows": 2,
+    "missing_values": 0,
+    "valid": false
+  },
+  "violations": [
+    {
+      "check_id": "columns",
+      "message": "盘点差异 sku=S002 账面 10 实盘 5 差异 5"
+    }
+  ]
+}

@@ -1,0 +1,18 @@
+{
+  "schema_version": "1.0.0",
+  "plugin": {
+    "id": "audit.foundation.tag-manage",
+    "version": "0.1.0",
+    "sha256": "b845e46d9e61e7dcac16638e714ae1e48f2008f98bce26b53d2bbacb07066477"
+  },
+  "protocol": {
+    "id": "audit.foundation.tag-manage",
+    "version": "0.1.0",
+    "sha256": "92e336027566aad9f4ea1fa2731ce60bb7be215ac35767c64ef35eb8bcc12507"
+  },
+  "execution_mode": "isolated_subprocess",
+  "capabilities": [
+    "audit.foundation.tag-manage"
+  ],
+  "status": "verified"
+}

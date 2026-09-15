@@ -1,0 +1,33 @@
+{
+  "id": "audit.investigation-plan",
+  "version": "0.1.0",
+  "name": "审计调查计划（影子计划草稿，本地只读）",
+  "runtime": "python",
+  "entrypoint": "plugins.builtin.audit_investigation_plan.runtime:handle",
+  "capabilities": ["audit.investigation.plan"],
+  "inputs": {
+    "capability": "audit.investigation.plan",
+    "schema": "anomaly-candidates.schema.json",
+    "content_type": "application/json"
+  },
+  "outputs": {
+    "capability": "audit.investigation.plan",
+    "schema": "investigation-plan-draft@1.0.0",
+    "content_type": "application/json"
+  },
+  "side_effects": "read_only",
+  "idempotency": "anomaly_set_sha256 + max_steps",
+  "permissions": {
+    "data_read": ["audit.anomaly_candidates", "audit.evidence_index"],
+    "data_write": [],
+    "network": "none",
+    "secrets": []
+  },
+  "resources": {"cpu": 1, "memory_mb": 256, "gpu": false, "timeout_seconds": 300},
+  "data_classification": "audit_confidential",
+  "evidence": {"preserve_inputs": true, "code_hash_required": true},
+  "tests": {
+    "contract": "tests/contract/test_audit_investigation_plan_contract.py",
+    "golden": "tests/unit/test_audit_investigation_plan_runtime.py"
+  }
+}

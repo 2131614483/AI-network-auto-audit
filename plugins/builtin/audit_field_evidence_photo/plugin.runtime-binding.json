@@ -1,0 +1,18 @@
+{
+  "schema_version": "1.0.0",
+  "plugin": {
+    "id": "audit.field.evidence-photo",
+    "version": "0.1.0",
+    "sha256": "f50047838d9d169a4b69067f5399db37d4bf773a7a15fd828390e71bccfc5d8e"
+  },
+  "protocol": {
+    "id": "audit.field.evidence-photo",
+    "version": "0.1.0",
+    "sha256": "128c271b6a3a3c7ed572a9ad469c711b118ca07731b025446a7b88a2a56eb502"
+  },
+  "execution_mode": "isolated_subprocess",
+  "capabilities": [
+    "audit.field.evidence-photo"
+  ],
+  "status": "verified"
+}

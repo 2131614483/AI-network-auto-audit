@@ -1,0 +1,18 @@
+{
+  "schema_version": "1.0.0",
+  "plugin": {
+    "id": "audit.field.meeting-minutes",
+    "version": "0.1.0",
+    "sha256": "a6cb382da2bd51871c4a655de39dc65479c05e3ffa6cd3ad26ae1aa5d5dc4391"
+  },
+  "protocol": {
+    "id": "audit.field.meeting-minutes",
+    "version": "0.1.0",
+    "sha256": "d54d08b724e8f35a28461276320780d3ea2cf098518c5d8715832891d8f2662b"
+  },
+  "execution_mode": "isolated_subprocess",
+  "capabilities": [
+    "audit.field.meeting-minutes"
+  ],
+  "status": "verified"
+}

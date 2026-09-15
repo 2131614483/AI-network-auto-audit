@@ -1,0 +1,33 @@
+{
+  "id": "aiops.alert-correlation",
+  "version": "0.1.0",
+  "name": "AIOps 告警关联（本地只读）",
+  "runtime": "python",
+  "entrypoint": "plugins.builtin.aiops_alert_correlation.runtime:handle",
+  "capabilities": ["aiops.alert.correlate"],
+  "inputs": {
+    "capability": "aiops.alert.correlate",
+    "schema": "alert-event-set.schema.json",
+    "content_type": "application/json"
+  },
+  "outputs": {
+    "capability": "aiops.alert.correlate",
+    "schema": "incident-candidate-set@1.0.0",
+    "content_type": "application/json"
+  },
+  "side_effects": "read_only",
+  "idempotency": "alert_set_sha256 + window_minutes + grouping_keys",
+  "permissions": {
+    "data_read": ["aiops.alerts"],
+    "data_write": [],
+    "network": "none",
+    "secrets": []
+  },
+  "resources": {"cpu": 1, "memory_mb": 256, "gpu": false, "timeout_seconds": 300},
+  "data_classification": "internal",
+  "evidence": {"preserve_inputs": true, "code_hash_required": true},
+  "tests": {
+    "contract": "tests/contract/test_aiops_alert_correlation_contract.py",
+    "golden": "tests/unit/test_aiops_alert_correlation_runtime.py"
+  }
+}

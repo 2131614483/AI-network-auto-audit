@@ -1,0 +1,18 @@
+{
+  "schema_version": "1.0.0",
+  "plugin": {
+    "id": "quant.experiment-evaluator",
+    "version": "0.1.0",
+    "sha256": "ba9fe809291ed91553d9c0623d6875ad63d97cc6e06b4b562374064888fd931f"
+  },
+  "protocol": {
+    "id": "quant.experiment-evaluator",
+    "version": "0.1.0",
+    "sha256": "496de910af2f937bc89da158afb4a8065a18f66004649c3676f3e3f59b5f81fb"
+  },
+  "execution_mode": "isolated_subprocess",
+  "capabilities": [
+    "quant.experiment.evaluate"
+  ],
+  "status": "verified"
+}

@@ -1,0 +1,91 @@
+{
+ "protocol_version": "1.0.0",
+ "id": "audit.field.audit-log",
+ "version": "0.1.0",
+ "name": "审计日志自动记录",
+ "description": "全程自动记录所有审计操作与数据访问；⊣ 穿透全现场阶段，调用权限管控。",
+ "kind": "governance",
+ "domains": [
+  "audit",
+  "compliance"
+ ],
+ "lifecycle": "verified",
+ "compatibility": {
+  "host_protocol": ">=1.0.0 <2.0.0",
+  "adapters": [
+   "python"
+  ],
+  "fallback_behavior": "human_review"
+ },
+ "capabilities": [
+  {
+   "id": "audit.field.audit-log",
+   "summary": "审计日志自动记录：全程自动记录所有审计操作与数据访问；⊣ 穿透全现场阶段，调用权限管控。",
+   "side_effects": "read_only",
+   "idempotency": "input_sha256 + capability_version",
+   "inputs": [
+    {
+     "contract_id": "log-event",
+     "version": "1.0.0",
+     "format": "artifact_ref",
+     "delivery": "reference",
+     "classification": "audit_confidential",
+     "schema_ref": "artifact-ref.schema.json",
+     "max_bytes": 268435456
+    }
+   ],
+   "outputs": [
+    {
+     "contract_id": "audit-log-set",
+     "version": "1.0.0",
+     "format": "json",
+     "delivery": "request_response",
+     "classification": "audit_confidential",
+     "schema_ref": "workflow.schema.json",
+     "max_bytes": 4194304
+    }
+   ]
+  }
+ ],
+ "governance": {
+  "default_data_classification": "audit_confidential",
+  "permissions": {
+   "data_read": [
+    "audit.field.audit-log.read"
+   ],
+   "data_write": [],
+   "network": "none",
+   "secret_refs": []
+  },
+  "policy": {
+   "gateway_required": true,
+   "approval_required": false,
+   "evidence_required": true
+  }
+ },
+ "resources": {
+  "cpu": 1,
+  "memory_mb": 256,
+  "gpu": "none",
+  "timeout_seconds": 300
+ },
+ "observability": {
+  "trace_required": true,
+  "emits": [
+   "structured_log",
+   "artifact_ref",
+   "audit_event"
+  ],
+  "health": "declared_only"
+ },
+ "provenance": {
+  "source_refs": [
+   "docs/audit-plugin-network-100.md#60",
+   "docs/插件开发与接入标准-UPP-v1.0.md",
+   "plugins/builtin/audit_field_audit_log/runtime.py"
+  ]
+ },
+ "ui": {
+  "mode": "none"
+ }
+}

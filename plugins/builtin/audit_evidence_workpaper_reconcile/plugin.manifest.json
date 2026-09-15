@@ -1,0 +1,45 @@
+{
+ "id": "audit.evidence.workpaper-reconcile",
+ "version": "0.1.0",
+ "name": "审计证据与底稿（契约声明）",
+ "runtime": "python",
+ "entrypoint": "plugins.builtin.audit_evidence_workpaper_reconcile.runtime:handle",
+ "capabilities": [
+  "audit.evidence.workpaper-reconcile"
+ ],
+ "inputs": {
+  "capability": "audit.evidence.workpaper-reconcile",
+  "schema": "workpaper-export.schema.json",
+  "content_type": "application/json"
+ },
+ "outputs": {
+  "capability": "audit.evidence.workpaper-reconcile",
+  "schema": "dataset-validation.schema.json",
+  "content_type": "application/json"
+ },
+ "side_effects": "read_only",
+ "idempotency": "input_sha256 + capability_version",
+ "permissions": {
+  "data_read": [
+   "audit.evidence.workpaper-reconcile.read"
+  ],
+  "data_write": [],
+  "network": "none",
+  "secrets": []
+ },
+ "resources": {
+  "cpu": 1,
+  "memory_mb": 256,
+  "gpu": false,
+  "timeout_seconds": 300
+ },
+ "data_classification": "audit_confidential",
+ "evidence": {
+  "preserve_inputs": true,
+  "code_hash_required": true
+ },
+ "tests": {
+  "contract": "tests/contract/test_audit_evidence_workpaper_reconcile_contract.py",
+  "golden": "tests/unit/test_audit_evidence_workpaper_reconcile_runtime.py"
+ }
+}

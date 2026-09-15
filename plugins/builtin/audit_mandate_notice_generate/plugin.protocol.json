@@ -1,0 +1,94 @@
+{
+ "protocol_version": "1.0.0",
+ "id": "audit.mandate.notice-generate",
+ "version": "0.1.0",
+ "name": "审计通知书生成",
+ "description": "自动生成标准化审计通知书并下发；上游正式立项项目，调用 NLP 生成文本（⇢）。",
+ "kind": "analysis",
+ "domains": [
+  "audit",
+  "compliance"
+ ],
+ "lifecycle": "verified",
+ "compatibility": {
+  "host_protocol": ">=1.0.0 <2.0.0",
+  "adapters": [
+   "python"
+  ],
+  "fallback_behavior": "human_review"
+ },
+ "capabilities": [
+  {
+   "id": "audit.mandate.notice-generate",
+   "summary": "审计通知书生成：自动生成标准化审计通知书并下发；上游正式立项项目，调用 NLP 生成文本（⇢）。",
+   "side_effects": "read_only",
+   "idempotency": "input_sha256 + capability_version",
+   "inputs": [
+    {
+     "contract_id": "project-snapshot",
+     "version": "1.0.0",
+     "format": "artifact_ref",
+     "delivery": "reference",
+     "classification": "audit_confidential",
+     "schema_ref": "dataset-validation.schema.json",
+     "max_bytes": 4194304
+    }
+   ],
+   "outputs": [
+    {
+     "contract_id": "audit-notice",
+     "version": "1.0.0",
+     "format": "json",
+     "delivery": "request_response",
+     "classification": "audit_confidential",
+     "schema_ref": "document-content.schema.json",
+     "max_bytes": 67108864
+    }
+   ],
+   "invokes": [
+    "audit.foundation.nlp-process"
+   ]
+  }
+ ],
+ "governance": {
+  "default_data_classification": "audit_confidential",
+  "permissions": {
+   "data_read": [
+    "audit.mandate.notice-generate.read"
+   ],
+   "data_write": [],
+   "network": "none",
+   "secret_refs": []
+  },
+  "policy": {
+   "gateway_required": true,
+   "approval_required": false,
+   "evidence_required": true
+  }
+ },
+ "resources": {
+  "cpu": 1,
+  "memory_mb": 256,
+  "gpu": "none",
+  "timeout_seconds": 300
+ },
+ "observability": {
+  "trace_required": true,
+  "emits": [
+   "structured_log",
+   "artifact_ref",
+   "audit_event"
+  ],
+  "health": "declared_only"
+ },
+ "provenance": {
+  "source_refs": [
+   "docs/audit-plugin-network-100.md#25",
+   "docs/插件开发与接入标准-UPP-v1.0.md",
+   "plugins/builtin/audit_mandate_notice_generate/runtime.py"
+  ]
+ },
+ "ui": {
+  "mode": "none"
+ }
+}

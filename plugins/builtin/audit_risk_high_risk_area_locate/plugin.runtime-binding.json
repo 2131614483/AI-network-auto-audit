@@ -1,0 +1,18 @@
+{
+  "schema_version": "1.0.0",
+  "plugin": {
+    "id": "audit.risk.high-risk-area-locate",
+    "version": "0.1.0",
+    "sha256": "6ff827b80eb36685b81a617be6d307f6b0033e4e42be7322d0b97afb5479fd42"
+  },
+  "protocol": {
+    "id": "audit.risk.high-risk-area-locate",
+    "version": "0.1.0",
+    "sha256": "721b6cc65665a33d3f330027c977f1330f90f3f11587ac0ba278511cba2ebade"
+  },
+  "execution_mode": "isolated_subprocess",
+  "capabilities": [
+    "audit.risk.high-risk-area-locate"
+  ],
+  "status": "verified"
+}

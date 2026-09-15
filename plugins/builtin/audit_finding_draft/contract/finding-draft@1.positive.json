@@ -1,0 +1,58 @@
+{
+  "contract_id": "finding-draft",
+  "contract_version": "1.0.0",
+  "anomaly_set_sha256": "a1b2c3d4e5f67890a1b2c3d4e5f67890a1b2c3d4e5f67890a1b2c3d4e5f67890",
+  "plan_sha256": "a1b2c3d4e5f67890a1b2c3d4e5f67890a1b2c3d4e5f67890a1b2c3d4e5f67890",
+  "draft_id": "a1b2c3d4e5f67890",
+  "period": "2026-03",
+  "rule_pack_sha256": "2222222222222222222222222222222222222222222222222222222222222222",
+  "findings": [
+    {
+      "finding_id": "a1b2c3d4e5f67890",
+      "title": "记账日期疑似异常（跨期/改期嫌疑）",
+      "severity": "high",
+      "rule_key": "invalid_date",
+      "status": "proposed",
+      "row_refs": ["60"],
+      "evidence_refs": ["journal:a1b2c3d4:row:60"],
+      "claims": [
+        {
+          "claim_id": "a1b2c3d4e5f67890",
+          "statement": "候选行记账日期偏离业务日历。命中 1 行、最高严重度 high。",
+          "basis": "anomaly",
+          "rule_key": "invalid_date",
+          "row_ref": "60",
+          "evidence_refs": ["journal:a1b2c3d4:row:60"],
+          "confidence": 0.84,
+          "severity": "high"
+        },
+        {
+          "claim_id": "a1b2c3d4e5f67890",
+          "statement": "必须主动证伪反证后才能把嫌疑上升为确认。",
+          "basis": "counter",
+          "rule_key": "invalid_date",
+          "row_ref": "60",
+          "evidence_refs": ["原始业务单据"],
+          "confidence": 0.16,
+          "severity": "high"
+        }
+      ],
+      "counter_hypotheses": [
+        {
+          "hypothesis_id": "a1b2c3d4e5f67890",
+          "hypothesis": "异常日期由系统换算或跨期调整正常产生，非人为改期。",
+          "verify_with": ["原始业务单据", "系统日切日志", "跨期调整审批"]
+        }
+      ],
+      "proposed_action": "escalate"
+    }
+  ],
+  "summary": {
+    "covered_candidates": 1,
+    "findings": 1,
+    "claims": 2,
+    "evidence_refs": 1,
+    "truncated": false,
+    "unknown_rule_count": 0
+  }
+}

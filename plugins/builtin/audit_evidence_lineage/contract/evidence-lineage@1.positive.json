@@ -1,0 +1,66 @@
+{
+  "contract_id": "evidence-lineage",
+  "contract_version": "1.0.0",
+  "lineage_id": "a9f8e7d6c5b4a312",
+  "release_sha256": "ab12cd34ef567890ab12cd34ef567890ab12cd34ef567890ab12cd34ef567890",
+  "truncated": false,
+  "node_count": 4,
+  "edge_count": 3,
+  "nodes": [
+    {
+      "node_id": "doc-102",
+      "node_type": "document",
+      "label": "BCSA 大案例 01 故障工单",
+      "source_ref": "file:///G:/数据/04-审计数据集与基准/PCCA-Benchmark/benchmark_cases/bigcase/BCSA/BCSA_big_01/fault_tickets.json"
+    },
+    {
+      "node_id": "ev-77",
+      "node_type": "evidence",
+      "label": "工单 102-7 温度越限记录",
+      "artifact_ref": {
+        "artifact_id": "7f3d2c1a-9b8e-4f6a-8c5d-0e1f2a3b4c5d",
+        "tenant_id": "9f8e7d6c-5b4a-4a32-8c1d-0e1f2a3b4c5d",
+        "media_type": "application/json",
+        "sha256": "b2c3d4e5f67890a1b2c3d4e5f67890a1b2c3d4e5f67890a1b2c3d4e5f67890ab",
+        "size_bytes": 158432,
+        "classification": "audit_confidential"
+      }
+    },
+    {
+      "node_id": "cl-5",
+      "node_type": "claim",
+      "label": "设备 12 过温停机导致告警",
+      "source_ref": "rule:overheat_shutdown@v3"
+    },
+    {
+      "node_id": "fi-1",
+      "node_type": "finding",
+      "label": "待复核：过温停机候选发现",
+      "source_ref": "review:human"
+    }
+  ],
+  "edges": [
+    {
+      "source_id": "ev-77",
+      "target_id": "doc-102",
+      "edge_type": "part_of"
+    },
+    {
+      "source_id": "cl-5",
+      "target_id": "ev-77",
+      "edge_type": "supports",
+      "confidence": 0.91
+    },
+    {
+      "source_id": "fi-1",
+      "target_id": "cl-5",
+      "edge_type": "derived_from",
+      "confidence": 0.8
+    }
+  ],
+  "summary": {
+    "evidence_count": 1,
+    "claim_count": 1,
+    "finding_count": 1
+  }
+}

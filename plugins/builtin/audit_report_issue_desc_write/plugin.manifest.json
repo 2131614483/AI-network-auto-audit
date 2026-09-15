@@ -1,0 +1,45 @@
+{
+ "id": "audit.report.issue-desc-write",
+ "version": "0.1.0",
+ "name": "问题描述自动撰写（契约声明）",
+ "runtime": "python",
+ "entrypoint": "plugins.builtin.audit_report_issue_desc_write.runtime:handle",
+ "capabilities": [
+  "audit.report.issue-desc-write"
+ ],
+ "inputs": {
+  "capability": "audit.report.issue-desc-write",
+  "schema": "finding-draft.schema.json",
+  "content_type": "application/json"
+ },
+ "outputs": {
+  "capability": "audit.report.issue-desc-write",
+  "schema": "report-draft.schema.json",
+  "content_type": "application/json"
+ },
+ "side_effects": "read_only",
+ "idempotency": "input_sha256 + capability_version",
+ "permissions": {
+  "data_read": [
+   "audit.report.issue-desc-write.read"
+  ],
+  "data_write": [],
+  "network": "none",
+  "secrets": []
+ },
+ "resources": {
+  "cpu": 1,
+  "memory_mb": 256,
+  "gpu": false,
+  "timeout_seconds": 300
+ },
+ "data_classification": "audit_confidential",
+ "evidence": {
+  "preserve_inputs": true,
+  "code_hash_required": true
+ },
+ "tests": {
+  "contract": "tests/contract/test_audit_report_issue_desc_write_contract.py",
+  "golden": "tests/unit/test_audit_report_issue_desc_write_runtime.py"
+ }
+}

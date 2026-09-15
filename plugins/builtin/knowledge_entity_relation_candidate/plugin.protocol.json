@@ -1,0 +1,48 @@
+{
+  "protocol_version": "1.0.0",
+  "id": "knowledge.entity-relation-candidate",
+  "version": "0.1.0",
+  "name": "知识实体关系候选抽取",
+  "description": "对已摄入的文档工件引用运行确定性实体与关系抽取，产出进入 shadow ChangeSet 的图谱候选集合；不写活跃图谱，不接触领域表。",
+  "kind": "ingestion",
+  "domains": ["knowledge", "audit"],
+  "lifecycle": "contract_only",
+  "compatibility": {"host_protocol": ">=1.0.0 <2.0.0", "adapters": ["python"], "fallback_behavior": "human_review"},
+  "capabilities": [
+    {
+      "id": "knowledge.extract.relations",
+      "summary": "从文档抽取组织/文档/通用实体候选与 7 类模板关系候选，带来源定位与置信度，输出 graph-candidate-set@1。",
+      "side_effects": "read_only",
+      "idempotency": "document_sha256 + max_entities + max_relations",
+      "inputs": [
+        {
+          "contract_id": "document-content",
+          "version": "1.0.0",
+          "format": "artifact_ref",
+          "delivery": "reference",
+          "classification": "internal",
+          "schema_ref": "document-content.schema.json"
+        }
+      ],
+      "outputs": [
+        {
+          "contract_id": "graph-candidate-set",
+          "version": "1.0.0",
+          "format": "json",
+          "delivery": "request_response",
+          "classification": "internal",
+          "schema_ref": "graph-candidate-set.schema.json"
+        }
+      ]
+    }
+  ],
+  "governance": {
+    "default_data_classification": "internal",
+    "permissions": {"data_read": ["knowledge.documents"], "data_write": [], "network": "none", "secret_refs": []},
+    "policy": {"gateway_required": true, "approval_required": false, "evidence_required": true}
+  },
+  "resources": {"cpu": 1, "memory_mb": 256, "gpu": "none", "timeout_seconds": 300},
+  "observability": {"trace_required": true, "emits": ["structured_log", "artifact_ref", "audit_event"], "health": "declared_only"},
+  "provenance": {"source_refs": ["docs/审计组网插件规划-v1.md#5.1", "docs/审计组网插件规划-v1.md#8", "docs/插件开发与接入标准-UPP-v1.0.md"]},
+  "ui": {"mode": "none"}
+}

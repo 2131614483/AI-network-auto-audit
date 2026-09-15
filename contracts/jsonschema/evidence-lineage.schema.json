@@ -1,0 +1,59 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://audit.local/contracts/evidence-lineage.schema.json",
+  "title": "EvidenceLineage",
+  "description": "证据血缘只读查询结果：证据、Claim、Finding 节点与有向边，携带发布哈希、预算截断标记与定位。结果只读，不写 Finding、不修改证据。",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["contract_id", "contract_version", "lineage_id", "release_sha256", "truncated", "nodes", "edges"],
+  "properties": {
+    "contract_id": {"const": "evidence-lineage"},
+    "contract_version": {"const": "1.0.0"},
+    "lineage_id": {"type": "string", "pattern": "^[A-Fa-f0-9]{16}$"},
+    "release_sha256": {"type": "string", "pattern": "^[A-Fa-f0-9]{64}$"},
+    "truncated": {"type": "boolean"},
+    "node_count": {"type": "integer", "minimum": 0},
+    "edge_count": {"type": "integer", "minimum": 0},
+    "nodes": {
+      "type": "array",
+      "maxItems": 100000,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["node_id", "node_type", "label"],
+        "properties": {
+          "node_id": {"type": "string", "minLength": 1, "maxLength": 255},
+          "node_type": {"type": "string", "enum": ["evidence", "claim", "finding", "artifact", "document"]},
+          "label": {"type": "string", "minLength": 1, "maxLength": 512},
+          "artifact_ref": {"$ref": "artifact-ref.schema.json"},
+          "source_ref": {"type": "string", "minLength": 1, "maxLength": 2048}
+        }
+      }
+    },
+    "edges": {
+      "type": "array",
+      "maxItems": 500000,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["source_id", "target_id", "edge_type"],
+        "properties": {
+          "source_id": {"type": "string", "minLength": 1, "maxLength": 255},
+          "target_id": {"type": "string", "minLength": 1, "maxLength": 255},
+          "edge_type": {"type": "string", "enum": ["supports", "refutes", "derived_from", "references", "part_of"]},
+          "confidence": {"type": "number", "minimum": 0, "maximum": 1}
+        }
+      }
+    },
+    "summary": {
+      "type": "object",
+      "additionalProperties": true,
+      "required": ["evidence_count", "claim_count", "finding_count"],
+      "properties": {
+        "evidence_count": {"type": "integer", "minimum": 0},
+        "claim_count": {"type": "integer", "minimum": 0},
+        "finding_count": {"type": "integer", "minimum": 0}
+      }
+    }
+  }
+}

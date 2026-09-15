@@ -1,0 +1,110 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://audit.local/contracts/remediation-proposal.schema.json",
+  "title": "RemediationProposal",
+  "description": "AIOps 处置预案草稿（aiops.playbook-proposer）：从根因候选选择并排序的处置预案集合——含预案动作步骤、canary 与回滚护栏、验证信号；仅只读草稿，不触发任何执行，约束强制 no_shell / no_change_request / no_auto_execution / requires_human_approval。",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["contract_id", "contract_version", "proposal_id", "rca_candidates_sha256", "status", "reference_time", "summary", "constraints", "proposals"],
+  "properties": {
+    "contract_id": {"const": "remediation-proposal"},
+    "contract_version": {"const": "1.0.0"},
+    "proposal_id": {"type": "string", "pattern": "^[A-Fa-f0-9]{16}$"},
+    "rca_candidates_sha256": {"type": "string", "pattern": "^[A-Fa-f0-9]{64}$"},
+    "status": {"enum": ["proposed"]},
+    "reference_time": {"type": "string", "format": "date-time"},
+    "summary": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["candidates_processed", "playbook_count", "canary_suggested", "rollback_available", "truncated"],
+      "properties": {
+        "candidates_processed": {"type": "integer", "minimum": 0},
+        "playbook_count": {"type": "integer", "minimum": 0},
+        "canary_suggested": {"type": "boolean"},
+        "rollback_available": {"type": "boolean"},
+        "truncated": {"type": "boolean"}
+      }
+    },
+    "incident_refs": {"type": "array", "uniqueItems": true, "items": {"type": "string", "minLength": 1, "maxLength": 255}},
+    "constraints": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["no_shell", "no_change_request", "no_auto_execution", "requires_human_approval"],
+      "properties": {
+        "no_shell": {"const": true},
+        "no_change_request": {"const": true},
+        "no_auto_execution": {"const": true},
+        "requires_human_approval": {"const": true}
+      }
+    },
+    "evidence_refs": {"type": "array", "uniqueItems": true, "items": {"type": "string", "minLength": 1, "maxLength": 255}},
+    "proposals": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["playbook_id", "title", "root_cause_ref", "candidate_rank", "score", "confidence", "match_terms", "preconditions", "actions", "canary", "rollback", "verification"],
+        "properties": {
+          "playbook_id": {"type": "string", "minLength": 1, "maxLength": 255},
+          "title": {"type": "string", "minLength": 1, "maxLength": 255},
+          "root_cause_ref": {"type": "string", "minLength": 1, "maxLength": 255},
+          "candidate_rank": {"type": "integer", "minimum": 1},
+          "score": {"type": "number", "minimum": 0, "maximum": 1},
+          "confidence": {"type": "number", "minimum": 0, "maximum": 1},
+          "match_terms": {"type": "array", "minItems": 1, "items": {"type": "string", "minLength": 1, "maxLength": 255}},
+          "preconditions": {"type": "array", "items": {"type": "string", "minLength": 1, "maxLength": 512}},
+          "actions": {
+            "type": "array",
+            "minItems": 1,
+            "items": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": ["step", "action_type", "target", "params", "verify"],
+              "properties": {
+                "step": {"type": "integer", "minimum": 1},
+                "action_type": {"enum": ["probe", "drain", "restart", "reload", "scale", "other"]},
+                "target": {"type": "string", "minLength": 1, "maxLength": 255},
+                "params": {"type": "object", "additionalProperties": true},
+                "verify": {"type": "string", "minLength": 1, "maxLength": 512}
+              }
+            }
+          },
+          "canary": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["suggested", "scope", "ratio", "watch_minutes", "traffic_criteria", "abort_conditions"],
+            "properties": {
+              "suggested": {"type": "boolean"},
+              "scope": {"enum": ["single_node", "low_traffic"]},
+              "ratio": {"type": "number", "minimum": 0, "maximum": 1},
+              "watch_minutes": {"type": "integer", "minimum": 1},
+              "traffic_criteria": {"type": "array", "minItems": 1, "items": {"type": "string", "minLength": 1, "maxLength": 512}},
+              "abort_conditions": {"type": "array", "minItems": 1, "items": {"type": "string", "minLength": 1, "maxLength": 512}}
+            }
+          },
+          "rollback": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["available", "strategy", "criteria", "auto_rollback"],
+            "properties": {
+              "available": {"type": "boolean"},
+              "strategy": {"enum": ["restart_previous", "scale_previous", "revert_config", "none"]},
+              "criteria": {"type": "array", "minItems": 1, "items": {"type": "string", "minLength": 1, "maxLength": 512}},
+              "auto_rollback": {"const": false}
+            }
+          },
+          "verification": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["expected_signals", "probes", "watch_minutes"],
+            "properties": {
+              "expected_signals": {"type": "array", "minItems": 1, "items": {"type": "string", "minLength": 1, "maxLength": 512}},
+              "probes": {"type": "array", "minItems": 1, "items": {"type": "string", "minLength": 1, "maxLength": 255}},
+              "watch_minutes": {"type": "integer", "minimum": 1}
+            }
+          }
+        }
+      }
+    }
+  }
+}

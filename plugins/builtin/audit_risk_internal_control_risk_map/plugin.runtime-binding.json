@@ -1,0 +1,18 @@
+{
+  "schema_version": "1.0.0",
+  "plugin": {
+    "id": "audit.risk.internal-control-risk-map",
+    "version": "0.1.0",
+    "sha256": "57098726010ddc4f70b99e9421c715e11d481aa980887b142d0bd5226de68c2f"
+  },
+  "protocol": {
+    "id": "audit.risk.internal-control-risk-map",
+    "version": "0.1.0",
+    "sha256": "f509c36b181a005936f564ee91c3db440fc2f8ae44d9be3e06efa234d90772c4"
+  },
+  "execution_mode": "isolated_subprocess",
+  "capabilities": [
+    "audit.risk.internal-control-risk-map"
+  ],
+  "status": "verified"
+}

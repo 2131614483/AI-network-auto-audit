@@ -1,0 +1,32 @@
+# 可选的环境适配器：开发与测试的默认路径是本机原生 PostgreSQL 16，见 README
+# 《首次安装》。本文件不得成为应用代码的依赖。
+
+services:
+  postgres:
+    image: pgvector/pgvector:pg16
+    container_name: audit-network-postgres
+    environment:
+      POSTGRES_DB: audit_network
+      POSTGRES_USER: audit_migrator
+      # 仅本机开发用；与 .env.example、scripts/ 默认值、CI 保持一致。
+      POSTGRES_PASSWORD: admin
+    ports:
+      # 映射到 54329 而不是 5432，避免与本机原生 PostgreSQL 抢端口。
+      # 走容器时 DATABASE_URL 要用 54329：
+      #   postgresql://audit_app:admin@localhost:54329/audit_network
+      - "54329:5432"
+    volumes:
+      - audit_network_pgdata:/var/lib/postgresql/data
+      # 让容器自己建好扩展、角色和测试库。缺了这一步，仅启动容器是**不能迁移**的：
+      # 迁移 0001 会在 `permission denied to create extension "vector"` 上失败。
+      # scripts/init-native-postgres.sql 不能代替它——那个脚本假定库已存在，
+      # 也刻意不设置密码。
+      - ./scripts/init-docker-postgres.sql:/docker-entrypoint-initdb.d/10-init.sql:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U audit_migrator -d audit_network"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+
+volumes:
+  audit_network_pgdata:

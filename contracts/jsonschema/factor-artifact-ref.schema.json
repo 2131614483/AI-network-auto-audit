@@ -1,0 +1,46 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://audit.local/contracts/factor-artifact-ref.schema.json",
+  "title": "FactorArtifactRef",
+  "description": "因子计算结果工件引用：不可变因子包哈希、逐因子统计与来源引用；因子仅用于只读分析，不触发交易或回测写入。",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["contract_id", "contract_version", "snapshot_sha256", "reference_time", "factor_pack_sha256", "summary", "factors"],
+  "properties": {
+    "contract_id": {"const": "factor-artifact-ref"},
+    "contract_version": {"const": "1.0.0"},
+    "snapshot_sha256": {"type": "string", "pattern": "^[A-Fa-f0-9]{64}$"},
+    "reference_time": {"type": "string", "format": "date-time"},
+    "factor_pack_sha256": {"type": "string", "pattern": "^[A-Fa-f0-9]{64}$"},
+    "summary": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["factors_computed", "series_points"],
+      "properties": {
+        "factors_computed": {"type": "integer", "minimum": 0},
+        "series_points": {"type": "integer", "minimum": 0},
+        "truncated": {"type": "boolean"}
+      }
+    },
+    "factors": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["factor_id", "name", "value", "n", "series_ref"],
+        "properties": {
+          "factor_id": {"type": "string", "enum": ["returns", "volatility", "momentum", "zscore", "drawdown", "volume_zscore"]},
+          "name": {"type": "string", "minLength": 1, "maxLength": 255},
+          "value": {"type": "number"},
+          "n": {"type": "integer", "minimum": 1},
+          "mean": {"type": "number"},
+          "stdev": {"type": "number"},
+          "min": {"type": "number"},
+          "max": {"type": "number"},
+          "series_ref": {"type": "string", "minLength": 1, "maxLength": 2048},
+          "source_refs": {"type": "array", "items": {"type": "string", "minLength": 1, "maxLength": 2048}}
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,19 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://audit.local/contracts/market-snapshot-ref.schema.json",
+  "title": "MarketSnapshotRef",
+  "description": "市场快照 CSV 工件引用：不可变哈希、参考时间、新鲜度预算、点时门与数据频率；内容不嵌入控制面消息。",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["contract_id", "contract_version", "artifact", "reference_time", "max_freshness_hours"],
+  "properties": {
+    "contract_id": {"const": "market-snapshot-ref"},
+    "contract_version": {"const": "1.0.0"},
+    "artifact": {"$ref": "artifact-ref.schema.json"},
+    "reference_time": {"type": "string", "format": "date-time"},
+    "max_freshness_hours": {"type": "number", "minimum": 1, "maximum": 8760},
+    "point_in_time": {"type": "boolean"},
+    "data_frequency": {"type": "string", "enum": ["minute", "hour", "day"]},
+    "expected_columns": {"type": "array", "items": {"type": "string", "minLength": 1, "maxLength": 255}}
+  }
+}

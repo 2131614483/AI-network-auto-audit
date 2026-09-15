@@ -1,0 +1,18 @@
+{
+  "schema_version": "1.0.0",
+  "plugin": {
+    "id": "aiops.alert-triage",
+    "version": "0.1.0",
+    "sha256": "fa2865ad5f634db38fc1690712c9580e6146e826d59fbfdc726d569ddf609daf"
+  },
+  "protocol": {
+    "id": "aiops.alert-triage",
+    "version": "0.1.0",
+    "sha256": "17702e99b10326aa41d265989ab1c526e2371fc5f1a0421cfe66d678f43f9dc2"
+  },
+  "execution_mode": "isolated_subprocess",
+  "capabilities": [
+    "aiops.alert.triage"
+  ],
+  "status": "verified"
+}

@@ -1,0 +1,18 @@
+{
+  "schema_version": "1.0.0",
+  "plugin": {
+    "id": "audit.plan.sample-size-compute",
+    "version": "0.1.0",
+    "sha256": "b49e134908a7742bfa943350e24600d3fd6343e465880420dc68851762c9e54b"
+  },
+  "protocol": {
+    "id": "audit.plan.sample-size-compute",
+    "version": "0.1.0",
+    "sha256": "60cf9fe089036d3318cff68ac0987c6d3ca41f30f5a87ca4d91b8cc0439ef909"
+  },
+  "execution_mode": "isolated_subprocess",
+  "capabilities": [
+    "audit.plan.sample-size-compute"
+  ],
+  "status": "verified"
+}

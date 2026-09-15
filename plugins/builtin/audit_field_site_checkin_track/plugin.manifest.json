@@ -1,0 +1,45 @@
+{
+ "id": "audit.field.site-checkin-track",
+ "version": "0.1.0",
+ "name": "现场签到与轨迹（契约声明）",
+ "runtime": "python",
+ "entrypoint": "plugins.builtin.audit_field_site_checkin_track.runtime:handle",
+ "capabilities": [
+  "audit.field.site-checkin-track"
+ ],
+ "inputs": {
+  "capability": "audit.field.site-checkin-track",
+  "schema": "artifact-ref.schema.json",
+  "content_type": "application/json"
+ },
+ "outputs": {
+  "capability": "audit.field.site-checkin-track",
+  "schema": "metric-series.schema.json",
+  "content_type": "application/json"
+ },
+ "side_effects": "read_only",
+ "idempotency": "input_sha256 + capability_version",
+ "permissions": {
+  "data_read": [
+   "audit.field.site-checkin-track.read"
+  ],
+  "data_write": [],
+  "network": "none",
+  "secrets": []
+ },
+ "resources": {
+  "cpu": 1,
+  "memory_mb": 256,
+  "gpu": false,
+  "timeout_seconds": 300
+ },
+ "data_classification": "audit_confidential",
+ "evidence": {
+  "preserve_inputs": true,
+  "code_hash_required": true
+ },
+ "tests": {
+  "contract": "tests/contract/test_audit_field_site_checkin_track_contract.py",
+  "golden": "tests/unit/test_audit_field_site_checkin_track_runtime.py"
+ }
+}

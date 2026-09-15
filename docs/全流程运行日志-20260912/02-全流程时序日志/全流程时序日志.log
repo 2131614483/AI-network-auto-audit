@@ -1,0 +1,636 @@
+====================================================================================================
+全流程时序日志   run_id=416b0efc-2f18-4c9a-841f-0a1f4370c7c2
+plan_key=plan-ai-fund-fraud-100   节点=100   成功=100   失败=0
+trace_id=ff164930-89f1-47f2-8ff4-8bbc6898c8a2
+====================================================================================================
+
+【阅读说明】每个节点一块；「输入」列出该插件实际收到的数据从哪来、多大、sha256 前 16 位；
+          「输出」是该插件真正产出的中间数据（完整 JSON 见 03-逐插件详情/）；
+          「状态」是 pending→running→succeeded 的落库事实。
+
+────────────────────────────────────────────────────────────────────────────────────────────────────
+[  1/100] asset-check-001   能力=audit.field.asset-check   插件=audit.field.asset-check
+        开始 11:33:38.748   结束 11:33:38.907   状态 succeeded
+        输入 asset-input ← seed:asset-input  sha256=4cbca1875e354c01…
+        输出 asset-result  473B summary={"checked_columns": 2, "checked_rows": 2, "missing_values": 0, "valid": false}
+────────────────────────────────────────────────────────────────────────────────────────────────────
+[  2/100] audit-log-001   能力=audit.field.audit-log   插件=audit.field.audit-log
+        开始 11:33:38.966   结束 11:33:39.101   状态 succeeded
+        输入 log-event ← seed:log-event  sha256=eb94d733e7485dfe…
+        输出 audit-log-set  735B
+────────────────────────────────────────────────────────────────────────────────────────────────────
+[  3/100] biz-standardize-001   能力=audit.foundation.biz-standardize   插件=audit.foundation.biz-standardize
+        开始 11:33:39.149   结束 11:33:39.279   状态 succeeded
+        输入 raw-biz-set ← seed:raw-biz-set  sha256=416e9455ded74647…
+        输出 standard-biz-set  435B summary={"checked_columns": 2, "checked_rows": 2, "missing_values": 0, "valid": true}
+────────────────────────────────────────────────────────────────────────────────────────────────────
+[  4/100] confirm-letter-001   能力=audit.field.confirm-letter   插件=audit.field.confirm-letter
+        开始 11:33:39.327   结束 11:33:39.458   状态 succeeded
+        输入 confirm-input ← seed:confirm-input  sha256=f53bf398a99255b9…
+        输出 confirm-result  726B
+────────────────────────────────────────────────────────────────────────────────────────────────────
+[  5/100] cross-dept-inquiry-001   能力=audit.field.cross-dept-inquiry   插件=audit.field.cross-dept-inquiry
+        开始 11:33:39.506   结束 11:33:39.637   状态 succeeded
+        输入 inquiry-request ← seed:inquiry-request  sha256=7021c66cb51bfd2b…
+        输出 inquiry-result  1000B
+────────────────────────────────────────────────────────────────────────────────────────────────────
+[  6/100] data-encrypt-001   能力=audit.foundation.data-encrypt   插件=audit.foundation.data-encrypt
+        开始 11:33:39.686   结束 11:33:39.840   状态 succeeded
+        输入 encrypt-request ← seed:encrypt-request  sha256=a7a439bf483f757e…
+        输出 encrypted-ref  424B
+────────────────────────────────────────────────────────────────────────────────────────────────────
+[  7/100] data-mask-001   能力=audit.foundation.data-mask   插件=audit.foundation.data-mask
+        开始 11:33:39.892   结束 11:33:40.182   状态 succeeded
+        输入 mask-request ← seed:mask-request  sha256=a5c1beafe92f6644…
+        输出 masked-set  406B
+────────────────────────────────────────────────────────────────────────────────────────────────────
+[  8/100] demand-collect-001   能力=audit.mandate.demand-collect   插件=audit.mandate.demand-collect
+        开始 11:33:40.227   结束 11:33:40.346   状态 succeeded
+        输入 demand-input ← seed:demand-input  sha256=97c6776be079fffb…
+        输出 demand-set  780B
+────────────────────────────────────────────────────────────────────────────────────────────────────
+[  9/100] evidence-photo-001   能力=audit.field.evidence-photo   插件=audit.field.evidence-photo
+        开始 11:33:40.395   结束 11:33:40.518   状态 succeeded
+        输入 photo-input ← seed:photo-input  sha256=a7720a2c3f2d09cb…
+        输出 photo-evidence  952B
+────────────────────────────────────────────────────────────────────────────────────────────────────
+[ 10/100] evidence-archive-001   能力=audit.evidence.evidence-archive   插件=audit.evidence.evidence-archive
+        开始 11:33:40.566   结束 11:33:40.688   状态 succeeded
+        输入 evidence-input ← evidence-photo-001:photo-evidence  sha256=61d7f105cbd77a80…
+        输出 archived-evidence  488B
+────────────────────────────────────────────────────────────────────────────────────────────────────
+[ 11/100] extension-approve-001   能力=audit.field.extension-approve   插件=audit.field.extension-approve
+        开始 11:33:40.733   结束 11:33:40.861   状态 succeeded
+        输入 extension-request ← seed:extension-request  sha256=88b85d8cde51d1a5…
+        输出 extension-decision  642B
+────────────────────────────────────────────────────────────────────────────────────────────────────
+[ 12/100] finance-clean-001   能力=audit.foundation.finance-clean   插件=audit.foundation.finance-clean
+        开始 11:33:40.910   结束 11:33:41.037   状态 succeeded
+        输入 raw-finance-set ← seed:raw-finance-set  sha256=79a9c4f07b4e5ec3…
+        输出 clean-finance-set  17620B summary={"duplicates_removed": 3, "input_rows": 96, "invalid_dates": 1, "kept_rows": 93, "missing_amounts": 0, "unbalanced_entri
+────────────────────────────────────────────────────────────────────────────────────────────────────
+[ 13/100] finance-anomaly-alert-001   能力=audit.risk.finance-anomaly-alert   插件=audit.risk.finance-anomaly-alert
+        开始 11:33:41.086   结束 11:33:41.219   状态 succeeded
+        输入 clean-finance-set ← finance-clean-001:clean-finance-set  sha256=e5b3c6fb99105af8…
+        输出 finance-anomaly-set  5037B summary={"candidate_count": 15, "rules": ["duplicate_row", "invalid_date", "unbalanced_entry", "outlier_amount", "round_amount"]
+────────────────────────────────────────────────────────────────────────────────────────────────────
+[ 14/100] fraud-risk-match-001   能力=audit.risk.fraud-risk-match   插件=audit.risk.fraud-risk-match
+        开始 11:33:41.272   结束 11:33:41.406   状态 succeeded
+        输入 fraud-input ← seed:fraud-input  sha256=c845d0b37c61513d…
+        输出 fraud-risk-set  383B summary={"candidates": 1}
+────────────────────────────────────────────────────────────────────────────────────────────────────
+[ 15/100] fulltext-search-001   能力=audit.foundation.fulltext-search   插件=audit.foundation.fulltext-search
+        开始 11:33:41.453   结束 11:33:41.709   状态 succeeded
+        输入 search-query ← seed:search-query  sha256=a0a9dd14665f72d8…
+        输出 search-hits  180B
+────────────────────────────────────────────────────────────────────────────────────────────────────
+[ 16/100] industry-risk-benchmark-001   能力=audit.risk.industry-risk-benchmark   插件=audit.risk.industry-risk-benchmark
+        开始 11:33:41.760   结束 11:33:41.887   状态 succeeded
+        输入 industry-benchmark ← seed:industry-benchmark  sha256=904a5e35dd97513e…
+        输出 industry-risk-set  515B summary={"candidates": 2}
+────────────────────────────────────────────────────────────────────────────────────────────────────
+[ 17/100] internal-control-risk-map-001   能力=audit.risk.internal-control-risk-map   插件=audit.risk.internal-control-risk-map
+        开始 11:33:41.936   结束 11:33:42.055   状态 succeeded
+        输入 ic-flow ← seed:ic-flow  sha256=cec32fcd320df85b…
+        输出 ic-risk-set  549B summary={"candidates": 2}
+────────────────────────────────────────────────────────────────────────────────────────────────────
+[ 18/100] interview-record-001   能力=audit.field.interview-record   插件=audit.field.interview-record
+        开始 11:33:42.099   结束 11:33:42.210   状态 succeeded
+        输入 interview-input ← seed:interview-input  sha256=65c5f77b2362153d…
+        输出 interview-note  575B
+────────────────────────────────────────────────────────────────────────────────────────────────────
+[ 19/100] inventory-count-001   能力=audit.field.inventory-count   插件=audit.field.inventory-count
+        开始 11:33:42.255   结束 11:33:42.373   状态 succeeded
+        输入 inventory-input ← seed:inventory-input  sha256=6673c26ac9b8db48…
+        输出 inventory-result  437B summary={"checked_columns": 2, "checked_rows": 2, "missing_values": 0, "valid": false}
+────────────────────────────────────────────────────────────────────────────────────────────────────
+[ 20/100] issue-trend-analysis-001   能力=audit.govern.issue-trend-analysis   插件=audit.govern.issue-trend-analysis
+        开始 11:33:42.420   结束 11:33:42.534   状态 succeeded
+        输入 history-issue-set ← seed:history-issue-set  sha256=e86d65284cd61ad1…
+        输出 trend-report  400B summary={"high": 2, "top_categories": [{"category": "资金管理", "count": 2}, {"category": "采购管理", "count": 1}, {"category": "内控缺陷", 
+────────────────────────────────────────────────────────────────────────────────────────────────────
+[ 21/100] lineage-track-001   能力=audit.foundation.lineage-track   插件=audit.foundation.lineage-track
+        开始 11:33:42.579   结束 11:33:42.692   状态 succeeded
+        输入 lineage-query ← seed:lineage-query  sha256=f55fb7cabb97f672…
+        输出 lineage-graph  183B
+────────────────────────────────────────────────────────────────────────────────────────────────────
+[ 22/100] macro-policy-risk-scan-001   能力=audit.risk.macro-policy-risk-scan   插件=audit.risk.macro-policy-risk-scan
+        开始 11:33:42.737   结束 11:33:42.855   状态 succeeded
+        输入 policy-input ← seed:policy-input  sha256=789bd55c3c60e47e…
+        输出 policy-risk-set  336B summary={"candidates": 1}
+────────────────────────────────────────────────────────────────────────────────────────────────────
+[ 23/100] master-mapping-001   能力=audit.foundation.master-mapping   插件=audit.foundation.master-mapping
+        开始 11:33:42.899   结束 11:33:43.015   状态 succeeded
+        输入 master-source ← seed:master-source  sha256=02c22c2c5b61024c…
+        输出 master-map  401B summary={"checked_columns": 1, "checked_rows": 1, "missing_values": 0, "valid": true}
+────────────────────────────────────────────────────────────────────────────────────────────────────
+[ 24/100] material-submit-001   能力=audit.mandate.material-submit   插件=audit.mandate.material-submit
+        开始 11:33:43.067   结束 11:33:43.183   状态 succeeded
+        输入 notice-accept ← seed:notice-accept  sha256=396b164e6a70aff6…
+        输出 submitted-material  856B
+────────────────────────────────────────────────────────────────────────────────────────────────────
+[ 25/100] material-precheck-001   能力=audit.mandate.material-precheck   插件=audit.mandate.material-precheck
+        开始 11:33:43.229   结束 11:33:43.346   状态 succeeded
+        输入 submitted-material ← material-submit-001:submitted-material  sha256=fe21194f858c9d1a…
+        输出 precheck-report  638B summary={"checked_columns": 5, "checked_rows": 2, "missing_values": 3, "valid": false}
+────────────────────────────────────────────────────────────────────────────────────────────────────
+[ 26/100] meeting-minutes-001   能力=audit.field.meeting-minutes   插件=audit.field.meeting-minutes
+        开始 11:33:43.392   结束 11:33:43.509   状态 succeeded
+        输入 meeting-audio ← seed:meeting-audio  sha256=13122ecb5f493314…
+        输出 meeting-minutes  529B
+────────────────────────────────────────────────────────────────────────────────────────────────────
+[ 27/100] metadata-manage-001   能力=audit.foundation.metadata-manage   插件=audit.foundation.metadata-manage
+        开始 11:33:43.552   结束 11:33:43.669   状态 succeeded
+        输入 metadata-query ← seed:metadata-query  sha256=4e2057cee9dbc091…
+        输出 metadata-dict  400B summary={"checked_columns": 1, "checked_rows": 1, "missing_values": 0, "valid": true}
+────────────────────────────────────────────────────────────────────────────────────────────────────
+[ 28/100] method-distill-001   能力=audit.govern.method-distill   插件=audit.govern.method-distill
+        开始 11:33:43.713   结束 11:33:43.828   状态 succeeded
+        输入 project-review-input ← seed:project-review-input  sha256=2e9141d5d3a395a5…
+        输出 method-library  375B
+────────────────────────────────────────────────────────────────────────────────────────────────────
+[ 29/100] metric-compute-001   能力=audit.foundation.metric-compute   插件=audit.foundation.metric-compute
+        开始 11:33:43.869   结束 11:33:43.987   状态 succeeded
+        输入 metric-input ← seed:metric-input  sha256=79a9c4f07b4e5ec3…
+        输出 metric-output  1276B
+────────────────────────────────────────────────────────────────────────────────────────────────────
+[ 30/100] multi-source-collect-001   能力=audit.foundation.multi-source-collect   插件=audit.foundation.multi-source-collect
+        开始 11:33:44.033   结束 11:33:44.147   状态 succeeded
+        输入 audit-source-request ← seed:audit-source-request  sha256=776fb24e373b2504…
+        输出 audit-source-set  325B
+────────────────────────────────────────────────────────────────────────────────────────────────────
+[ 31/100] nlp-process-001   能力=audit.foundation.nlp-process   插件=audit.foundation.nlp-process
+        开始 11:33:44.194   结束 11:33:44.310   状态 succeeded
+        输入 nlp-input ← seed:nlp-input  sha256=870e4d26ab83ef49…
+        输出 nlp-output  734B summary="审计发现异常。供应商重复入账三次。"
+────────────────────────────────────────────────────────────────────────────────────────────────────
+[ 32/100] ocr-extract-001   能力=audit.foundation.ocr-extract   插件=audit.foundation.ocr-extract
+        开始 11:33:44.353   结束 11:33:44.490   状态 succeeded
+        输入 ocr-image ← seed:ocr-image  sha256=39116e923fa1ab51…
+        输出 ocr-text  573B
+────────────────────────────────────────────────────────────────────────────────────────────────────
+[ 33/100] permission-control-001   能力=audit.foundation.permission-control   插件=audit.foundation.permission-control
+        开始 11:33:44.535   结束 11:33:44.649   状态 succeeded
+        输入 access-request ← seed:access-request  sha256=c3ba0630ef63fab2…
+        输出 access-decision  416B summary={"checked_columns": 1, "checked_rows": 1, "missing_values": 0, "valid": true}
+────────────────────────────────────────────────────────────────────────────────────────────────────
+[ 34/100] plan-version-control-001   能力=audit.plan.plan-version-control   插件=audit.plan.plan-version-control
+        开始 11:33:44.692   结束 11:33:44.816   状态 succeeded
+        输入 plan-change ← seed:plan-change  sha256=dab71ea879f76998…
+        输出 plan-version  619B
+────────────────────────────────────────────────────────────────────────────────────────────────────
+[ 35/100] process-gap-detect-001   能力=audit.risk.process-gap-detect   插件=audit.risk.process-gap-detect
+        开始 11:33:44.861   结束 11:33:44.974   状态 succeeded
+        输入 process-input ← seed:process-input  sha256=25e7853bb94114a1…
+        输出 process-gap-set  336B summary={"candidates": 1}
+────────────────────────────────────────────────────────────────────────────────────────────────────
+[ 36/100] progress-report-001   能力=audit.field.progress-report   插件=audit.field.progress-report
+        开始 11:33:45.017   结束 11:33:45.129   状态 succeeded
+        输入 daily-progress ← seed:daily-progress  sha256=138e9579a8f066ee…
+        输出 progress-daily  227B
+────────────────────────────────────────────────────────────────────────────────────────────────────
+[ 37/100] project-quality-score-001   能力=audit.govern.project-quality-score   插件=audit.govern.project-quality-score
+        开始 11:33:45.275   结束 11:33:45.386   状态 succeeded
+        输入 project-flow-input ← seed:project-flow-input  sha256=b125a321c0f122de…
+        输出 quality-score  287B summary={"passed": 3, "score": 0.75, "total": 4}
+────────────────────────────────────────────────────────────────────────────────────────────────────
+[ 38/100] quality-check-001   能力=audit.foundation.quality-check   插件=audit.foundation.quality-check
+        开始 11:33:45.430   结束 11:33:45.545   状态 succeeded
+        输入 quality-input ← seed:quality-input  sha256=79a9c4f07b4e5ec3…
+        输出 quality-report  1141B summary={"checked_columns": 6, "checked_rows": 96, "duplicate_timestamps": 3, "first_timestamp": "2025-12-31T00:00:00+00:00", "l
+────────────────────────────────────────────────────────────────────────────────────────────────────
+[ 39/100] risk-matrix-build-001   能力=audit.risk.risk-matrix-build   插件=audit.risk.risk-matrix-build
+        开始 11:33:45.587   结束 11:33:45.703   状态 succeeded
+        输入 ic-risk-set ← internal-control-risk-map-001:ic-risk-set  sha256=a0c6a8727d6cfd3f…
+        输入 fraud-risk-set ← fraud-risk-match-001:fraud-risk-set  sha256=6b8f099b114bde5f…
+        输入 policy-risk-set ← macro-policy-risk-scan-001:policy-risk-set  sha256=4ce68612d0b0f716…
+        输入 process-gap-set ← process-gap-detect-001:process-gap-set  sha256=c642a31c39500951…
+        输入 industry-risk-set ← industry-risk-benchmark-001:industry-risk-set  sha256=07359379172e2546…
+        输入 finance-anomaly-set ← finance-anomaly-alert-001:finance-anomaly-set  sha256=84f13a7697c37159…
+        输出 risk-matrix  8090B
+────────────────────────────────────────────────────────────────────────────────────────────────────
+[ 40/100] risk-level-assign-001   能力=audit.risk.risk-level-assign   插件=audit.risk.risk-level-assign
+        开始 11:33:45.749   结束 11:33:45.868   状态 succeeded
+        输入 risk-matrix ← risk-matrix-build-001:risk-matrix  sha256=f29681f458c8844c…
+        输出 risk-level  3759B
+────────────────────────────────────────────────────────────────────────────────────────────────────
+[ 41/100] high-risk-area-locate-001   能力=audit.risk.high-risk-area-locate   插件=audit.risk.high-risk-area-locate
+        开始 11:33:45.911   结束 11:33:46.024   状态 succeeded
+        输入 risk-level ← risk-level-assign-001:risk-level  sha256=8fe43612aa1044c2…
+        输出 high-risk-area  2032B
+────────────────────────────────────────────────────────────────────────────────────────────────────
+[ 42/100] risk-advice-generate-001   能力=audit.risk.risk-advice-generate   插件=audit.risk.risk-advice-generate
+        开始 11:33:46.071   结束 11:33:46.181   状态 succeeded
+        输入 high-risk-area ← high-risk-area-locate-001:high-risk-area  sha256=b9351b02e6733282…
+        输出 risk-advice-set  467B
+────────────────────────────────────────────────────────────────────────────────────────────────────
+[ 43/100] project-scheme-build-001   能力=audit.plan.project-scheme-build   插件=audit.plan.project-scheme-build
+        开始 11:33:46.224   结束 11:33:46.336   状态 succeeded
+        输入 high-risk-area ← high-risk-area-locate-001:high-risk-area  sha256=b9351b02e6733282…
+        输入 risk-advice-set ← risk-advice-generate-001:risk-advice-set  sha256=17bc556a3a9ba7e3…
+        输出 project-scheme  1660B
+────────────────────────────────────────────────────────────────────────────────────────────────────
+[ 44/100] program-template-match-001   能力=audit.plan.program-template-match   插件=audit.plan.program-template-match
+        开始 11:33:46.382   结束 11:33:46.493   状态 succeeded
+        输入 scheme-request ← project-scheme-build-001:project-scheme  sha256=f2ae1463aaaeb0e0…
+        输出 program-template  2871B
+────────────────────────────────────────────────────────────────────────────────────────────────────
+[ 45/100] risk-heatmap-draw-001   能力=audit.risk.risk-heatmap-draw   插件=audit.risk.risk-heatmap-draw
+        开始 11:33:46.536   结束 11:33:46.649   状态 succeeded
+        输入 risk-level ← risk-level-assign-001:risk-level  sha256=8fe43612aa1044c2…
+        输出 risk-heatmap  555B
+────────────────────────────────────────────────────────────────────────────────────────────────────
+[ 46/100] rule-engine-001   能力=audit.foundation.rule-engine   插件=audit.foundation.rule-engine
+        开始 11:33:46.693   结束 11:33:46.803   状态 succeeded
+        输入 rule-input ← seed:rule-input  sha256=7c3236ce3875131f…
+        输出 rule-evaluation  535B summary={"hits": 3, "rows": 96, "rules": 1}
+────────────────────────────────────────────────────────────────────────────────────────────────────
+[ 47/100] rule-iteration-001   能力=audit.govern.rule-iteration   插件=audit.govern.rule-iteration
+        开始 11:33:46.849   结束 11:33:46.959   状态 succeeded
+        输入 trend-report ← issue-trend-analysis-001:trend-report  sha256=a4b9b1d8ef3881bd…
+        输出 updated-rule-pack  585B summary={"checked_columns": 3, "checked_rows": 3, "missing_values": 0, "valid": true}
+────────────────────────────────────────────────────────────────────────────────────────────────────
+[ 48/100] sampling-select-001   能力=audit.plan.sampling-select   插件=audit.plan.sampling-select
+        开始 11:33:47.000   结束 11:33:47.112   状态 succeeded
+        输入 sampling-input ← seed:sampling-input  sha256=ed3d7f62dd799c49…
+        输出 sampling-plan  388B summary={"checked_columns": 2, "checked_rows": 4, "missing_values": 0, "valid": true}
+────────────────────────────────────────────────────────────────────────────────────────────────────
+[ 49/100] sample-size-compute-001   能力=audit.plan.sample-size-compute   插件=audit.plan.sample-size-compute
+        开始 11:33:47.155   结束 11:33:47.270   状态 succeeded
+        输入 sampling-plan ← sampling-select-001:sampling-plan  sha256=7d654f273bbdd7a2…
+        输出 sample-size  223B
+────────────────────────────────────────────────────────────────────────────────────────────────────
+[ 50/100] site-checkin-track-001   能力=audit.field.site-checkin-track   插件=audit.field.site-checkin-track
+        开始 11:33:47.316   结束 11:33:47.432   状态 succeeded
+        输入 checkin-input ← seed:checkin-input  sha256=e448659497161535…
+        输出 checkin-log  271B
+────────────────────────────────────────────────────────────────────────────────────────────────────
+[ 51/100] strategy-align-001   能力=audit.mandate.strategy-align   插件=audit.mandate.strategy-align
+        开始 11:33:47.475   结束 11:33:47.586   状态 succeeded
+        输入 demand-set ← demand-collect-001:demand-set  sha256=87b4c984596d7ef7…
+        输出 aligned-demand  1040B
+────────────────────────────────────────────────────────────────────────────────────────────────────
+[ 52/100] annual-propose-001   能力=audit.mandate.annual-propose   插件=audit.mandate.annual-propose
+        开始 11:33:47.629   结束 11:33:47.745   状态 succeeded
+        输入 aligned-demand ← strategy-align-001:aligned-demand  sha256=efb7c446d566d88d…
+        输出 proposal-set  600B
+────────────────────────────────────────────────────────────────────────────────────────────────────
+[ 53/100] proposal-score-001   能力=audit.mandate.proposal-score   插件=audit.mandate.proposal-score
+        开始 11:33:47.788   结束 11:33:47.908   状态 succeeded
+        输入 proposal-set ← annual-propose-001:proposal-set  sha256=b3680e513232c205…
+        输出 scored-proposal  282B
+────────────────────────────────────────────────────────────────────────────────────────────────────
+[ 54/100] project-library-001   能力=audit.mandate.project-library   插件=audit.mandate.project-library
+        开始 11:33:47.951   结束 11:33:48.061   状态 succeeded
+        输入 scored-proposal ← proposal-score-001:scored-proposal  sha256=b8e66b9a2197141e…
+        输出 project-snapshot  465B summary={"checked_columns": 3, "checked_rows": 2, "missing_values": 0, "valid": true}
+────────────────────────────────────────────────────────────────────────────────────────────────────
+[ 55/100] notice-generate-001   能力=audit.mandate.notice-generate   插件=audit.mandate.notice-generate
+        开始 11:33:48.104   结束 11:33:48.215   状态 succeeded
+        输入 project-snapshot ← project-library-001:project-snapshot  sha256=74403cf3b347369d…
+        输出 audit-notice  366B
+────────────────────────────────────────────────────────────────────────────────────────────────────
+[ 56/100] priority-rank-001   能力=audit.mandate.priority-rank   插件=audit.mandate.priority-rank
+        开始 11:33:48.258   结束 11:33:48.368   状态 succeeded
+        输入 project-snapshot ← project-library-001:project-snapshot  sha256=74403cf3b347369d…
+        输出 priority-order  281B
+────────────────────────────────────────────────────────────────────────────────────────────────────
+[ 57/100] annual-plan-build-001   能力=audit.plan.annual-plan-build   插件=audit.plan.annual-plan-build
+        开始 11:33:48.412   结束 11:33:48.526   状态 succeeded
+        输入 priority-order ← priority-rank-001:priority-order  sha256=70f2f100f217c324…
+        输出 annual-plan  379B
+────────────────────────────────────────────────────────────────────────────────────────────────────
+[ 58/100] report-frame-build-001   能力=audit.report.report-frame-build   插件=audit.report.report-frame-build
+        开始 11:33:48.570   结束 11:33:48.680   状态 succeeded
+        输入 project-snapshot ← project-library-001:project-snapshot  sha256=74403cf3b347369d…
+        输出 report-frame  659B summary={"frame_sections": 8, "project_count": 2} status="frame"
+────────────────────────────────────────────────────────────────────────────────────────────────────
+[ 59/100] report-data-check-001   能力=audit.report.report-data-check   插件=audit.report.report-data-check
+        开始 11:33:48.721   结束 11:33:48.833   状态 succeeded
+        输入 report-draft-input ← report-frame-build-001:report-frame  sha256=547cca5d95ac3288…
+        输出 report-check-report  541B summary={"checked_columns": 3, "checked_rows": 0, "missing_values": 0, "valid": true}
+────────────────────────────────────────────────────────────────────────────────────────────────────
+[ 60/100] report-multi-review-001   能力=audit.report.report-multi-review   插件=audit.report.report-multi-review
+        开始 11:33:48.878   结束 11:33:48.991   状态 succeeded
+        输入 report-check-report ← report-data-check-001:report-check-report  sha256=5608cb993fa82708…
+        输出 report-approved  278B summary={"approved": true, "note": "三级审核通过，准予发布", "review_levels": ["项目负责人", "部门负责人", "总审计师"], "violation_count": 0} status="approved"
+────────────────────────────────────────────────────────────────────────────────────────────────────
+[ 61/100] notice-mask-publish-001   能力=audit.report.notice-mask-publish   插件=audit.report.notice-mask-publish
+        开始 11:33:49.034   结束 11:33:49.146   状态 succeeded
+        输入 report-approved ← report-multi-review-001:report-approved  sha256=91f08b9750152bdf…
+        输出 published-notice  404B
+────────────────────────────────────────────────────────────────────────────────────────────────────
+[ 62/100] result-distill-001   能力=audit.report.result-distill   插件=audit.report.result-distill
+        开始 11:33:49.190   结束 11:33:49.306   状态 succeeded
+        输入 report-approved ← report-multi-review-001:report-approved  sha256=91f08b9750152bdf…
+        输出 distilled-result  469B
+────────────────────────────────────────────────────────────────────────────────────────────────────
+[ 63/100] case-library-update-001   能力=audit.govern.case-library-update   插件=audit.govern.case-library-update
+        开始 11:33:49.346   结束 11:33:49.459   状态 succeeded
+        输入 distilled-result ← result-distill-001:distilled-result  sha256=e4bf3ce4817ead89…
+        输出 case-entry  514B
+────────────────────────────────────────────────────────────────────────────────────────────────────
+[ 64/100] suspicion-flag-001   能力=audit.field.suspicion-flag   插件=audit.field.suspicion-flag
+        开始 11:33:49.503   结束 11:33:49.613   状态 succeeded
+        输入 field-finding-input ← seed:field-finding-input  sha256=98f13e43f89680ed…
+        输出 suspicion-set  697B summary={"candidates": 2, "field_findings": 2}
+────────────────────────────────────────────────────────────────────────────────────────────────────
+[ 65/100] suspicion-merge-001   能力=audit.finding.suspicion-merge   插件=audit.finding.suspicion-merge
+        开始 11:33:49.660   结束 11:33:49.771   状态 succeeded
+        输入 suspicion-set ← finance-anomaly-alert-001:finance-anomaly-set  sha256=84f13a7697c37159…
+        输入 photo-evidence ← evidence-photo-001:photo-evidence  sha256=61d7f105cbd77a80…
+        输出 merged-suspicion  3059B summary={"duplicates_removed": 6, "input_candidates": 15, "merged_candidates": 9, "photos_attached": 0}
+────────────────────────────────────────────────────────────────────────────────────────────────────
+[ 66/100] issue-type-judge-001   能力=audit.finding.issue-type-judge   插件=audit.finding.issue-type-judge
+        开始 11:33:49.812   结束 11:33:49.926   状态 succeeded
+        输入 merged-suspicion ← suspicion-merge-001:merged-suspicion  sha256=3080a72ab8568f9f…
+        输出 issue-type-set  3522B summary={"by_category": {"大额交易": 3, "舞弊特征": 3, "账务差错": 2, "费用跨期": 1}, "issue_count": 9, "suspicion_count": 9}
+────────────────────────────────────────────────────────────────────────────────────────────────────
+[ 67/100] issue-amount-compute-001   能力=audit.finding.issue-amount-compute   插件=audit.finding.issue-amount-compute
+        开始 11:33:49.969   结束 11:33:50.082   状态 succeeded
+        输入 clean-finance-set ← finance-clean-001:clean-finance-set  sha256=e5b3c6fb99105af8…
+        输入 issue-verify-input ← issue-type-judge-001:issue-type-set  sha256=248791398809fa12…
+        输出 issue-amount  4256B summary={"by_category": {"大额交易": 3, "舞弊特征": 3, "账务差错": 2, "费用跨期": 1}, "issue_count": 9, "quantified_total": 7423300.0, "suspicio
+────────────────────────────────────────────────────────────────────────────────────────────────────
+[ 68/100] tag-manage-001   能力=audit.foundation.tag-manage   插件=audit.foundation.tag-manage
+        开始 11:33:50.126   结束 11:33:50.244   状态 succeeded
+        输入 tag-query ← seed:tag-query  sha256=2dd8c29d81458237…
+        输出 tag-tree  473B
+────────────────────────────────────────────────────────────────────────────────────────────────────
+[ 69/100] team-forming-001   能力=audit.mandate.team-forming   插件=audit.mandate.team-forming
+        开始 11:33:50.290   结束 11:33:50.405   状态 succeeded
+        输入 project-snapshot ← project-library-001:project-snapshot  sha256=74403cf3b347369d…
+        输出 team-scheme  965B
+────────────────────────────────────────────────────────────────────────────────────────────────────
+[ 70/100] staff-schedule-001   能力=audit.plan.staff-schedule   插件=audit.plan.staff-schedule
+        开始 11:33:50.449   结束 11:33:50.563   状态 succeeded
+        输入 team-scheme ← team-forming-001:team-scheme  sha256=710f373f182754ee…
+        输出 schedule-plan  1987B
+────────────────────────────────────────────────────────────────────────────────────────────────────
+[ 71/100] effort-budget-001   能力=audit.plan.effort-budget   插件=audit.plan.effort-budget
+        开始 11:33:50.607   结束 11:33:50.719   状态 succeeded
+        输入 schedule-plan ← staff-schedule-001:schedule-plan  sha256=94d3d490ca5b966e…
+        输出 effort-budget  237B
+────────────────────────────────────────────────────────────────────────────────────────────────────
+[ 72/100] resource-conflict-detect-001   能力=audit.plan.resource-conflict-detect   插件=audit.plan.resource-conflict-detect
+        开始 11:33:50.766   结束 11:33:50.885   状态 succeeded
+        输入 schedule-plan ← staff-schedule-001:schedule-plan  sha256=94d3d490ca5b966e…
+        输入 project-snapshot ← project-library-001:project-snapshot  sha256=74403cf3b347369d…
+        输出 conflict-alert  385B summary={"checked_columns": 2, "checked_rows": 0, "missing_values": 0, "valid": true}
+────────────────────────────────────────────────────────────────────────────────────────────────────
+[ 73/100] violation-clause-match-001   能力=audit.finding.violation-clause-match   插件=audit.finding.violation-clause-match
+        开始 11:33:50.931   结束 11:33:51.040   状态 succeeded
+        输入 issue-type-set ← issue-type-judge-001:issue-type-set  sha256=248791398809fa12…
+        输出 violation-clause  4902B summary={"by_category": {"大额交易": 3, "舞弊特征": 3, "账务差错": 2, "费用跨期": 1}, "clause_matched": 9, "issue_count": 9, "suspicion_count": 
+────────────────────────────────────────────────────────────────────────────────────────────────────
+[ 74/100] responsible-party-find-001   能力=audit.finding.responsible-party-find   插件=audit.finding.responsible-party-find
+        开始 11:33:51.082   结束 11:33:51.191   状态 succeeded
+        输入 master-map ← master-mapping-001:master-map  sha256=43f60b93f77109c5…
+        输入 issue-trace-input ← violation-clause-match-001:violation-clause  sha256=81889837d75fbc0d…
+        输出 responsible-party  4948B summary={"by_category": {"大额交易": 3, "舞弊特征": 3, "账务差错": 2, "费用跨期": 1}, "clause_matched": 9, "issue_count": 9, "pending_human": 9,
+────────────────────────────────────────────────────────────────────────────────────────────────────
+[ 75/100] issue-grade-001   能力=audit.finding.issue-grade   插件=audit.finding.issue-grade
+        开始 11:33:51.236   结束 11:33:51.345   状态 succeeded
+        输入 issue-amount ← issue-amount-compute-001:issue-amount  sha256=28d30253ca3801e5…
+        输入 responsible-party ← responsible-party-find-001:responsible-party  sha256=30f93d499da201cf…
+        输出 graded-issue  4899B summary={"by_category": {"大额交易": 3, "舞弊特征": 3, "账务差错": 2, "费用跨期": 1}, "by_grade": {"重大": 8, "重要": 1}, "issue_count": 9, "quantif
+────────────────────────────────────────────────────────────────────────────────────────────────────
+[ 76/100] auditee-feedback-001   能力=audit.finding.auditee-feedback   插件=audit.finding.auditee-feedback
+        开始 11:33:51.386   结束 11:33:51.500   状态 succeeded
+        输入 graded-issue ← issue-grade-001:graded-issue  sha256=c9aa2c2ccbd6336a…
+        输出 feedback-set  6209B summary={"by_category": {"大额交易": 3, "舞弊特征": 3, "账务差错": 2, "费用跨期": 1}, "by_grade": {"重大": 8, "重要": 1}, "feedback_pending": 9, "is
+────────────────────────────────────────────────────────────────────────────────────────────────────
+[ 77/100] issue-final-review-001   能力=audit.finding.issue-final-review   插件=audit.finding.issue-final-review
+        开始 11:33:51.545   结束 11:33:51.654   状态 succeeded
+        输入 feedback-set ← auditee-feedback-001:feedback-set  sha256=f3513adc0d9e40b6…
+        输出 final-issue-set  6527B summary={"by_category": {"大额交易": 3, "舞弊特征": 3, "账务差错": 2, "费用跨期": 1}, "by_final_decision": {"待反馈": 9}, "by_grade": {"重大": 8, "重要
+────────────────────────────────────────────────────────────────────────────────────────────────────
+[ 78/100] advice-match-001   能力=audit.report.advice-match   插件=audit.report.advice-match
+        开始 11:33:51.699   结束 11:33:51.808   状态 succeeded
+        输入 final-issue-set ← issue-final-review-001:final-issue-set  sha256=b45aa48f88c5d053…
+        输出 advice-set  1606B summary={"advice_count": 9} status="draft"
+────────────────────────────────────────────────────────────────────────────────────────────────────
+[ 79/100] issue-desc-write-001   能力=audit.report.issue-desc-write   插件=audit.report.issue-desc-write
+        开始 11:33:51.850   结束 11:33:51.963   状态 succeeded
+        输入 final-issue-set ← issue-final-review-001:final-issue-set  sha256=b45aa48f88c5d053…
+        输出 issue-desc  3728B summary={"by_category": {"大额交易": 3, "舞弊特征": 3, "账务差错": 2, "费用跨期": 1}, "issue_count": 9, "quantified_total": 7423300.0}
+────────────────────────────────────────────────────────────────────────────────────────────────────
+[ 80/100] remedy-dispatch-001   能力=audit.remedy.remedy-dispatch   插件=audit.remedy.remedy-dispatch
+        开始 11:33:52.006   结束 11:33:52.112   状态 succeeded
+        输入 final-issue-set ← issue-final-review-001:final-issue-set  sha256=b45aa48f88c5d053…
+        输出 remedy-task  1703B summary={"high": 5, "task_count": 9}
+────────────────────────────────────────────────────────────────────────────────────────────────────
+[ 81/100] remedy-plan-review-001   能力=audit.remedy.remedy-plan-review   插件=audit.remedy.remedy-plan-review
+        开始 11:33:52.156   结束 11:33:52.265   状态 succeeded
+        输入 remedy-task ← remedy-dispatch-001:remedy-task  sha256=25e15d9a2987aaa1…
+        输出 remedy-plan-approved  1892B summary={"approved": false, "missing_owner": ["RT-0001", "RT-0002", "RT-0003", "RT-0004", "RT-0005", "RT-0006", "RT-0007", "RT-0
+────────────────────────────────────────────────────────────────────────────────────────────────────
+[ 82/100] remedy-progress-track-001   能力=audit.remedy.remedy-progress-track   插件=audit.remedy.remedy-progress-track
+        开始 11:33:52.306   结束 11:33:52.415   状态 succeeded
+        输入 remedy-plan-approved ← remedy-plan-review-001:remedy-plan-approved  sha256=15ac6ab30c033671…
+        输出 remedy-progress  486B summary={"completion_rate": 0.0, "done": 0, "in_progress": 0, "overdue": 0, "total": 0}
+────────────────────────────────────────────────────────────────────────────────────────────────────
+[ 83/100] remedy-overdue-alert-001   能力=audit.remedy.remedy-overdue-alert   插件=audit.remedy.remedy-overdue-alert
+        开始 11:33:52.459   结束 11:33:52.570   状态 succeeded
+        输入 remedy-progress ← remedy-progress-track-001:remedy-progress  sha256=aa49215fe753e480…
+        输出 overdue-alert  304B summary={"completion_rate": 0.0, "overdue_count": 0}
+────────────────────────────────────────────────────────────────────────────────────────────────────
+[ 84/100] viz-analysis-001   能力=audit.foundation.viz-analysis   插件=audit.foundation.viz-analysis
+        开始 11:33:52.612   结束 11:33:52.723   状态 succeeded
+        输入 viz-input ← seed:viz-input  sha256=892898d7f2c4758d…
+        输出 viz-output  461B
+────────────────────────────────────────────────────────────────────────────────────────────────────
+[ 85/100] voucher-drilldown-001   能力=audit.field.voucher-drilldown   插件=audit.field.voucher-drilldown
+        开始 11:33:52.880   结束 11:33:52.993   状态 succeeded
+        输入 clean-finance-set ← finance-clean-001:clean-finance-set  sha256=e5b3c6fb99105af8…
+        输出 voucher-chain  10998B
+────────────────────────────────────────────────────────────────────────────────────────────────────
+[ 86/100] workflow-engine-001   能力=audit.foundation.workflow-engine   插件=audit.foundation.workflow-engine
+        开始 11:33:53.038   结束 11:33:53.150   状态 succeeded
+        输入 workflow-request ← seed:workflow-request  sha256=6376ec2d2145943a…
+        输出 workflow-state  238B summary={"approved": 1, "state": "running", "total": 2}
+────────────────────────────────────────────────────────────────────────────────────────────────────
+[ 87/100] workpaper-borrow-approve-001   能力=audit.evidence.workpaper-borrow-approve   插件=audit.evidence.workpaper-borrow-approve
+        开始 11:33:53.193   结束 11:33:53.414   状态 succeeded
+        输入 borrow-request ← seed:borrow-request  sha256=e3aefa190f6655a0…
+        输出 borrow-status  518B
+────────────────────────────────────────────────────────────────────────────────────────────────────
+[ 88/100] workpaper-build-001   能力=audit.field.workpaper-build   插件=audit.field.workpaper-build
+        开始 11:33:53.459   结束 11:33:53.577   状态 succeeded
+        输入 sample-size ← sample-size-compute-001:sample-size  sha256=6078e9cef44ea7f9…
+        输入 program-template ← program-template-match-001:program-template  sha256=897a7b5697044b63…
+        输出 workpaper-draft  8775B summary={"evidence_refs": 0, "findings": 26, "high": 0, "low": 26, "medium": 0, "truncated": false} status="draft"
+────────────────────────────────────────────────────────────────────────────────────────────────────
+[ 89/100] evidence-index-link-001   能力=audit.evidence.evidence-index-link   插件=audit.evidence.evidence-index-link
+        开始 11:33:53.620   结束 11:33:53.731   状态 succeeded
+        输入 photo-evidence ← evidence-photo-001:photo-evidence  sha256=61d7f105cbd77a80…
+        输入 workpaper-draft ← workpaper-build-001:workpaper-draft  sha256=6faf6a6f6ac5b829…
+        输出 evidence-index  8138B
+────────────────────────────────────────────────────────────────────────────────────────────────────
+[ 90/100] evidence-verify-001   能力=audit.evidence.evidence-verify   插件=audit.evidence.evidence-verify
+        开始 11:33:53.773   结束 11:33:53.885   状态 succeeded
+        输入 evidence-index ← evidence-index-link-001:evidence-index  sha256=4a4c4f9ccb66bb86…
+        输出 evidence-verdict  624B summary={"checked_edges": 26, "checked_evidence": 27, "closed_edges": 26, "duplicate_digests": 0, "missing_hashes": 0, "valid": 
+────────────────────────────────────────────────────────────────────────────────────────────────────
+[ 91/100] remedy-effect-verify-001   能力=audit.remedy.remedy-effect-verify   插件=audit.remedy.remedy-effect-verify
+        开始 11:33:53.929   结束 11:33:54.045   状态 succeeded
+        输入 evidence-index ← evidence-index-link-001:evidence-index  sha256=4a4c4f9ccb66bb86…
+        输入 remedy-evidence ← seed:remedy-evidence  sha256=1de29a2682ad6a8c…
+        输出 remedy-verdict  354B summary={"checked_columns": 1, "checked_rows": 0, "missing_values": 0, "valid": true}
+────────────────────────────────────────────────────────────────────────────────────────────────────
+[ 92/100] remedy-close-001   能力=audit.remedy.remedy-close   插件=audit.remedy.remedy-close
+        开始 11:33:54.087   结束 11:33:54.197   状态 succeeded
+        输入 remedy-verdict ← remedy-effect-verify-001:remedy-verdict  sha256=45dfc352ebb4ea54…
+        输出 remedy-ledger  252B summary={"closed": true, "note": "整改销号完成", "violation_count": 0}
+────────────────────────────────────────────────────────────────────────────────────────────────────
+[ 93/100] effect-evaluate-001   能力=audit.govern.effect-evaluate   插件=audit.govern.effect-evaluate
+        开始 11:33:54.241   结束 11:33:54.355   状态 succeeded
+        输入 remedy-ledger ← remedy-close-001:remedy-ledger  sha256=b46e5f7ddc3d674f…
+        输出 effect-report  286B summary={"closed": 1, "effect_ratio": 1.0, "total": 1}
+────────────────────────────────────────────────────────────────────────────────────────────────────
+[ 94/100] remedy-publish-001   能力=audit.remedy.remedy-publish   插件=audit.remedy.remedy-publish
+        开始 11:33:54.401   结束 11:33:54.538   状态 succeeded
+        输入 remedy-ledger ← remedy-close-001:remedy-ledger  sha256=b46e5f7ddc3d674f…
+        输出 published-remedy  331B
+────────────────────────────────────────────────────────────────────────────────────────────────────
+[ 95/100] workpaper-reconcile-001   能力=audit.evidence.workpaper-reconcile   插件=audit.evidence.workpaper-reconcile
+        开始 11:33:54.592   结束 11:33:54.733   状态 succeeded
+        输入 workpaper-draft ← workpaper-build-001:workpaper-draft  sha256=6faf6a6f6ac5b829…
+        输出 reconcile-report  213B summary="勾稽校验 26 条：通过 26，问题 0"
+────────────────────────────────────────────────────────────────────────────────────────────────────
+[ 96/100] workpaper-review3-001   能力=audit.evidence.workpaper-review3   插件=audit.evidence.workpaper-review3
+        开始 11:33:54.788   结束 11:33:54.906   状态 succeeded
+        输入 workpaper-draft ← workpaper-build-001:workpaper-draft  sha256=6faf6a6f6ac5b829…
+        输入 reconcile-report ← workpaper-reconcile-001:reconcile-report  sha256=9502e3fca3613bbd…
+        输出 review-status  4075B
+────────────────────────────────────────────────────────────────────────────────────────────────────
+[ 97/100] e-signature-001   能力=audit.evidence.e-signature   插件=audit.evidence.e-signature
+        开始 11:33:54.961   结束 11:33:55.078   状态 succeeded
+        输入 review-status ← workpaper-review3-001:review-status  sha256=c9b852ea134e298c…
+        输出 signed-workpaper  3241B
+────────────────────────────────────────────────────────────────────────────────────────────────────
+[ 98/100] workpaper-encrypt-store-001   能力=audit.evidence.workpaper-encrypt-store   插件=audit.evidence.workpaper-encrypt-store
+        开始 11:33:55.122   结束 11:33:55.235   状态 succeeded
+        输入 signed-workpaper ← e-signature-001:signed-workpaper  sha256=6a7b072f2d5bad1d…
+        输出 encrypt-status  3738B
+────────────────────────────────────────────────────────────────────────────────────────────────────
+[ 99/100] workpaper-template-update-001   能力=audit.evidence.workpaper-template-update   插件=audit.evidence.workpaper-template-update
+        开始 11:33:55.283   结束 11:33:55.410   状态 succeeded
+        输入 workpaper-draft ← workpaper-build-001:workpaper-draft  sha256=6faf6a6f6ac5b829…
+        输出 template-update-set  4210B
+────────────────────────────────────────────────────────────────────────────────────────────────────
+[100/100] workpaper-version-diff-001   能力=audit.evidence.workpaper-version-diff   插件=audit.evidence.workpaper-version-diff
+        开始 11:33:55.459   结束 11:33:55.579   状态 succeeded
+        输入 workpaper-draft ← workpaper-build-001:workpaper-draft  sha256=6faf6a6f6ac5b829…
+        输出 version-diff-report  4300B
+────────────────────────────────────────────────────────────────────────────────────────────────────
+
+【策略裁决】
+  (本次运行的策略裁决由内存 PolicyEngine 在编排前给出，未逐节点落 policy.decisions)
+
+【事务事件 event.outbox】
+  11:33:38.907  node.finished          aggregate=d78102cc
+  11:33:39.101  node.finished          aggregate=ae91a719
+  11:33:39.279  node.finished          aggregate=e8582ecf
+  11:33:39.458  node.finished          aggregate=39ad413f
+  11:33:39.637  node.finished          aggregate=75dbd0bd
+  11:33:39.840  node.finished          aggregate=c689a656
+  11:33:40.182  node.finished          aggregate=5b372f68
+  11:33:40.346  node.finished          aggregate=402acbe4
+  11:33:40.518  node.finished          aggregate=8f927557
+  11:33:40.688  node.finished          aggregate=2f1a1157
+  11:33:40.861  node.finished          aggregate=d2f1fd83
+  11:33:41.037  node.finished          aggregate=a3698231
+  11:33:41.219  node.finished          aggregate=44e05a60
+  11:33:41.406  node.finished          aggregate=9cac275b
+  11:33:41.709  node.finished          aggregate=b17eab99
+  11:33:41.887  node.finished          aggregate=97dc04b0
+  11:33:42.055  node.finished          aggregate=44f23c67
+  11:33:42.210  node.finished          aggregate=1baa45e2
+  11:33:42.373  node.finished          aggregate=7a6c7559
+  11:33:42.534  node.finished          aggregate=35f3e1e7
+  11:33:42.692  node.finished          aggregate=a9cd94e6
+  11:33:42.855  node.finished          aggregate=142611ef
+  11:33:43.015  node.finished          aggregate=6a837068
+  11:33:43.183  node.finished          aggregate=c393db67
+  11:33:43.346  node.finished          aggregate=0ee3342f
+  11:33:43.509  node.finished          aggregate=dd4e4b42
+  11:33:43.669  node.finished          aggregate=5cd67239
+  11:33:43.828  node.finished          aggregate=75aa6048
+  11:33:43.987  node.finished          aggregate=0dd0af5b
+  11:33:44.147  node.finished          aggregate=59c59d76
+  11:33:44.310  node.finished          aggregate=4a8568e8
+  11:33:44.490  node.finished          aggregate=51a14ab2
+  11:33:44.649  node.finished          aggregate=c08db4d1
+  11:33:44.816  node.finished          aggregate=cb001fab
+  11:33:44.974  node.finished          aggregate=baed14ce
+  11:33:45.129  node.finished          aggregate=b2b19f49
+  11:33:45.386  node.finished          aggregate=aa3723a3
+  11:33:45.545  node.finished          aggregate=50d2b2ec
+  11:33:45.703  node.finished          aggregate=ccbba091
+  11:33:45.868  node.finished          aggregate=c6ea8e91
+  11:33:46.024  node.finished          aggregate=db110b29
+  11:33:46.181  node.finished          aggregate=ef7fee02
+  11:33:46.336  node.finished          aggregate=b6fc9604
+  11:33:46.493  node.finished          aggregate=407e9470
+  11:33:46.649  node.finished          aggregate=dd2efd19
+  11:33:46.803  node.finished          aggregate=6743ce7e
+  11:33:46.959  node.finished          aggregate=5d0f4829
+  11:33:47.112  node.finished          aggregate=aa223e69
+  11:33:47.270  node.finished          aggregate=5b6684a2
+  11:33:47.432  node.finished          aggregate=3aab6968
+  11:33:47.586  node.finished          aggregate=6ac1710e
+  11:33:47.745  node.finished          aggregate=d670726f
+  11:33:47.908  node.finished          aggregate=5fec1982
+  11:33:48.061  node.finished          aggregate=661c44b8
+  11:33:48.215  node.finished          aggregate=c6f99657
+  11:33:48.368  node.finished          aggregate=50b1e448
+  11:33:48.526  node.finished          aggregate=b0fb4d8d
+  11:33:48.680  node.finished          aggregate=46fac4d5
+  11:33:48.833  node.finished          aggregate=f2c52898
+  11:33:48.991  node.finished          aggregate=71f00281
+  11:33:49.146  node.finished          aggregate=f7aa3966
+  11:33:49.306  node.finished          aggregate=ea474449
+  11:33:49.459  node.finished          aggregate=9bc1e5be
+  11:33:49.613  node.finished          aggregate=4e1ed635
+  11:33:49.771  node.finished          aggregate=06b0707f
+  11:33:49.926  node.finished          aggregate=46593331
+  11:33:50.082  node.finished          aggregate=57e75dd8
+  11:33:50.244  node.finished          aggregate=e5879301
+  11:33:50.405  node.finished          aggregate=b90eab8f
+  11:33:50.563  node.finished          aggregate=eafa8e3c
+  11:33:50.719  node.finished          aggregate=987bf828
+  11:33:50.885  node.finished          aggregate=ca50d66a
+  11:33:51.040  node.finished          aggregate=43bda0f8
+  11:33:51.191  node.finished          aggregate=d3e7bf1b
+  11:33:51.345  node.finished          aggregate=f1428925
+  11:33:51.500  node.finished          aggregate=7790eece
+  11:33:51.654  node.finished          aggregate=2a4eef18
+  11:33:51.808  node.finished          aggregate=73360251
+  11:33:51.963  node.finished          aggregate=6a20ec0d
+  11:33:52.112  node.finished          aggregate=cd49d114
+  11:33:52.265  node.finished          aggregate=454e8f57
+  11:33:52.415  node.finished          aggregate=614a2189
+  11:33:52.570  node.finished          aggregate=e769f42a
+  11:33:52.723  node.finished          aggregate=cee88dc5
+  11:33:52.993  node.finished          aggregate=ad6df0cb
+  11:33:53.150  node.finished          aggregate=1a4e5fef
+  11:33:53.414  node.finished          aggregate=1b68785d
+  11:33:53.577  node.finished          aggregate=5f16b7dd
+  11:33:53.731  node.finished          aggregate=870fd336
+  11:33:53.885  node.finished          aggregate=14c585ac
+  11:33:54.045  node.finished          aggregate=e578281e
+  11:33:54.197  node.finished          aggregate=294555b5
+  11:33:54.355  node.finished          aggregate=006f1775
+  11:33:54.538  node.finished          aggregate=c38975ee
+  11:33:54.733  node.finished          aggregate=ba395d73
+  11:33:54.906  node.finished          aggregate=ddaa2902
+  11:33:55.078  node.finished          aggregate=b5809948
+  11:33:55.235  node.finished          aggregate=802fb087
+  11:33:55.410  node.finished          aggregate=04abe956
+  11:33:55.579  node.finished          aggregate=b40d26af
+
+【汇总】
+  节点总数 100    成功 100    失败 0
+  产出中间数据文件 100 个（见 04-中间数据状态/）
+  逐插件详情目录   100 个（见 03-逐插件详情/）

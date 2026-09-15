@@ -1,0 +1,18 @@
+{
+  "schema_version": "1.0.0",
+  "plugin": {
+    "id": "audit.plan.sampling-select",
+    "version": "0.1.0",
+    "sha256": "0afdb01ef3925256bd4db28369ae75a2bf90f094bd1d9f98089151f6ae91062a"
+  },
+  "protocol": {
+    "id": "audit.plan.sampling-select",
+    "version": "0.1.0",
+    "sha256": "22f80b785a50d5e284d3fc277d704fe1036e5a99b0a9ece1828cf05b1691f51d"
+  },
+  "execution_mode": "isolated_subprocess",
+  "capabilities": [
+    "audit.plan.sampling-select"
+  ],
+  "status": "verified"
+}

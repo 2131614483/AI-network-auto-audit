@@ -1,0 +1,1593 @@
+{
+  "generated_at": "2026-09-08T12:46:27.128978+00:00",
+  "code_sha256": "14f090774c8d2ba56aec2a24a6a6a785618e47ea393d28c7439763490bf341e0",
+  "api_file": "apps/api/main.py",
+  "endpoint_count": 96,
+  "endpoints": [
+    {
+      "method": "GET",
+      "path": "/health",
+      "file": "apps/api/main.py",
+      "line": 2028,
+      "tables": [
+        "app.get",
+        "config.api_version",
+        "config.app_env",
+        "config.database_url"
+      ],
+      "code_sha256": "14f090774c8d2ba56aec2a24a6a6a785618e47ea393d28c7439763490bf341e0"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/health/ready",
+      "file": "apps/api/main.py",
+      "line": 2039,
+      "tables": [
+        "app.get",
+        "app.tenant_id",
+        "checks.append",
+        "config.database_url",
+        "connection.cursor",
+        "control.task_runs",
+        "cur.execute",
+        "cur.fetchone",
+        "event.outbox",
+        "iam.tenants",
+        "logger.exception",
+        "ops.worker_heartbeats",
+        "psycopg2.connect",
+        "public.alembic_version"
+      ],
+      "code_sha256": "14f090774c8d2ba56aec2a24a6a6a785618e47ea393d28c7439763490bf341e0"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/observability/code-map",
+      "file": "apps/api/main.py",
+      "line": 2109,
+      "tables": [
+        "app.get",
+        "map.json"
+      ],
+      "code_sha256": "14f090774c8d2ba56aec2a24a6a6a785618e47ea393d28c7439763490bf341e0"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/ui/bootstrap",
+      "file": "apps/api/main.py",
+      "line": 2130,
+      "tables": [
+        "app.get",
+        "config.api_version",
+        "config.ui_shell_version",
+        "dashboard.cards",
+        "detail.actions",
+        "entity.tabs",
+        "global.navigation",
+        "settings.sections",
+        "workspace.navigation",
+        "workspace.tools"
+      ],
+      "code_sha256": "14f090774c8d2ba56aec2a24a6a6a785618e47ea393d28c7439763490bf341e0"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/ui/contributions",
+      "file": "apps/api/main.py",
+      "line": 2171,
+      "tables": [
+        "app.get"
+      ],
+      "code_sha256": "14f090774c8d2ba56aec2a24a6a6a785618e47ea393d28c7439763490bf341e0"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/ui/tenant-context",
+      "file": "apps/api/main.py",
+      "line": 2191,
+      "tables": [
+        "config.database_url",
+        "connection.cursor",
+        "cur.execute",
+        "cur.fetchone",
+        "iam.tenants",
+        "psycopg2.connect"
+      ],
+      "code_sha256": "14f090774c8d2ba56aec2a24a6a6a785618e47ea393d28c7439763490bf341e0"
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/policy/evaluate",
+      "file": "apps/api/main.py",
+      "line": 2443,
+      "tables": [
+        "app.post"
+      ],
+      "code_sha256": "14f090774c8d2ba56aec2a24a6a6a785618e47ea393d28c7439763490bf341e0"
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/policy/simulate",
+      "file": "apps/api/main.py",
+      "line": 2452,
+      "tables": [
+        "app.post"
+      ],
+      "code_sha256": "14f090774c8d2ba56aec2a24a6a6a785618e47ea393d28c7439763490bf341e0"
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/plugins/invoke",
+      "file": "apps/api/main.py",
+      "line": 2460,
+      "tables": [
+        "app.get",
+        "artifact.as_payload",
+        "baseline.tenant_id",
+        "binding.capability",
+        "binding.entrypoint",
+        "binding.plugin_id",
+        "binding.version",
+        "config.plugin_read_roots",
+        "decision.decision",
+        "decision.decision_id",
+        "decision.model_dump",
+        "evidence_index.tenant_id",
+        "graph_ref.artifact",
+        "graph_snapshot.tenant_id",
+        "incident_set.tenant_id",
+        "input_artifact.artifact_id",
+        "input_artifact.classification",
+        "input_artifact.media_type",
+        "input_artifact.sha256",
+        "input_artifact.size_bytes",
+        "input_artifact.tenant_id",
+        "input_artifact.uri",
+        "investigation_plan.tenant_id",
+        "payload.alerts",
+        "payload.artifact",
+        "payload.backtest",
+        "payload.capability",
+        "payload.dataset",
+        "payload.document",
+        "payload.experiment",
+        "payload.finding",
+        "payload.investigation",
+        "payload.journal",
+        "payload.ledger",
+        "payload.lineage",
+        "payload.max_characters",
+        "payload.plugin_id",
+        "payload.postmortem",
+        "payload.proposal",
+        "payload.rca",
+        "payload.recovery",
+        "payload.remediation",
+        "payload.report",
+        "payload.research_note",
+        "payload.retention",
+        "payload.snapshot",
+        "payload.ticket",
+        "payload.triage",
+        "payload.workpaper",
+        "proposal.tenant_id",
+        "result.capability",
+        "result.input_sha256",
+        "result.output",
+        "result.plugin_id",
+        "result.plugin_version",
+        "result.runtime_code_sha256",
+        "snapshot_ref.artifact",
+        "topology_graph.tenant_id",
+        "verification.tenant_id"
+      ],
+      "code_sha256": "14f090774c8d2ba56aec2a24a6a6a785618e47ea393d28c7439763490bf341e0"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/plugins/verified",
+      "file": "apps/api/main.py",
+      "line": 2670,
+      "tables": [
+        "app.get",
+        "binding.capability",
+        "binding.entrypoint",
+        "binding.plugin_id",
+        "binding.version",
+        "items.append"
+      ],
+      "code_sha256": "14f090774c8d2ba56aec2a24a6a6a785618e47ea393d28c7439763490bf341e0"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/approvals",
+      "file": "apps/api/main.py",
+      "line": 2708,
+      "tables": [
+        "app.post",
+        "config.database_url",
+        "control.approvals",
+        "cur.close",
+        "cur.execute",
+        "cur.fetchall",
+        "psycopg2.connect"
+      ],
+      "code_sha256": "14f090774c8d2ba56aec2a24a6a6a785618e47ea393d28c7439763490bf341e0"
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/approvals/{approval_id}/decide",
+      "file": "apps/api/main.py",
+      "line": 2745,
+      "tables": [
+        "app.post",
+        "config.database_url",
+        "control.approvals",
+        "control.authorization_leases",
+        "control.idempotency_records",
+        "cur.close",
+        "cur.execute",
+        "cur.fetchone",
+        "datetime.now",
+        "hashlib.sha256",
+        "iam.principals",
+        "payload.decision",
+        "payload.model_dump_json",
+        "payload.reason",
+        "payload.ttl_seconds",
+        "psycopg2.connect",
+        "response.model_dump",
+        "timezone.utc"
+      ],
+      "code_sha256": "14f090774c8d2ba56aec2a24a6a6a785618e47ea393d28c7439763490bf341e0"
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/missions",
+      "file": "apps/api/main.py",
+      "line": 2826,
+      "tables": [
+        "app.post",
+        "config.database_url",
+        "control.mission",
+        "payload.autonomy_mode",
+        "payload.domain",
+        "payload.objective",
+        "payload.project_slug",
+        "payload.requested_by",
+        "payload.title"
+      ],
+      "code_sha256": "14f090774c8d2ba56aec2a24a6a6a785618e47ea393d28c7439763490bf341e0"
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/workflows",
+      "file": "apps/api/main.py",
+      "line": 2843,
+      "tables": [
+        "app.post",
+        "config.database_url",
+        "control.workflow",
+        "payload.created_by",
+        "payload.graph",
+        "payload.key",
+        "payload.name",
+        "payload.version"
+      ],
+      "code_sha256": "14f090774c8d2ba56aec2a24a6a6a785618e47ea393d28c7439763490bf341e0"
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/workflows/{workflow_key}/run",
+      "file": "apps/api/main.py",
+      "line": 2858,
+      "tables": [
+        "app.get",
+        "config.database_url",
+        "control.workflow",
+        "payload.input_payload",
+        "payload.mission_id",
+        "payload.version"
+      ],
+      "code_sha256": "14f090774c8d2ba56aec2a24a6a6a785618e47ea393d28c7439763490bf341e0"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/workflow-runs/{workflow_run_id}/runnable-tasks",
+      "file": "apps/api/main.py",
+      "line": 2876,
+      "tables": [
+        "app.post",
+        "config.database_url",
+        "control.task",
+        "item.attempt",
+        "item.capability",
+        "item.id",
+        "item.max_attempts",
+        "item.node_key",
+        "item.status"
+      ],
+      "code_sha256": "14f090774c8d2ba56aec2a24a6a6a785618e47ea393d28c7439763490bf341e0"
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/task-runs/{task_run_id}/claim",
+      "file": "apps/api/main.py",
+      "line": 2894,
+      "tables": [
+        "agent.id",
+        "agent.status",
+        "agent.task_run_id",
+        "app.post",
+        "config.database_url",
+        "control.task",
+        "payload.model_key",
+        "payload.principal_id",
+        "payload.role_key"
+      ],
+      "code_sha256": "14f090774c8d2ba56aec2a24a6a6a785618e47ea393d28c7439763490bf341e0"
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/agent-runs/{agent_run_id}/complete",
+      "file": "apps/api/main.py",
+      "line": 2911,
+      "tables": [
+        "app.post",
+        "config.database_url",
+        "control.agent",
+        "control.agent_runs",
+        "control.idempotency_records",
+        "cur.close",
+        "cur.execute",
+        "cur.fetchone",
+        "hashlib.sha256",
+        "payload.model_dump_json",
+        "payload.output",
+        "psycopg2.connect",
+        "response.model_dump",
+        "scheduler.complete_agent"
+      ],
+      "code_sha256": "14f090774c8d2ba56aec2a24a6a6a785618e47ea393d28c7439763490bf341e0"
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/knowledge/ingest",
+      "file": "apps/api/main.py",
+      "line": 2962,
+      "tables": [
+        "app.post",
+        "config.database_url",
+        "item.byte_size",
+        "item.chunks",
+        "item.extractor_key",
+        "item.sha256",
+        "item.source_uri",
+        "item.status",
+        "knowledge.ingest",
+        "payload.dry_run",
+        "payload.max_chars",
+        "payload.source_dir",
+        "result.accepted",
+        "result.batch_id",
+        "result.deferred",
+        "result.files",
+        "result.scanned",
+        "result.skipped",
+        "source.relative_to"
+      ],
+      "code_sha256": "14f090774c8d2ba56aec2a24a6a6a785618e47ea393d28c7439763490bf341e0"
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/knowledge/upload",
+      "file": "apps/api/main.py",
+      "line": 3011,
+      "tables": [
+        "config.database_url",
+        "exc.detail",
+        "item.byte_size",
+        "item.chunks",
+        "item.extractor_key",
+        "item.sha256",
+        "item.source_uri",
+        "item.status",
+        "knowledge.upload",
+        "os.getenv",
+        "reservation.cached_response",
+        "reservation.is_replay",
+        "response.model_dump",
+        "result.accepted",
+        "result.batch_id",
+        "result.deferred",
+        "result.files",
+        "result.scanned",
+        "result.skipped",
+        "store.complete",
+        "store.reserve",
+        "upload.close",
+        "upload_root.relative_to"
+      ],
+      "code_sha256": "14f090774c8d2ba56aec2a24a6a6a785618e47ea393d28c7439763490bf341e0"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/knowledge/stats",
+      "file": "apps/api/main.py",
+      "line": 3119,
+      "tables": [
+        "app.get",
+        "knowledge.read"
+      ],
+      "code_sha256": "14f090774c8d2ba56aec2a24a6a6a785618e47ea393d28c7439763490bf341e0"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/knowledge/documents",
+      "file": "apps/api/main.py",
+      "line": 3132,
+      "tables": [
+        "app.get",
+        "knowledge.read"
+      ],
+      "code_sha256": "14f090774c8d2ba56aec2a24a6a6a785618e47ea393d28c7439763490bf341e0"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/knowledge/adapters",
+      "file": "apps/api/main.py",
+      "line": 3147,
+      "tables": [
+        "adapter.execution_mode",
+        "adapter.key",
+        "adapter.label",
+        "adapter.next_step",
+        "adapter.status",
+        "adapter.supported_suffixes",
+        "app.post",
+        "knowledge.read"
+      ],
+      "code_sha256": "14f090774c8d2ba56aec2a24a6a6a785618e47ea393d28c7439763490bf341e0"
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/knowledge/documents/{document_id}/retire",
+      "file": "apps/api/main.py",
+      "line": 3172,
+      "tables": [
+        "app.get",
+        "knowledge.document",
+        "payload.reason",
+        "result.document_id",
+        "result.recycle_bin_id",
+        "result.status"
+      ],
+      "code_sha256": "14f090774c8d2ba56aec2a24a6a6a785618e47ea393d28c7439763490bf341e0"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/knowledge/recycle-bin",
+      "file": "apps/api/main.py",
+      "line": 3209,
+      "tables": [
+        "app.post",
+        "knowledge.recycle_bin"
+      ],
+      "code_sha256": "14f090774c8d2ba56aec2a24a6a6a785618e47ea393d28c7439763490bf341e0"
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/knowledge/recycle-bin/{recycle_bin_id}/restore",
+      "file": "apps/api/main.py",
+      "line": 3232,
+      "tables": [
+        "app.get",
+        "knowledge.document",
+        "payload.reason",
+        "result.document_id",
+        "result.recycle_bin_id",
+        "result.status"
+      ],
+      "code_sha256": "14f090774c8d2ba56aec2a24a6a6a785618e47ea393d28c7439763490bf341e0"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/knowledge/batches",
+      "file": "apps/api/main.py",
+      "line": 3269,
+      "tables": [
+        "app.post",
+        "knowledge.read"
+      ],
+      "code_sha256": "14f090774c8d2ba56aec2a24a6a6a785618e47ea393d28c7439763490bf341e0"
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/knowledge/search",
+      "file": "apps/api/main.py",
+      "line": 3284,
+      "tables": [
+        "app.post",
+        "item.get",
+        "knowledge.search",
+        "payload.limit",
+        "payload.mode",
+        "payload.query",
+        "service.search"
+      ],
+      "code_sha256": "14f090774c8d2ba56aec2a24a6a6a785618e47ea393d28c7439763490bf341e0"
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/knowledge/embed",
+      "file": "apps/api/main.py",
+      "line": 3309,
+      "tables": [
+        "app.post",
+        "knowledge.embedding",
+        "payload.batch_id",
+        "payload.limit",
+        "service.embed_pending",
+        "service.embedder"
+      ],
+      "code_sha256": "14f090774c8d2ba56aec2a24a6a6a785618e47ea393d28c7439763490bf341e0"
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/knowledge/rich-media/extract",
+      "file": "apps/api/main.py",
+      "line": 3329,
+      "tables": [
+        "app.post",
+        "config.database_url",
+        "knowledge.extract",
+        "payload.ingest_file_id",
+        "payload.method",
+        "result.attempt_count",
+        "result.ingest_file_id",
+        "result.job_id",
+        "result.method",
+        "result.status"
+      ],
+      "code_sha256": "14f090774c8d2ba56aec2a24a6a6a785618e47ea393d28c7439763490bf341e0"
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/knowledge/rich-media/retry",
+      "file": "apps/api/main.py",
+      "line": 3381,
+      "tables": [
+        "app.get",
+        "config.database_url",
+        "knowledge.extract",
+        "payload.ingest_file_id",
+        "payload.method",
+        "result.attempt_count",
+        "result.ingest_file_id",
+        "result.job_id",
+        "result.method",
+        "result.status"
+      ],
+      "code_sha256": "14f090774c8d2ba56aec2a24a6a6a785618e47ea393d28c7439763490bf341e0"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/knowledge/rich-media/pending",
+      "file": "apps/api/main.py",
+      "line": 3429,
+      "tables": [
+        "app.get",
+        "config.database_url",
+        "knowledge.read"
+      ],
+      "code_sha256": "14f090774c8d2ba56aec2a24a6a6a785618e47ea393d28c7439763490bf341e0"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/ui/operations",
+      "file": "apps/api/main.py",
+      "line": 3448,
+      "tables": [
+        "aiops.executions",
+        "aiops.incidents",
+        "app.get",
+        "audit.engagements",
+        "audit.findings",
+        "catalog.plugins",
+        "config.database_url",
+        "control.agent_runs",
+        "control.missions",
+        "control.task_runs",
+        "control.workflow_runs",
+        "cur.close",
+        "cur.execute",
+        "cur.fetchall",
+        "cur.fetchone",
+        "decision.decided_at",
+        "decision.decision",
+        "decision.reason",
+        "decision.risk_score",
+        "decision.tool_call_id",
+        "graph.edges",
+        "graph.nodes",
+        "graph.spaces",
+        "platform.dashboard",
+        "policy.decisions",
+        "policy.tool_calls",
+        "psycopg2.connect",
+        "quant.backtests",
+        "tool.capability",
+        "tool.id",
+        "tool.trace_id"
+      ],
+      "code_sha256": "14f090774c8d2ba56aec2a24a6a6a785618e47ea393d28c7439763490bf341e0"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/ui/operations/detail",
+      "file": "apps/api/main.py",
+      "line": 3510,
+      "tables": [
+        "agents_by_task.get",
+        "agents_by_task.setdefault",
+        "app.post",
+        "config.database_url",
+        "control.agent_runs",
+        "control.missions",
+        "control.task_runs",
+        "control.workflow_runs",
+        "cur.close",
+        "cur.execute",
+        "cur.fetchall",
+        "platform.dashboard",
+        "psycopg2.connect",
+        "tasks_by_workflow.get",
+        "tasks_by_workflow.setdefault",
+        "tasks_by_workflow.values",
+        "workflows_by_mission.get",
+        "workflows_by_mission.setdefault",
+        "workflows_by_mission.values"
+      ],
+      "code_sha256": "14f090774c8d2ba56aec2a24a6a6a785618e47ea393d28c7439763490bf341e0"
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/graph/spaces",
+      "file": "apps/api/main.py",
+      "line": 3602,
+      "tables": [
+        "app.post",
+        "config.database_url",
+        "graph.space",
+        "payload.cluster_key",
+        "payload.description",
+        "payload.key",
+        "payload.level",
+        "payload.model_dump",
+        "payload.name"
+      ],
+      "code_sha256": "14f090774c8d2ba56aec2a24a6a6a785618e47ea393d28c7439763490bf341e0"
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/graph/nodes",
+      "file": "apps/api/main.py",
+      "line": 3622,
+      "tables": [
+        "app.post",
+        "config.database_url",
+        "graph.node",
+        "payload.canonical_key",
+        "payload.label",
+        "payload.model_dump",
+        "payload.node_type",
+        "payload.properties",
+        "payload.space_key"
+      ],
+      "code_sha256": "14f090774c8d2ba56aec2a24a6a6a785618e47ea393d28c7439763490bf341e0"
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/graph/edges",
+      "file": "apps/api/main.py",
+      "line": 3641,
+      "tables": [
+        "app.post",
+        "config.database_url",
+        "graph.edge",
+        "payload.model_dump",
+        "payload.relation_type",
+        "payload.source_node_id",
+        "payload.space_key",
+        "payload.target_node_id",
+        "payload.weight"
+      ],
+      "code_sha256": "14f090774c8d2ba56aec2a24a6a6a785618e47ea393d28c7439763490bf341e0"
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/graph/bridges",
+      "file": "apps/api/main.py",
+      "line": 3660,
+      "tables": [
+        "app.get",
+        "config.database_url",
+        "graph.bridge",
+        "payload.model_dump",
+        "payload.relation_type",
+        "payload.source_node_id",
+        "payload.source_space_key",
+        "payload.target_node_id",
+        "payload.target_space_key",
+        "payload.weight"
+      ],
+      "code_sha256": "14f090774c8d2ba56aec2a24a6a6a785618e47ea393d28c7439763490bf341e0"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/graph/neighbors",
+      "file": "apps/api/main.py",
+      "line": 3680,
+      "tables": [
+        "app.get",
+        "config.database_url",
+        "graph.neighbors"
+      ],
+      "code_sha256": "14f090774c8d2ba56aec2a24a6a6a785618e47ea393d28c7439763490bf341e0"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/graph/routes",
+      "file": "apps/api/main.py",
+      "line": 3703,
+      "tables": [
+        "app.get",
+        "config.database_url",
+        "graph.route"
+      ],
+      "code_sha256": "14f090774c8d2ba56aec2a24a6a6a785618e47ea393d28c7439763490bf341e0"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/graph/governance",
+      "file": "apps/api/main.py",
+      "line": 3747,
+      "tables": [
+        "app.get",
+        "config.database_url",
+        "graph.governance"
+      ],
+      "code_sha256": "14f090774c8d2ba56aec2a24a6a6a785618e47ea393d28c7439763490bf341e0"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/graph/nodes/{node_id}/revisions",
+      "file": "apps/api/main.py",
+      "line": 3761,
+      "tables": [
+        "app.post",
+        "config.database_url",
+        "graph.governance"
+      ],
+      "code_sha256": "14f090774c8d2ba56aec2a24a6a6a785618e47ea393d28c7439763490bf341e0"
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/graph/nodes/{node_id}/retire",
+      "file": "apps/api/main.py",
+      "line": 3778,
+      "tables": [
+        "app.post",
+        "config.database_url",
+        "graph.node",
+        "payload.model_dump",
+        "payload.reason"
+      ],
+      "code_sha256": "14f090774c8d2ba56aec2a24a6a6a785618e47ea393d28c7439763490bf341e0"
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/graph/nodes/{node_id}/revisions/{revision_id}/rollback",
+      "file": "apps/api/main.py",
+      "line": 3796,
+      "tables": [
+        "app.get",
+        "config.database_url",
+        "graph.node",
+        "payload.model_dump"
+      ],
+      "code_sha256": "14f090774c8d2ba56aec2a24a6a6a785618e47ea393d28c7439763490bf341e0"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/graph/conflicts",
+      "file": "apps/api/main.py",
+      "line": 3816,
+      "tables": [
+        "app.post",
+        "config.database_url",
+        "graph.governance"
+      ],
+      "code_sha256": "14f090774c8d2ba56aec2a24a6a6a785618e47ea393d28c7439763490bf341e0"
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/graph/nodes/merge",
+      "file": "apps/api/main.py",
+      "line": 3832,
+      "tables": [
+        "app.post",
+        "config.database_url",
+        "graph.node",
+        "payload.expected_revision",
+        "payload.model_dump",
+        "payload.reason",
+        "payload.source_keys",
+        "payload.space_key",
+        "payload.target_key"
+      ],
+      "code_sha256": "14f090774c8d2ba56aec2a24a6a6a785618e47ea393d28c7439763490bf341e0"
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/graph/nodes/split",
+      "file": "apps/api/main.py",
+      "line": 3855,
+      "tables": [
+        "app.post",
+        "config.database_url",
+        "graph.node",
+        "part.model_dump",
+        "payload.expected_revision",
+        "payload.model_dump",
+        "payload.parts",
+        "payload.reason",
+        "payload.source_key",
+        "payload.space_key"
+      ],
+      "code_sha256": "14f090774c8d2ba56aec2a24a6a6a785618e47ea393d28c7439763490bf341e0"
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/graph/arbitration/resolve",
+      "file": "apps/api/main.py",
+      "line": 3878,
+      "tables": [
+        "app.get",
+        "config.database_url",
+        "graph.arbitration",
+        "payload.case_id",
+        "payload.decision",
+        "payload.merge",
+        "payload.model_dump",
+        "payload.reason"
+      ],
+      "code_sha256": "14f090774c8d2ba56aec2a24a6a6a785618e47ea393d28c7439763490bf341e0"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/graph/merges",
+      "file": "apps/api/main.py",
+      "line": 3900,
+      "tables": [
+        "app.get",
+        "config.database_url",
+        "graph.governance"
+      ],
+      "code_sha256": "14f090774c8d2ba56aec2a24a6a6a785618e47ea393d28c7439763490bf341e0"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/graph/splits",
+      "file": "apps/api/main.py",
+      "line": 3917,
+      "tables": [
+        "app.get",
+        "config.database_url",
+        "graph.governance"
+      ],
+      "code_sha256": "14f090774c8d2ba56aec2a24a6a6a785618e47ea393d28c7439763490bf341e0"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/graph/visualization",
+      "file": "apps/api/main.py",
+      "line": 3934,
+      "tables": [
+        "app.post",
+        "config.database_url",
+        "graph.visualize"
+      ],
+      "code_sha256": "14f090774c8d2ba56aec2a24a6a6a785618e47ea393d28c7439763490bf341e0"
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/graph/extractions/preview",
+      "file": "apps/api/main.py",
+      "line": 3961,
+      "tables": [
+        "app.post",
+        "c.to_json",
+        "config.database_url",
+        "knowledge.extract",
+        "payload.model_dump"
+      ],
+      "code_sha256": "14f090774c8d2ba56aec2a24a6a6a785618e47ea393d28c7439763490bf341e0"
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/graph/extractions/propose",
+      "file": "apps/api/main.py",
+      "line": 3991,
+      "tables": [
+        "app.get",
+        "app.tenant_id",
+        "c.to_json",
+        "config.database_url",
+        "connection.cursor",
+        "cur.execute",
+        "cur.fetchone",
+        "iam.tenants",
+        "knowledge.change_sets",
+        "knowledge.extract",
+        "payload.document_id",
+        "payload.model_dump",
+        "payload.space_key",
+        "psycopg2.connect",
+        "service.route_candidates",
+        "service.stage_proposal",
+        "staged.candidates",
+        "staged.conflicts",
+        "staged.rejected"
+      ],
+      "code_sha256": "14f090774c8d2ba56aec2a24a6a6a785618e47ea393d28c7439763490bf341e0"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/graph/extractions/proposals",
+      "file": "apps/api/main.py",
+      "line": 4047,
+      "tables": [
+        "app.post",
+        "config.database_url",
+        "knowledge.extract",
+        "lifecycle.list_changesets"
+      ],
+      "code_sha256": "14f090774c8d2ba56aec2a24a6a6a785618e47ea393d28c7439763490bf341e0"
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/graph/extractions/proposals/{proposal_id}/approve",
+      "file": "apps/api/main.py",
+      "line": 4069,
+      "tables": [
+        "app.post",
+        "config.database_url",
+        "graph.change",
+        "lifecycle.apply_changeset"
+      ],
+      "code_sha256": "14f090774c8d2ba56aec2a24a6a6a785618e47ea393d28c7439763490bf341e0"
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/graph/extractions/proposals/{proposal_id}/reject",
+      "file": "apps/api/main.py",
+      "line": 4096,
+      "tables": [
+        "app.post",
+        "config.database_url",
+        "graph.change",
+        "lifecycle.reject_changeset"
+      ],
+      "code_sha256": "14f090774c8d2ba56aec2a24a6a6a785618e47ea393d28c7439763490bf341e0"
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/audit/ledger",
+      "file": "apps/api/main.py",
+      "line": 4121,
+      "tables": [
+        "app.get",
+        "audit.ledger",
+        "config.database_url",
+        "csv_path.relative_to",
+        "payload.amount_threshold",
+        "payload.csv_path",
+        "payload.engagement_name",
+        "result.anomalies",
+        "result.duplicate_rows",
+        "result.engagement_id",
+        "result.missing_amounts",
+        "result.rows"
+      ],
+      "code_sha256": "14f090774c8d2ba56aec2a24a6a6a785618e47ea393d28c7439763490bf341e0"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/audit/engagements",
+      "file": "apps/api/main.py",
+      "line": 4146,
+      "tables": [
+        "app.get",
+        "audit.chain",
+        "config.database_url"
+      ],
+      "code_sha256": "14f090774c8d2ba56aec2a24a6a6a785618e47ea393d28c7439763490bf341e0"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/audit/engagements/{engagement_id}/lineage",
+      "file": "apps/api/main.py",
+      "line": 4162,
+      "tables": [
+        "app.post",
+        "audit.chain",
+        "config.database_url"
+      ],
+      "code_sha256": "14f090774c8d2ba56aec2a24a6a6a785618e47ea393d28c7439763490bf341e0"
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/audit/findings/confirm",
+      "file": "apps/api/main.py",
+      "line": 4185,
+      "tables": [
+        "app.get",
+        "audit.finding",
+        "config.database_url",
+        "payload.candidate_id",
+        "payload.model_dump",
+        "payload.reviewer_label"
+      ],
+      "code_sha256": "14f090774c8d2ba56aec2a24a6a6a785618e47ea393d28c7439763490bf341e0"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/quant/backtests",
+      "file": "apps/api/main.py",
+      "line": 4208,
+      "tables": [
+        "app.get",
+        "config.database_url",
+        "quant.chain"
+      ],
+      "code_sha256": "14f090774c8d2ba56aec2a24a6a6a785618e47ea393d28c7439763490bf341e0"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/quant/backtests/{backtest_id}/lineage",
+      "file": "apps/api/main.py",
+      "line": 4224,
+      "tables": [
+        "app.get",
+        "config.database_url",
+        "quant.chain"
+      ],
+      "code_sha256": "14f090774c8d2ba56aec2a24a6a6a785618e47ea393d28c7439763490bf341e0"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/aiops/incidents",
+      "file": "apps/api/main.py",
+      "line": 4245,
+      "tables": [
+        "aiops.chain",
+        "app.get",
+        "config.database_url"
+      ],
+      "code_sha256": "14f090774c8d2ba56aec2a24a6a6a785618e47ea393d28c7439763490bf341e0"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/aiops/incidents/{incident_id}/lineage",
+      "file": "apps/api/main.py",
+      "line": 4261,
+      "tables": [
+        "aiops.chain",
+        "app.post",
+        "config.database_url"
+      ],
+      "code_sha256": "14f090774c8d2ba56aec2a24a6a6a785618e47ea393d28c7439763490bf341e0"
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/aiops/executions/{execution_id}/verify",
+      "file": "apps/api/main.py",
+      "line": 4277,
+      "tables": [
+        "aiops.canary",
+        "app.get",
+        "config.database_url",
+        "payload.model_dump",
+        "payload.outcome",
+        "payload.reviewer_label"
+      ],
+      "code_sha256": "14f090774c8d2ba56aec2a24a6a6a785618e47ea393d28c7439763490bf341e0"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/topology/clusters",
+      "file": "apps/api/main.py",
+      "line": 4299,
+      "tables": [
+        "app.get",
+        "config.database_url",
+        "topology.cluster"
+      ],
+      "code_sha256": "14f090774c8d2ba56aec2a24a6a6a785618e47ea393d28c7439763490bf341e0"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/topology/blueprints",
+      "file": "apps/api/main.py",
+      "line": 4315,
+      "tables": [
+        "app.get",
+        "config.database_url",
+        "topology.blueprint"
+      ],
+      "code_sha256": "14f090774c8d2ba56aec2a24a6a6a785618e47ea393d28c7439763490bf341e0"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/topology/releases",
+      "file": "apps/api/main.py",
+      "line": 4331,
+      "tables": [
+        "app.get",
+        "config.database_url",
+        "topology.plan"
+      ],
+      "code_sha256": "14f090774c8d2ba56aec2a24a6a6a785618e47ea393d28c7439763490bf341e0"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/topology/plans",
+      "file": "apps/api/main.py",
+      "line": 4347,
+      "tables": [
+        "app.get",
+        "config.database_url",
+        "topology.plan"
+      ],
+      "code_sha256": "14f090774c8d2ba56aec2a24a6a6a785618e47ea393d28c7439763490bf341e0"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/topology/bridges",
+      "file": "apps/api/main.py",
+      "line": 4363,
+      "tables": [
+        "app.post",
+        "config.database_url",
+        "topology.bridge"
+      ],
+      "code_sha256": "14f090774c8d2ba56aec2a24a6a6a785618e47ea393d28c7439763490bf341e0"
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/topology/chains/materialize",
+      "file": "apps/api/main.py",
+      "line": 4379,
+      "tables": [
+        "app.get",
+        "app.tenant_id",
+        "config.database_url",
+        "connection.cursor",
+        "cur.execute",
+        "payload.idempotency_key",
+        "payload.plan_key",
+        "payload.reason",
+        "psycopg2.connect",
+        "topology.chain"
+      ],
+      "code_sha256": "14f090774c8d2ba56aec2a24a6a6a785618e47ea393d28c7439763490bf341e0"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/topology/chains",
+      "file": "apps/api/main.py",
+      "line": 4422,
+      "tables": [
+        "app.get",
+        "config.database_url",
+        "topology.chain"
+      ],
+      "code_sha256": "14f090774c8d2ba56aec2a24a6a6a785618e47ea393d28c7439763490bf341e0"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/topology/chains/{chain_key}/intents",
+      "file": "apps/api/main.py",
+      "line": 4438,
+      "tables": [
+        "app.post",
+        "config.database_url",
+        "topology.intent"
+      ],
+      "code_sha256": "14f090774c8d2ba56aec2a24a6a6a785618e47ea393d28c7439763490bf341e0"
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/topology/chains/{chain_key}/approvals",
+      "file": "apps/api/main.py",
+      "line": 4455,
+      "tables": [
+        "app.get",
+        "app.tenant_id",
+        "config.database_url",
+        "connection.cursor",
+        "cur.execute",
+        "payload.chain_key",
+        "payload.decision",
+        "payload.idempotency_key",
+        "payload.reason",
+        "payload.slot_key",
+        "psycopg2.connect",
+        "topology.chain"
+      ],
+      "code_sha256": "14f090774c8d2ba56aec2a24a6a6a785618e47ea393d28c7439763490bf341e0"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/topology/chains/{chain_key}/approvals",
+      "file": "apps/api/main.py",
+      "line": 4504,
+      "tables": [
+        "app.post",
+        "config.database_url",
+        "topology.execution"
+      ],
+      "code_sha256": "14f090774c8d2ba56aec2a24a6a6a785618e47ea393d28c7439763490bf341e0"
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/topology/chains/{chain_key}/executions",
+      "file": "apps/api/main.py",
+      "line": 4521,
+      "tables": [
+        "app.get",
+        "app.tenant_id",
+        "config.database_url",
+        "connection.cursor",
+        "cur.execute",
+        "execute.isolated",
+        "payload.chain_key",
+        "payload.idempotency_key",
+        "payload.mode",
+        "payload.reason",
+        "psycopg2.connect",
+        "result.get",
+        "result.items",
+        "service.execute_chain",
+        "service.execute_chain_isolated",
+        "topology.chain"
+      ],
+      "code_sha256": "14f090774c8d2ba56aec2a24a6a6a785618e47ea393d28c7439763490bf341e0"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/topology/chains/{chain_key}/executions",
+      "file": "apps/api/main.py",
+      "line": 4584,
+      "tables": [
+        "app.post",
+        "config.database_url",
+        "topology.execution"
+      ],
+      "code_sha256": "14f090774c8d2ba56aec2a24a6a6a785618e47ea393d28c7439763490bf341e0"
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/topology/chains/{chain_key}/runs",
+      "file": "apps/api/main.py",
+      "line": 4601,
+      "tables": [
+        "app.get",
+        "app.tenant_id",
+        "config.database_url",
+        "connection.cursor",
+        "cur.execute",
+        "execute.isolated",
+        "payload.chain_key",
+        "payload.idempotency_key",
+        "payload.mode",
+        "payload.reason",
+        "psycopg2.connect",
+        "result.get",
+        "result.items",
+        "topology.chain"
+      ],
+      "code_sha256": "14f090774c8d2ba56aec2a24a6a6a785618e47ea393d28c7439763490bf341e0"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/topology/chains/{chain_key}/runs",
+      "file": "apps/api/main.py",
+      "line": 4664,
+      "tables": [
+        "app.get",
+        "config.database_url",
+        "topology.execution"
+      ],
+      "code_sha256": "14f090774c8d2ba56aec2a24a6a6a785618e47ea393d28c7439763490bf341e0"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/topology/runs/{run_id}",
+      "file": "apps/api/main.py",
+      "line": 4681,
+      "tables": [
+        "app.post",
+        "config.database_url",
+        "result.get",
+        "result.items",
+        "topology.execution"
+      ],
+      "code_sha256": "14f090774c8d2ba56aec2a24a6a6a785618e47ea393d28c7439763490bf341e0"
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/topology/runs/{run_id}/verifications",
+      "file": "apps/api/main.py",
+      "line": 4702,
+      "tables": [
+        "app.get",
+        "app.tenant_id",
+        "config.database_url",
+        "connection.cursor",
+        "cur.execute",
+        "payload.idempotency_key",
+        "payload.reason",
+        "payload.reference_run_id",
+        "psycopg2.connect",
+        "result.get",
+        "result.items",
+        "topology.chain"
+      ],
+      "code_sha256": "14f090774c8d2ba56aec2a24a6a6a785618e47ea393d28c7439763490bf341e0"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/topology/runs/{run_id}/verifications",
+      "file": "apps/api/main.py",
+      "line": 4760,
+      "tables": [
+        "app.get",
+        "config.database_url",
+        "topology.execution"
+      ],
+      "code_sha256": "14f090774c8d2ba56aec2a24a6a6a785618e47ea393d28c7439763490bf341e0"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/topology/verifications/{verification_id}",
+      "file": "apps/api/main.py",
+      "line": 4783,
+      "tables": [
+        "app.post",
+        "config.database_url",
+        "result.items",
+        "topology.execution"
+      ],
+      "code_sha256": "14f090774c8d2ba56aec2a24a6a6a785618e47ea393d28c7439763490bf341e0"
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/topology/verifications/{verification_id}/remediation",
+      "file": "apps/api/main.py",
+      "line": 4810,
+      "tables": [
+        "app.post",
+        "app.tenant_id",
+        "config.database_url",
+        "connection.cursor",
+        "cur.execute",
+        "payload.action",
+        "payload.idempotency_key",
+        "payload.reason",
+        "psycopg2.connect",
+        "result.get",
+        "result.items",
+        "topology.chain"
+      ],
+      "code_sha256": "14f090774c8d2ba56aec2a24a6a6a785618e47ea393d28c7439763490bf341e0"
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/topology/remediation/{proposal_id}/decisions",
+      "file": "apps/api/main.py",
+      "line": 4868,
+      "tables": [
+        "app.post",
+        "app.tenant_id",
+        "config.database_url",
+        "connection.cursor",
+        "cur.execute",
+        "payload.approver",
+        "payload.decision",
+        "payload.idempotency_key",
+        "payload.reason",
+        "psycopg2.connect",
+        "result.get",
+        "result.items",
+        "topology.chain"
+      ],
+      "code_sha256": "14f090774c8d2ba56aec2a24a6a6a785618e47ea393d28c7439763490bf341e0"
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/topology/remediation/{proposal_id}/runs",
+      "file": "apps/api/main.py",
+      "line": 4922,
+      "tables": [
+        "app.get",
+        "app.tenant_id",
+        "config.database_url",
+        "connection.cursor",
+        "cur.execute",
+        "execute.isolated",
+        "payload.idempotency_key",
+        "payload.reason",
+        "psycopg2.connect",
+        "result.get",
+        "result.items",
+        "topology.chain"
+      ],
+      "code_sha256": "14f090774c8d2ba56aec2a24a6a6a785618e47ea393d28c7439763490bf341e0"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/topology/remediation",
+      "file": "apps/api/main.py",
+      "line": 4988,
+      "tables": [
+        "app.get",
+        "config.database_url",
+        "topology.execution"
+      ],
+      "code_sha256": "14f090774c8d2ba56aec2a24a6a6a785618e47ea393d28c7439763490bf341e0"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/topology/remediation/{proposal_id}",
+      "file": "apps/api/main.py",
+      "line": 5013,
+      "tables": [
+        "app.post",
+        "config.database_url",
+        "result.items",
+        "topology.execution"
+      ],
+      "code_sha256": "14f090774c8d2ba56aec2a24a6a6a785618e47ea393d28c7439763490bf341e0"
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/topology/evidence/anchors",
+      "file": "apps/api/main.py",
+      "line": 5040,
+      "tables": [
+        "app.get",
+        "app.tenant_id",
+        "config.database_url",
+        "connection.cursor",
+        "cur.execute",
+        "payload.idempotency_key",
+        "payload.scope",
+        "psycopg2.connect",
+        "topology.evidence"
+      ],
+      "code_sha256": "14f090774c8d2ba56aec2a24a6a6a785618e47ea393d28c7439763490bf341e0"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/topology/evidence/verify",
+      "file": "apps/api/main.py",
+      "line": 5087,
+      "tables": [
+        "app.get",
+        "app.tenant_id",
+        "config.database_url",
+        "connection.cursor",
+        "cur.execute",
+        "psycopg2.connect",
+        "result.items",
+        "topology.evidence"
+      ],
+      "code_sha256": "14f090774c8d2ba56aec2a24a6a6a785618e47ea393d28c7439763490bf341e0"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/topology/evidence/export",
+      "file": "apps/api/main.py",
+      "line": 5123,
+      "tables": [
+        "app.get",
+        "app.tenant_id",
+        "config.database_url",
+        "connection.cursor",
+        "cur.execute",
+        "psycopg2.connect",
+        "result.items",
+        "topology.evidence"
+      ],
+      "code_sha256": "14f090774c8d2ba56aec2a24a6a6a785618e47ea393d28c7439763490bf341e0"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/topology/evidence/status",
+      "file": "apps/api/main.py",
+      "line": 5163,
+      "tables": [
+        "app.post",
+        "app.tenant_id",
+        "config.database_url",
+        "connection.cursor",
+        "cur.execute",
+        "psycopg2.connect",
+        "result.items",
+        "topology.evidence"
+      ],
+      "code_sha256": "14f090774c8d2ba56aec2a24a6a6a785618e47ea393d28c7439763490bf341e0"
+    },
+    {
+      "method": "POST",
+      "path": "/api/v1/topology/planning/intents",
+      "file": "apps/api/main.py",
+      "line": 5196,
+      "tables": [
+        "app.get",
+        "app.tenant_id",
+        "config.database_url",
+        "connection.cursor",
+        "cur.execute",
+        "payload.idempotency_key",
+        "payload.intent",
+        "payload.model_dump",
+        "payload.trace_id",
+        "psycopg2.connect",
+        "result.items",
+        "topology.blueprint_graph_links",
+        "topology.intent",
+        "topology.planning_intents"
+      ],
+      "code_sha256": "14f090774c8d2ba56aec2a24a6a6a785618e47ea393d28c7439763490bf341e0"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/topology/planning/intents",
+      "file": "apps/api/main.py",
+      "line": 5253,
+      "tables": [
+        "app.get",
+        "config.database_url",
+        "topology.intent"
+      ],
+      "code_sha256": "14f090774c8d2ba56aec2a24a6a6a785618e47ea393d28c7439763490bf341e0"
+    },
+    {
+      "method": "GET",
+      "path": "/api/v1/topology/planning/intents/{intent_id}",
+      "file": "apps/api/main.py",
+      "line": 5280,
+      "tables": [
+        "app.get",
+        "config.database_url",
+        "result.items",
+        "topology.intent"
+      ],
+      "code_sha256": "14f090774c8d2ba56aec2a24a6a6a785618e47ea393d28c7439763490bf341e0"
+    },
+    {
+      "method": "GET",
+      "path": "/",
+      "file": "apps/api/main.py",
+      "line": 5314,
+      "tables": [
+        "app.mount",
+        "index.html"
+      ],
+      "code_sha256": "14f090774c8d2ba56aec2a24a6a6a785618e47ea393d28c7439763490bf341e0"
+    }
+  ]
+}

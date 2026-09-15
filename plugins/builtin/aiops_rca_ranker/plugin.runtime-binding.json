@@ -1,0 +1,8 @@
+{
+  "schema_version": "1.0.0",
+  "plugin": {"id": "aiops.rca-ranker", "version": "0.1.0", "sha256": "24ec48982655190e2fb9c96d59590a4d815bf7476b930d77b9e374c8ba036d27"},
+  "protocol": {"id": "aiops.rca-ranker", "version": "0.1.0", "sha256": "d95bcf765c18f59e6ff32e60adf4340443d97c2c4f86b82e2ee984a0eb9f973c"},
+  "execution_mode": "isolated_subprocess",
+  "capabilities": ["aiops.rca.rank"],
+  "status": "verified"
+}

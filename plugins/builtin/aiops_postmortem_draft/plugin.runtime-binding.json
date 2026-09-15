@@ -1,0 +1,18 @@
+{
+  "schema_version": "1.0.0",
+  "plugin": {
+    "id": "aiops.postmortem-draft",
+    "version": "0.1.0",
+    "sha256": "b09beb2a6290a032842eba2e074f3930f367a9e75617bad8699cdefc22206d62"
+  },
+  "protocol": {
+    "id": "aiops.postmortem-draft",
+    "version": "0.1.0",
+    "sha256": "d2a70703928521133aa62cb4fa6fdfb903d8085011dd0b8ccf501ee07c255996"
+  },
+  "execution_mode": "isolated_subprocess",
+  "capabilities": [
+    "aiops.postmortem.draft"
+  ],
+  "status": "verified"
+}

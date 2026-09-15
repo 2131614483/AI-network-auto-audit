@@ -1,0 +1,18 @@
+{
+  "schema_version": "1.0.0",
+  "plugin": {
+    "id": "audit.foundation.multi-source-collect",
+    "version": "0.1.0",
+    "sha256": "c30c239c55b7217d2587d0f257d461da824e28821ace9897d23ddd319b7c03ac"
+  },
+  "protocol": {
+    "id": "audit.foundation.multi-source-collect",
+    "version": "0.1.0",
+    "sha256": "ed96486831fde766c3c8317444e5d8960645adb9417602d7049ec38b5dabe732"
+  },
+  "execution_mode": "isolated_subprocess",
+  "capabilities": [
+    "audit.foundation.multi-source-collect"
+  ],
+  "status": "verified"
+}

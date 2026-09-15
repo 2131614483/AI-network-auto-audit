@@ -1,0 +1,18 @@
+{
+  "schema_version": "1.0.0",
+  "plugin": {
+    "id": "quant.simulated-backtest",
+    "version": "0.1.0",
+    "sha256": "cf5712a812da32ecfd8ed0c0c7b2df8c59110890091532f08dad3fb635ccb679"
+  },
+  "protocol": {
+    "id": "quant.simulated-backtest",
+    "version": "0.1.0",
+    "sha256": "aaf1f82d228a9a0f261f89853bbee3d150fb61bfb5030defed3440e1a60bcbca"
+  },
+  "execution_mode": "isolated_subprocess",
+  "capabilities": [
+    "quant.backtest.simulate"
+  ],
+  "status": "verified"
+}

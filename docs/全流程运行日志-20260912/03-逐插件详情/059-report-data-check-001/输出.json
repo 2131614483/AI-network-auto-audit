@@ -1,0 +1,31 @@
+{
+  "report-check-report": {
+    "checks": [
+      {
+        "check_id": "columns",
+        "message": "报告章节 8 个完整",
+        "status": "pass"
+      },
+      {
+        "check_id": "freshness",
+        "message": "报告汇总完整",
+        "status": "pass"
+      },
+      {
+        "check_id": "missing_rate",
+        "message": "报告未包含问题明细，需人工补充",
+        "status": "warn"
+      }
+    ],
+    "contract_id": "dataset-validation",
+    "contract_version": "1.0.0",
+    "snapshot_sha256": "0000000000000000000000000000000000000000000000000000000000000000",
+    "summary": {
+      "checked_columns": 3,
+      "checked_rows": 0,
+      "missing_values": 0,
+      "valid": true
+    },
+    "violations": []
+  }
+}

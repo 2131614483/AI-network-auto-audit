@@ -1,0 +1,18 @@
+{
+  "schema_version": "1.0.0",
+  "plugin": {
+    "id": "audit.finding.issue-grade",
+    "version": "0.1.0",
+    "sha256": "2a7469cb9e2b5c8f5f111d023778b8fc1e556e0c007e18cc4b5b2ba062aeb9a3"
+  },
+  "protocol": {
+    "id": "audit.finding.issue-grade",
+    "version": "0.1.0",
+    "sha256": "f793d54c9240e8927263a749448b46dd7280e8441bab8d56e516cc392c6951bc"
+  },
+  "execution_mode": "isolated_subprocess",
+  "capabilities": [
+    "audit.finding.issue-grade"
+  ],
+  "status": "verified"
+}

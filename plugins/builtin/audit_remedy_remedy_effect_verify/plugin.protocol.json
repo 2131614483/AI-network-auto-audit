@@ -1,0 +1,103 @@
+{
+ "protocol_version": "1.0.0",
+ "id": "audit.remedy.remedy-effect-verify",
+ "version": "0.1.0",
+ "name": "整改成效验证",
+ "description": "核实整改证据验证有效性；上游整改提交，调用证据校验；直接调取底稿/证据历史资料（跨阶段）。",
+ "kind": "analysis",
+ "domains": [
+  "audit",
+  "compliance"
+ ],
+ "lifecycle": "verified",
+ "compatibility": {
+  "host_protocol": ">=1.0.0 <2.0.0",
+  "adapters": [
+   "python"
+  ],
+  "fallback_behavior": "human_review"
+ },
+ "capabilities": [
+  {
+   "id": "audit.remedy.remedy-effect-verify",
+   "summary": "整改成效验证：核实整改证据验证有效性；上游整改提交，调用证据校验；直接调取底稿/证据历史资料（跨阶段）。",
+   "side_effects": "read_only",
+   "idempotency": "input_sha256 + capability_version",
+   "inputs": [
+    {
+     "contract_id": "remedy-evidence",
+     "version": "1.0.0",
+     "format": "artifact_ref",
+     "delivery": "reference",
+     "classification": "audit_confidential",
+     "schema_ref": "artifact-ref.schema.json",
+     "max_bytes": 268435456
+    },
+    {
+     "contract_id": "evidence-index",
+     "version": "1.0.0",
+     "format": "artifact_ref",
+     "delivery": "reference",
+     "classification": "audit_confidential",
+     "schema_ref": "evidence-lineage.schema.json",
+     "max_bytes": 16777216
+    }
+   ],
+   "outputs": [
+    {
+     "contract_id": "remedy-verdict",
+     "version": "1.0.0",
+     "format": "json",
+     "delivery": "request_response",
+     "classification": "audit_confidential",
+     "schema_ref": "dataset-validation.schema.json",
+     "max_bytes": 4194304
+    }
+   ],
+   "invokes": [
+    "audit.foundation.lineage-track"
+   ]
+  }
+ ],
+ "governance": {
+  "default_data_classification": "audit_confidential",
+  "permissions": {
+   "data_read": [
+    "audit.remedy.remedy-effect-verify.read"
+   ],
+   "data_write": [],
+   "network": "none",
+   "secret_refs": []
+  },
+  "policy": {
+   "gateway_required": true,
+   "approval_required": false,
+   "evidence_required": true
+  }
+ },
+ "resources": {
+  "cpu": 1,
+  "memory_mb": 256,
+  "gpu": "none",
+  "timeout_seconds": 300
+ },
+ "observability": {
+  "trace_required": true,
+  "emits": [
+   "structured_log",
+   "artifact_ref",
+   "audit_event"
+  ],
+  "health": "declared_only"
+ },
+ "provenance": {
+  "source_refs": [
+   "docs/audit-plugin-network-100.md#91",
+   "docs/插件开发与接入标准-UPP-v1.0.md",
+   "plugins/builtin/audit_remedy_remedy_effect_verify/runtime.py"
+  ]
+ },
+ "ui": {
+  "mode": "none"
+ }
+}

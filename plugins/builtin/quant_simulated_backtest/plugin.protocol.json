@@ -1,0 +1,93 @@
+{
+  "protocol_version": "1.0.0",
+  "id": "quant.simulated-backtest",
+  "version": "0.1.0",
+  "name": "量化模拟回测",
+  "description": "声明点时行情快照、策略版本与模拟报告之间的非交易性研究契约。",
+  "kind": "quant",
+  "domains": [
+    "quant",
+    "audit"
+  ],
+  "lifecycle": "contract_only",
+  "compatibility": {
+    "host_protocol": ">=1.0.0 <2.0.0",
+    "adapters": [
+      "python",
+      "node",
+      "container",
+      "wasm"
+    ],
+    "fallback_behavior": "reject"
+  },
+  "capabilities": [
+    {
+      "id": "quant.backtest.simulate",
+      "summary": "基于冻结快照生成可复核的模拟回测报告，不产生交易请求。",
+      "side_effects": "read_only",
+      "idempotency": "strategy_hash_and_snapshot_hash",
+      "inputs": [
+        {
+          "contract_id": "market-snapshot-ref",
+          "version": "1.0.0",
+          "format": "artifact_ref",
+          "delivery": "reference",
+          "classification": "restricted",
+          "schema_ref": "market-snapshot-ref.schema.json"
+        }
+      ],
+      "outputs": [
+        {
+          "contract_id": "backtest-report",
+          "version": "1.0.0",
+          "format": "json",
+          "delivery": "artifact_ref",
+          "classification": "restricted",
+          "schema_ref": "backtest-report.schema.json"
+        }
+      ]
+    }
+  ],
+  "governance": {
+    "default_data_classification": "restricted",
+    "permissions": {
+      "data_read": [
+        "quant.market_snapshot"
+      ],
+      "data_write": [],
+      "network": "none",
+      "secret_refs": []
+    },
+    "policy": {
+      "gateway_required": true,
+      "approval_required": false,
+      "evidence_required": true
+    }
+  },
+  "resources": {
+    "cpu": 2,
+    "memory_mb": 512,
+    "gpu": "optional",
+    "timeout_seconds": 1800
+  },
+  "observability": {
+    "trace_required": true,
+    "emits": [
+      "structured_log",
+      "metric",
+      "artifact_ref",
+      "audit_event"
+    ],
+    "health": "declared_only"
+  },
+  "provenance": {
+    "source_refs": [
+      "docs/plugin-protocol.md",
+      "docs/plugin-topology-orchestration.md#2.1"
+    ]
+  },
+  "ui": {
+    "mode": "declarative",
+    "contribution_schema": "ui-contribution.schema.json"
+  }
+}

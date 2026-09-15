@@ -1,0 +1,18 @@
+{
+  "schema_version": "1.0.0",
+  "plugin": {
+    "id": "audit.mandate.strategy-align",
+    "version": "0.1.0",
+    "sha256": "90bfaeec890fd22bc1f9fddacaee473aa697c44198cff837bcecb128715d9fef"
+  },
+  "protocol": {
+    "id": "audit.mandate.strategy-align",
+    "version": "0.1.0",
+    "sha256": "fc6e7a2c26a68cd1a223b5cf92d60fd6f619092446810cbb1ba13ea994e66fad"
+  },
+  "execution_mode": "isolated_subprocess",
+  "capabilities": [
+    "audit.mandate.strategy-align"
+  ],
+  "status": "verified"
+}

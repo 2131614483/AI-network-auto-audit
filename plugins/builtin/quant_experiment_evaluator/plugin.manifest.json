@@ -1,0 +1,33 @@
+{
+  "id": "quant.experiment-evaluator",
+  "version": "0.1.0",
+  "name": "量化实验评估（研究提案草稿，本地只读）",
+  "runtime": "python",
+  "entrypoint": "plugins.builtin.quant_experiment_evaluator.runtime:handle",
+  "capabilities": ["quant.experiment.evaluate"],
+  "inputs": {
+    "capability": "quant.experiment.evaluate",
+    "schema": "backtest-report.schema.json",
+    "content_type": "application/json"
+  },
+  "outputs": {
+    "capability": "quant.experiment.evaluate",
+    "schema": "experiment-evaluation@1.0.0",
+    "content_type": "application/json"
+  },
+  "side_effects": "read_only",
+  "idempotency": "report_sha256 + baseline_sha256",
+  "permissions": {
+    "data_read": ["quant.backtest_report", "quant.backtest_report_baseline"],
+    "data_write": [],
+    "network": "none",
+    "secrets": []
+  },
+  "resources": {"cpu": 1, "memory_mb": 256, "gpu": false, "timeout_seconds": 300},
+  "data_classification": "restricted",
+  "evidence": {"preserve_inputs": true, "code_hash_required": true},
+  "tests": {
+    "contract": "tests/contract/test_quant_experiment_evaluator_contract.py",
+    "golden": "tests/unit/test_quant_experiment_evaluator_runtime.py"
+  }
+}

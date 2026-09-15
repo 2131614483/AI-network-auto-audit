@@ -1,0 +1,18 @@
+{
+  "schema_version": "1.0.0",
+  "plugin": {
+    "id": "audit.field.site-checkin-track",
+    "version": "0.1.0",
+    "sha256": "2d5b3a36d27ca8d19aec931a13ae6058d2438c84299028eb180e525918637f34"
+  },
+  "protocol": {
+    "id": "audit.field.site-checkin-track",
+    "version": "0.1.0",
+    "sha256": "e9b937b73512f5953c80a3cb152e3eda22957e120a71dea71ce213db087770e9"
+  },
+  "execution_mode": "isolated_subprocess",
+  "capabilities": [
+    "audit.field.site-checkin-track"
+  ],
+  "status": "verified"
+}

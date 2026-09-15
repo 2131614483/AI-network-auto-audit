@@ -1,0 +1,18 @@
+{
+  "schema_version": "1.0.0",
+  "plugin": {
+    "id": "audit.remedy.remedy-close",
+    "version": "0.1.0",
+    "sha256": "77cd6e7f4e46f2723178d074cafd20a3b35db69dd183e6c3efb17d17af90c517"
+  },
+  "protocol": {
+    "id": "audit.remedy.remedy-close",
+    "version": "0.1.0",
+    "sha256": "805729b07ce92cd70b7322293d5a8345311e3b7ec7ae2c782acc45812394c64a"
+  },
+  "execution_mode": "isolated_subprocess",
+  "capabilities": [
+    "audit.remedy.remedy-close"
+  ],
+  "status": "verified"
+}

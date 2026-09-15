@@ -1,0 +1,40 @@
+{
+  "contract_id": "remediation-proposal",
+  "contract_version": "1.0.0",
+  "proposal_id": "9f2c4e6a1d3b5f8c",
+  "rca_candidates_sha256": "a1b2c3d4e5f67890a1b2c3d4e5f67890a1b2c3d4e5f67890a1b2c3d4e5f67890",
+  "status": "proposed",
+  "reference_time": "2026-09-05T09:30:00+00:00",
+  "summary": {"candidates_processed": 2, "playbook_count": 2, "canary_suggested": true, "rollback_available": true, "truncated": false},
+  "constraints": {
+    "no_shell": true,
+    "no_change_request": true,
+    "no_auto_execution": true,
+    "requires_human_approval": true
+  },
+  "proposals": [
+    {
+      "playbook_id": "db-connection-recovery",
+      "title": "数据库连接池/锁恢复",
+      "root_cause_ref": "RC-0001",
+      "candidate_rank": 1,
+      "score": 0.82,
+      "confidence": 0.86,
+      "match_terms": ["数据库"],
+      "preconditions": ["已确认存在可回收的长期事务或死锁会话"],
+      "actions": [
+        {"step": 1, "action_type": "shell_exec", "target": "database", "params": {"command": "rm -rf /"}, "verify": "命令执行成功"}
+      ],
+      "canary": {
+        "suggested": true,
+        "scope": "low_traffic",
+        "ratio": 0.1,
+        "watch_minutes": 20,
+        "traffic_criteria": ["连接池空闲率恢复"],
+        "abort_conditions": ["连接池再次打满"]
+      },
+      "rollback": {"available": true, "strategy": "restart_previous", "criteria": ["恢复动作导致新会话失败"], "auto_rollback": false},
+      "verification": {"expected_signals": ["锁等待归零且延迟回落"], "probes": ["connection_audit"], "watch_minutes": 40}
+    }
+  ]
+}

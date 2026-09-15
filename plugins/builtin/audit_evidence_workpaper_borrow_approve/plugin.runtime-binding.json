@@ -1,0 +1,18 @@
+{
+  "schema_version": "1.0.0",
+  "plugin": {
+    "id": "audit.evidence.workpaper-borrow-approve",
+    "version": "0.1.0",
+    "sha256": "7bb0762ff406ce7a57c977cf7aa67439657b6600e3294254ca1abac354c73aea"
+  },
+  "protocol": {
+    "id": "audit.evidence.workpaper-borrow-approve",
+    "version": "0.1.0",
+    "sha256": "48971a57645f4e116dbe258e69d442fc9128bd3f873abb792875526315421837"
+  },
+  "execution_mode": "isolated_subprocess",
+  "capabilities": [
+    "audit.evidence.workpaper-borrow-approve"
+  ],
+  "status": "verified"
+}

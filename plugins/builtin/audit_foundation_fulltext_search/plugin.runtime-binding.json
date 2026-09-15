@@ -1,0 +1,18 @@
+{
+  "schema_version": "1.0.0",
+  "plugin": {
+    "id": "audit.foundation.fulltext-search",
+    "version": "0.1.0",
+    "sha256": "c74b709b43371838bffd3595327648e465383fa4b5d56e5b81be7d7646d0077c"
+  },
+  "protocol": {
+    "id": "audit.foundation.fulltext-search",
+    "version": "0.1.0",
+    "sha256": "774817937215773745a47470d63dd14f838310d9eef0bd2f31a657c92e493376"
+  },
+  "execution_mode": "isolated_subprocess",
+  "capabilities": [
+    "audit.foundation.fulltext-search"
+  ],
+  "status": "verified"
+}

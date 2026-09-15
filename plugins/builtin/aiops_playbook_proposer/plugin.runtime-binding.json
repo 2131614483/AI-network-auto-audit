@@ -1,0 +1,8 @@
+{
+  "schema_version": "1.0.0",
+  "plugin": {"id": "aiops.playbook-proposer", "version": "0.1.0", "sha256": "b60fc9ccbfd4b7a6666ec446c7fa48381a193e2032961f1de9a9bbdf5a0b09e3"},
+  "protocol": {"id": "aiops.playbook-proposer", "version": "0.1.0", "sha256": "86046a79c9aef5232bbb63cf9c6e41785aca4dec80e6ac19360c3855cd1be9ad"},
+  "execution_mode": "isolated_subprocess",
+  "capabilities": ["aiops.remediation.propose"],
+  "status": "verified"
+}

@@ -1,0 +1,27 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://audit.local/contracts/topology-recycle.schema.json",
+  "title": "TopologyRecycle",
+  "description": "插件拓扑回收/恢复服务载荷。回收只做快照软删除（证据不可硬删除）；恢复必须显式引用回收记录。",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["recycle_type", "entity_kind", "entity_key", "idempotency_key"],
+  "properties": {
+    "recycle_type": {"type": "string", "enum": ["recycled", "restored"]},
+    "entity_kind": {"type": "string", "enum": ["cluster", "blueprint", "edge", "membership", "binding"]},
+    "entity_key": {"type": "string", "minLength": 1, "maxLength": 200},
+    "idempotency_key": {"type": "string", "minLength": 1, "maxLength": 255},
+    "trace_id": {"type": "string", "format": "uuid"},
+    "restored_from_recycle_id": {"type": "string", "format": "uuid"},
+    "reason": {"type": "string", "maxLength": 1000},
+    "created_by": {"type": "string", "format": "uuid"}
+  },
+  "allOf": [
+    {
+      "if": {"properties": {"recycle_type": {"const": "restored"}}, "required": ["recycle_type"]},
+      "then": {
+        "required": ["restored_from_recycle_id"]
+      }
+    }
+  ]
+}

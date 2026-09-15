@@ -1,0 +1,18 @@
+{
+  "schema_version": "1.0.0",
+  "plugin": {
+    "id": "audit.remedy.remedy-plan-review",
+    "version": "0.1.0",
+    "sha256": "8807b27e4a6afa9e2bb1350ea4adfdfc34e40544e0d35746d8697f7e43514d22"
+  },
+  "protocol": {
+    "id": "audit.remedy.remedy-plan-review",
+    "version": "0.1.0",
+    "sha256": "7aa2425727c970494583d15c8aedbed91f1e15c6d53627aaa4935ee92b41b025"
+  },
+  "execution_mode": "isolated_subprocess",
+  "capabilities": [
+    "audit.remedy.remedy-plan-review"
+  ],
+  "status": "verified"
+}

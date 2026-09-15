@@ -1,0 +1,33 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://audit.local/contracts/graph-route.schema.json",
+  "title": "BoundedMultiGraphRoute",
+  "description": "跨图路由响应必须显示实际经过的图空间和任何截断原因。",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["nodes", "edges", "visited_space_keys", "partial", "truncation_reasons", "budget"],
+  "properties": {
+    "nodes": {"type": "array", "items": {"type": "string", "format": "uuid"}},
+    "edges": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["source", "target", "relation", "weight", "kind", "source_space_key", "target_space_key"],
+        "properties": {
+          "source": {"type": "string", "format": "uuid"},
+          "target": {"type": "string", "format": "uuid"},
+          "relation": {"type": "string"},
+          "weight": {"type": "number"},
+          "kind": {"enum": ["internal", "bridge"]},
+          "source_space_key": {"type": "string"},
+          "target_space_key": {"type": "string"}
+        }
+      }
+    },
+    "visited_space_keys": {"type": "array", "uniqueItems": true, "items": {"type": "string"}},
+    "partial": {"type": "boolean"},
+    "truncation_reasons": {"type": "array", "uniqueItems": true, "items": {"enum": ["max_nodes", "max_edges", "max_frontier", "max_graphs", "max_hops", "max_bridge_hops", "max_latency_ms"]}},
+    "budget": {"$ref": "https://audit.local/contracts/graph-query-budget.schema.json"}
+  }
+}

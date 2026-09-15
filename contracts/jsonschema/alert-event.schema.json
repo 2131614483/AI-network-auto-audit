@@ -1,0 +1,21 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://audit.local/contracts/alert-event.schema.json",
+  "title": "AlertEvent",
+  "description": "不可变告警事件：来源、时间戳、级别、指纹与唯一键；只读归因输入，不包含任何执行指令或凭据。",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["contract_id", "contract_version", "event_id", "source", "occurred_at", "severity", "fingerprint", "summary"],
+  "properties": {
+    "contract_id": {"const": "alert-event"},
+    "contract_version": {"const": "1.0.0"},
+    "event_id": {"type": "string", "minLength": 1, "maxLength": 255},
+    "source": {"type": "string", "minLength": 1, "maxLength": 255},
+    "occurred_at": {"type": "string", "format": "date-time"},
+    "severity": {"type": "string", "enum": ["critical", "high", "medium", "low", "info"]},
+    "fingerprint": {"type": "string", "pattern": "^[A-Fa-f0-9]{64}$"},
+    "summary": {"type": "string", "minLength": 1, "maxLength": 1024},
+    "grouping_keys": {"type": "array", "maxItems": 4, "uniqueItems": true, "items": {"type": "string", "minLength": 1, "maxLength": 255}},
+    "labels": {"type": "object", "additionalProperties": {"type": "string"}}
+  }
+}

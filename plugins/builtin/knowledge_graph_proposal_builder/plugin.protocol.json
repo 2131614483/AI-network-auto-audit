@@ -1,0 +1,56 @@
+{
+  "protocol_version": "1.0.0",
+  "id": "knowledge.graph-proposal-builder",
+  "version": "0.1.0",
+  "name": "图谱提案构建",
+  "description": "把已抽取的实体/关系候选集合转换为确定性图谱 ChangeSet 草稿：每个操作携带来源定位、幂等键、目标空间以及对活图快照的重复/冲突标注。草稿不写活跃图谱、不接触领域表；由图谱治理服务在策略裁决与规则/人工批准后作为影子 ChangeSet 落库。",
+  "kind": "graph",
+  "domains": ["knowledge", "audit", "compliance"],
+  "lifecycle": "contract_only",
+  "compatibility": {"host_protocol": ">=1.0.0 <2.0.0", "adapters": ["python"], "fallback_behavior": "human_review"},
+  "capabilities": [
+    {
+      "id": "graph.proposal.build",
+      "summary": "将 graph-candidate-set@1 转换为 graph-proposal-draft@1：实体级重复/类型冲突检测、关系端点校验与确定性幂等键，输出草稿不发布到活图。",
+      "side_effects": "read_only",
+      "idempotency": "candidate_set_sha256 + space_level + max_proposals",
+      "inputs": [
+        {
+          "contract_id": "graph-candidate-set",
+          "version": "1.0.0",
+          "format": "artifact_ref",
+          "delivery": "reference",
+          "classification": "internal",
+          "schema_ref": "graph-candidate-set.schema.json"
+        },
+        {
+          "contract_id": "graph-snapshot",
+          "version": "1.0.0",
+          "format": "artifact_ref",
+          "delivery": "reference",
+          "classification": "internal",
+          "schema_ref": "graph-snapshot.schema.json"
+        }
+      ],
+      "outputs": [
+        {
+          "contract_id": "graph-proposal-draft",
+          "version": "1.0.0",
+          "format": "json",
+          "delivery": "request_response",
+          "classification": "internal",
+          "schema_ref": "graph-proposal-draft.schema.json"
+        }
+      ]
+    }
+  ],
+  "governance": {
+    "default_data_classification": "internal",
+    "permissions": {"data_read": ["knowledge.entity_relation_candidates", "graph.snapshot"], "data_write": [], "network": "none", "secret_refs": []},
+    "policy": {"gateway_required": true, "approval_required": false, "evidence_required": true}
+  },
+  "resources": {"cpu": 1, "memory_mb": 256, "gpu": "none", "timeout_seconds": 300},
+  "observability": {"trace_required": true, "emits": ["structured_log", "artifact_ref", "audit_event"], "health": "declared_only"},
+  "provenance": {"source_refs": ["docs/审计组网插件规划-v1.md#5.2", "docs/审计组网插件规划-v1.md#8", "docs/插件开发与接入标准-UPP-v1.0.md"]},
+  "ui": {"mode": "none"}
+}

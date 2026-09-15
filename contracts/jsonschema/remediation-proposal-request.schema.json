@@ -1,0 +1,16 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://audit.local/contracts/remediation-proposal-request.schema.json",
+  "title": "RemediationProposalRequest",
+  "description": "修复提案请求（M8）：对一条 status=drifted 的运行验证发起漂移处置——记录建议动作（继承 M7 回滚裁定动作枚举，可显式覆写但不越界）、受影响节点与基线摘要；纯 DB 证据投影、零子进程；必须携带幂等键；reason 必填说明处置用途；任意额外字段拒绝。",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["verification_id", "action", "reason", "idempotency_key"],
+  "properties": {
+    "verification_id": {"type": "string", "format": "uuid"},
+    "action": {"enum": ["re-verify", "re-run-locked-release", "escalate-human"]},
+    "reason": {"type": "string", "minLength": 1, "maxLength": 500},
+    "idempotency_key": {"type": "string", "minLength": 1, "maxLength": 255},
+    "trace_id": {"type": "string", "format": "uuid"}
+  }
+}

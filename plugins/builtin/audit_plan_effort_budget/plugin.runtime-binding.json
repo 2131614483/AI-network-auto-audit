@@ -1,0 +1,18 @@
+{
+  "schema_version": "1.0.0",
+  "plugin": {
+    "id": "audit.plan.effort-budget",
+    "version": "0.1.0",
+    "sha256": "8069886008738099b0ae3bcad1392c3426157d7983d7c2c23b4f5fc6c987f902"
+  },
+  "protocol": {
+    "id": "audit.plan.effort-budget",
+    "version": "0.1.0",
+    "sha256": "f1e2776143df41fa07ab3cac849a4d2998956641c92e285b0dde7bd67f2509df"
+  },
+  "execution_mode": "isolated_subprocess",
+  "capabilities": [
+    "audit.plan.effort-budget"
+  ],
+  "status": "verified"
+}

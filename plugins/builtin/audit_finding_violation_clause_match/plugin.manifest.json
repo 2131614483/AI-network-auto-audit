@@ -1,0 +1,45 @@
+{
+ "id": "audit.finding.violation-clause-match",
+ "version": "0.1.0",
+ "name": "违规条款匹配（契约声明）",
+ "runtime": "python",
+ "entrypoint": "plugins.builtin.audit_finding_violation_clause_match.runtime:handle",
+ "capabilities": [
+  "audit.finding.violation-clause-match"
+ ],
+ "inputs": {
+  "capability": "audit.finding.violation-clause-match",
+  "schema": "finding-draft.schema.json",
+  "content_type": "application/json"
+ },
+ "outputs": {
+  "capability": "audit.finding.violation-clause-match",
+  "schema": "finding-draft.schema.json",
+  "content_type": "application/json"
+ },
+ "side_effects": "read_only",
+ "idempotency": "input_sha256 + capability_version",
+ "permissions": {
+  "data_read": [
+   "audit.finding.violation-clause-match.read"
+  ],
+  "data_write": [],
+  "network": "none",
+  "secrets": []
+ },
+ "resources": {
+  "cpu": 1,
+  "memory_mb": 256,
+  "gpu": false,
+  "timeout_seconds": 300
+ },
+ "data_classification": "audit_confidential",
+ "evidence": {
+  "preserve_inputs": true,
+  "code_hash_required": true
+ },
+ "tests": {
+  "contract": "tests/contract/test_audit_finding_violation_clause_match_contract.py",
+  "golden": "tests/unit/test_audit_finding_violation_clause_match_runtime.py"
+ }
+}
