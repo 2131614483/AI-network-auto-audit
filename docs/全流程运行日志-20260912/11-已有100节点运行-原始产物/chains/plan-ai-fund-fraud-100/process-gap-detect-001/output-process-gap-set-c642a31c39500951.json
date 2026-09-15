@@ -1,1 +1,0 @@
-{"candidates": [{"note": "流程步骤「收货入库」缺少责任人", "row_ref": "process:P2", "rule_id": "PROC-0002", "rule_key": "process_gap", "score": 0.85, "severity": "high", "source_ref": "process-gap-detect"}], "contract_id": "anomaly-candidates", "contract_version": "1.0.0", "period": "2026", "summary": {"candidates": 1}}

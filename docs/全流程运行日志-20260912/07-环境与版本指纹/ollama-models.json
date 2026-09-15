@@ -1,4 +1,0 @@
-{
-  "error": "<urlopen error [WinError 10061] 由于目标计算机积极拒绝，无法连接。>",
-  "note": "采集时刻 Ollama 未运行；知识库向量检索会 fail-closed"
-}

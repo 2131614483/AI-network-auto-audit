@@ -1,1 +1,0 @@
-{"object_type": "ledger", "dimensions": ["amount-band", "entry-status", "risk-level"], "rows": [{"entry_id": "T1", "amount": "1200000", "status": "outlier", "severity": "高"}, {"entry_id": "T2", "amount": "50000", "status": "ok", "severity": "中"}]}
