@@ -18,12 +18,13 @@
 ## 目录
 
 - [项目介绍](#项目介绍)
+- [组网实战：四份实验报告（核心）](#组网实战四份实验报告核心)
 - [核心命题：AI 落地审计场景的三个痛点](#核心命题ai-落地审计场景的三个痛点)
 - [总体架构](#总体架构)
 - [AI 组网：六道闸门，模型永远不能自授权](#ai-组网六道闸门模型永远不能自授权)
 - [关键设计](#关键设计)
-- [可视化界面（图文）](#可视化界面图文)
 - [真实端到端案例](#真实端到端案例)
+- [可视化界面（精选）](#可视化界面精选)
 - [技术栈](#技术栈)
 - [目录结构](#目录结构)
 - [快速开始](#快速开始)
@@ -44,6 +45,19 @@
 - **结论可自证**：每个产物锁定 `sha256`，证据包可**离线独立复算**——不复用项目任何代码也能重算出一致的结论。
 
 项目代号 `audit_network`，自 2026-09 起逐阶段实施，已通过 **Phase 0–9、CW0–CW7 与插件拓扑 M1–M10 全部验收里程碑**（详见 [里程碑](#里程碑) 与 [docs/status.md](docs/status.md)）。
+
+## 组网实战：四份实验报告（核心）
+
+本项目的核心不是"又一个带界面的工具"，而是 **让 AI 自己把插件组成一条可跑、可复核、可复算的执行 DAG**。以下四份报告按时间顺序记录了组网从设计方向、真实业务实战、独立验证到多源数据复算的完整链路；每份都带 run_id / trace_id / sha256 / 证据包，可离线复验。**这是理解本项目应先读的部分。**
+
+| 日期 | 报告 | 一句话结论 |
+| --- | --- | --- |
+| 2026-09-08 | [AI 画布组网与全链路日志优化方案](docs/AI画布组网与全链路日志优化方案-20260908.md) | 确立演进方向：AI 选插件与连线 → 确定性编译器检查 → 统一调度执行 → 画布展示与干预 → 独立日志留痕；立项 5 个 P0 基础缺口（逐边数据流、发布快照冻结、短事务、完整日志） |
+| 2026-09-09 | [组网业务实战报告：日记账质检 → 回测](docs/组网业务实战报告-20260909.md) | 云端 AI 真实组网跑通：9 行日记账检出 6 项质量候选，送入回测 recommendation=**hold**；证据包离线复验 `ok=True` |
+| 2026-09-11 | [AI 组网 Demo 全链路功能验证报告](docs/AI组网Demo-全链路功能验证报告-20260911.md) | 独立验证（源码通读 + 实机重跑 + 独立复算 + A/B/C 对照）：链路真实可跑、业务结果可独立复算；同时定位 P0 路径穿越与悬挂运行态缺陷并逐条修复 |
+| 2026-09-14 | [多源业务数据组网 Demo 合格性审计](docs/审计报告-多源业务数据组网Demo.md) | 6 组开源数据集 / 2,775 条记录组成 **21 节点 / 23 边 / 6 层 DAG**；F1–F5 发现均可逐行回溯到行号金额，AAR 恒等式 **0/776 偏差**为整条网提供可信度锚 |
+
+> 最硬的一条：**不依赖项目任何代码，独立实现质检规则重算，得到与插件产物逐条一致的结果**——这就是"组网结论可被独立复算"的含义。四份报告相互独立、结论冲突处以实机证据为准。
 
 ## 核心命题：AI 落地审计场景的三个痛点
 
@@ -147,185 +161,6 @@ flowchart LR
 - **检索**：向量 + 全文 + 图谱混合 RRF（Reciprocal Rank Fusion）融合排序；多图谱按预算路由，防止海量图检索爆炸。
 - **闭环设计**：运行事实自动投影为经验证据（`L0 自动统计 → L1 候选关系 → L2 人工固化`），三级安全分级，**经验只改变概率分布，不改变权限集合**——这是把"经验"回流到 AI 组网的演进主线。
 
-## 可视化界面（图文）
-
-全套 **42 张真实界面截图**如下，全部来自仓库内实际运行界面（桌面驾驶舱 26 张 + Run 画布 7 帧过程序列 + 网页版可视化 9 张），统一维护在 [docs/screenshots/](docs/screenshots/)。
-
-### A. 桌面驾驶舱 —— 审计智能中枢（Electron + React 19，26 张）
-
-桌面端提供 **13 个工作台视图**：运行总览 / 任务编排 / 模型管理 / 知识库 / 插件工作台 / 审计工作台 / 量化工作台 / AIOps 工作台 / 审批中心 / 风险模拟 / 日志 / Run 画布 / AI 设置。核心姿态：**所有工具调用强制经过策略网关，GUI 不能绕过策略**；每个读取携带租户与 Trace ID、每次写入具备幂等键与 ChangeRequest 审计。以下按 10 个板块逐一展示。
-
-#### 01 运行总览
-
-以「租户隔离 + 策略优先」为默认姿态的控制平面首页：左侧平台导航，顶部「网关托管 / 控制平面已连接」状态横幅，核心数据为 773 项自动化测试、Phase 9 已验收、迁移版本头、安全 GUI 插槽等要素。
-
-<a href="docs/screenshots/desktop/overview.png"><img src="docs/screenshots/desktop/overview.png" width="72%" alt="运行总览"></a>
-
-#### 02 任务编排
-
-Mission → Workflow → Task → Agent 四层持久运行投影，全部来自当前租户实时数据库；下方「最近策略裁决」逐条记录时间、能力、结果、风险分、规则说明与 Trace ID。点击任意 Mission 行可逐层展开到**四层运行过程**（workflow_key / 节点 / 能力 / 尝试次数 / 角色 / Token 消耗 / 错误详情），数据来自只读详情端点 `GET /api/v1/ui/operations/detail`。
-
-<a href="docs/screenshots/desktop/operations.png"><img src="docs/screenshots/desktop/operations.png" width="48%" alt="任务编排列表"></a>
-<a href="docs/screenshots/desktop/ops-detail-4level.png"><img src="docs/screenshots/desktop/ops-detail-4level.png" width="48%" alt="任务编排四层运行过程"></a>
-
-#### 03 知识库
-
-文档入库、分块、向量化、解析的全链路状态（文档 159 / 知识块 555 / 已向量化 28 / 待解析 3）；文件导入面板提交至策略网关与本地处理队列，历史记录**只回收、不硬删除**。点击任意文档行展开完整元数据：文档 ID / 来源 URI / 版本 / 知识块数 / 向量状态 / 更新时间。
-
-<a href="docs/screenshots/desktop/knowledge.png"><img src="docs/screenshots/desktop/knowledge.png" width="48%" alt="知识库列表"></a>
-<a href="docs/screenshots/desktop/knowledge-detail.png"><img src="docs/screenshots/desktop/knowledge-detail.png" width="48%" alt="知识库文档展开详情"></a>
-
-#### 04 多级图谱治理
-
-L0–L4 分层、已登记有限桥接（仅 artifact_ref / capability_contract / released_graph_ref / health_signal 四类关系）与预算路由；拖拽、缩放或点击节点查看受限路径。右侧**节点与路由检查器**展示同图关系、跨图预算路径与可回滚版本历史；冲突收件箱遵循「来源主张保留、不自动删除」。
-
-<a href="docs/screenshots/desktop/graph.png"><img src="docs/screenshots/desktop/graph.png" width="48%" alt="多级图谱治理列表"></a>
-<a href="docs/screenshots/desktop/graph-detail.png"><img src="docs/screenshots/desktop/graph-detail.png" width="48%" alt="图谱节点检查器与图空间目录"></a>
-
-#### 05 插件拓扑工作台
-
-以集群（16）/ 规划蓝图（10，一律 plan_only）/ 能力契约 / 已验证运行时（23）四要素呈现插件生态；页面顶部明确横幅：**「此处显示的是规划蓝图，不是已安装插件。生成结果始终为 plan_only，不能执行、安装、取消或申请权限」**。
-
-- **影子模拟**：对调用链行执行前弹出受控确认框——「mode 恒为 simulated，不启动任何子进程，不触达外部系统」，产物为确定性影子输出 Ref + SHA256 写入执行版本；
-- **执行账本**：槽位 / 序号 / 模式 / 输出引用 / 输出校验和 / 状态 / 开始时间逐条留痕（`audit.ledger.validate`、`quant.research-note.draft` 均 succeeded）；
-- **审批账本**：同步记录策略决策、审批人与原因；未授权操作被网关拒绝并提示「请在审批中心按最小权限发布对应规则」（fail-closed）。
-
-<a href="docs/screenshots/desktop/plugins.png"><img src="docs/screenshots/desktop/plugins.png" width="48%" alt="插件拓扑工作台列表"></a>
-<a href="docs/screenshots/desktop/plugins-shadow-run.png"><img src="docs/screenshots/desktop/plugins-shadow-run.png" width="48%" alt="插件影子模拟确认"></a>
-
-<a href="docs/screenshots/desktop/plugins-chain-detail.png"><img src="docs/screenshots/desktop/plugins-chain-detail.png" width="48%" alt="插件调用链影子模拟确认"></a>
-<a href="docs/screenshots/desktop/plugins-executions-ledger-tab.png"><img src="docs/screenshots/desktop/plugins-executions-ledger-tab.png" width="48%" alt="插件执行账本"></a>
-
-<a href="docs/screenshots/desktop/plugins-executions-ledger.png"><img src="docs/screenshots/desktop/plugins-executions-ledger.png" width="48%" alt="插件执行账本（含状态）"></a>
-<a href="docs/screenshots/desktop/plugins-executions-ledger-ok.png"><img src="docs/screenshots/desktop/plugins-executions-ledger-ok.png" width="48%" alt="插件执行账本（全部 succeeded）"></a>
-
-<a href="docs/screenshots/desktop/plugins-approvals-ledger-tab.png"><img src="docs/screenshots/desktop/plugins-approvals-ledger-tab.png" width="72%" alt="插件审批账本"></a>
-
-#### 06 审计工作台
-
-项目（50）/ 发现（17，跨证据来源）/ 待确认异常候选（98，只读·人工审计）/ 策略裁决（30）四类证据统计；列表按 completed 展示，点击项目行打开**证据链血缘**——证据（类型 / 工件 ID / rows + sha256）/ 异常候选 / 已确认发现三个标签，评审人留痕（desktop-reviewer），confirm 为幂等操作。副标题明确：**「确认与操作都需自带账户 Trace」**。
-
-<a href="docs/screenshots/desktop/audit.png"><img src="docs/screenshots/desktop/audit.png" width="48%" alt="审计工作台列表"></a>
-<a href="docs/screenshots/desktop/audit-detail.png"><img src="docs/screenshots/desktop/audit-detail.png" width="48%" alt="审计项目列表与状态色阶"></a>
-
-<a href="docs/screenshots/desktop/audit-lineage.png"><img src="docs/screenshots/desktop/audit-lineage.png" width="72%" alt="审计项目证据链血缘"></a>
-
-#### 07 量化工作台
-
-50 条模拟回测记录全部为 `completed + simulated_only`，数据源指向本地合成价格文件（`csv:prices.csv`），**明确横幅「不含真实下单、不连真实行情」**；表格展示策略 / 状态 / 数据集 / 最新收益 / 波动 / 回撤 / 周期。点击行打开**回测证据链**：数据快照 SHA、代码 SHA、点时门 passed、仅模拟 true、收益与最大回撤指标，数据源定格说明为整条证据链背书。
-
-<a href="docs/screenshots/desktop/quant.png"><img src="docs/screenshots/desktop/quant.png" width="48%" alt="量化工作台列表"></a>
-<a href="docs/screenshots/desktop/quant-detail.png"><img src="docs/screenshots/desktop/quant-detail.png" width="48%" alt="量化模拟回测列表"></a>
-
-<a href="docs/screenshots/desktop/quant-lineage.png"><img src="docs/screenshots/desktop/quant-lineage.png" width="72%" alt="量化回测证据链血缘"></a>
-
-#### 08 AIOps 治理
-
-Phase 9 成果的桌面呈现：事故台账（50）+ 修复提案（160，无执行入口）+ 模拟执行（157，无外部执行器）+ 待核验 Canary（0，仅人工确认），执行边界始终为「仅本地模拟」。点击事故行打开**事故模拟证据链**：告警（来源 / 指纹 / 严重度 / 时间）/ 提案 / 变更授权 / 模拟执行 / 核验账本五个标签，完整呈现从告警到人工核验的受控治理链路。
-
-<a href="docs/screenshots/desktop/aiops.png"><img src="docs/screenshots/desktop/aiops.png" width="48%" alt="AIOps 治理列表"></a>
-<a href="docs/screenshots/desktop/aiops-detail.png"><img src="docs/screenshots/desktop/aiops-detail.png" width="48%" alt="AIOps 事故五标签证据链"></a>
-
-#### 09 审批中心
-
-当策略对某能力为 `REQUIRE_APPROVAL` 时，请求先落审批待办、请求方收到 409（fail-closed）——这里展示的 22 条 pending 的 `topology.execution.read`（read_only）正是「只读请求也会触发审批门」的直接证据。点击审批行展开完整字段：审批 ID / 工具调用 ID / 参数哈希 / 授权租约 / 理由 / Trace ID / 过期时间 / 裁决时间。
-
-<a href="docs/screenshots/desktop/approvals.png"><img src="docs/screenshots/desktop/approvals.png" width="48%" alt="审批中心列表"></a>
-<a href="docs/screenshots/desktop/approvals-detail.png"><img src="docs/screenshots/desktop/approvals-detail.png" width="48%" alt="审批行完整字段"></a>
-
-#### 10 风险 / 策略模拟
-
-发布策略前的模拟评估：输入目标能力（如 `graph.neighbors.read`），查看能力 / 风险等级 / 副作用 / 参数声明后运行安全模拟。返回**模拟裁决结果**——决策 ALLOW、风险分、命中规则 ID 与策略版本逐项列出，并提供完整 JSON 快照（decision_id / tool_call_id / reviewer_type）；**只模拟，不创建工具调用、审批或授权租约**。
-
-<a href="docs/screenshots/desktop/policy.png"><img src="docs/screenshots/desktop/policy.png" width="48%" alt="风险模拟表单"></a>
-<a href="docs/screenshots/desktop/policy-result.png"><img src="docs/screenshots/desktop/policy-result.png" width="48%" alt="风险模拟裁决结果"></a>
-
-### B. 桌面驾驶舱 —— Run 画布：AI 组网过程动画（7 帧连拍）
-
-纯前端只读、零后端写面。把一次 AI 组网运行（凭证穿透 → 底稿编制 → 证据索引 → 问题定性）变成可播放的动画：播放/暂停/单步/变速/拖动进度条，边三态（未导通灰 → 流动金 → 导通青绿虚线，失败红），下钻面板逐条列出"数据从哪传入 / 产出中间结果"并带 `sha256`。时间线与布局全部为**纯函数**（11 个 vitest 单测），曾借此修复一个真实死循环（最长路径分层在纯环图上 CPU 飙到 272 秒、永不收敛）。
-
-下方为该 run（6 节点 / 6 边 / 全程 4560ms）的 **7 帧连拍**（通过 `window.__flowDemo.seek(ms)` 暂停定位逐帧截取），完整呈现一次动态组网从"全员待命"到"全链路导通"的演变：
-
-| 帧   | 时刻      | 进度  | 画面状态                                                |
-| --- | ------- | --- | --------------------------------------------------- |
-| 1   | 0 ms    | 0/6 | 全部节点灰色待处理，所有连线未导通                                   |
-| 2   | 600 ms  | 1/6 | 凭证数据入口已产出（绿勾），**两路金色数据包**正飞向穿透查询与清洗                 |
-| 3   | 1600 ms | 2/6 | 凭证穿透查询已产出，财务数据清洗处理中（金框）                             |
-| 4   | 2400 ms | 3/6 | 审计底稿编制处理中，**汇聚两路输入**（voucher-detail + clean-ledger） |
-| 5   | 3150 ms | 4/6 | 证据索引关联处理中，上一链路变绿虚已达                                 |
-| 6   | 3900 ms | 5/6 | 问题金额核算处理中，链路接近全通                                    |
-| 7   | 4450 ms | 6/6 | **全链路导通**：全部连线绿色虚线、所有节点✓已产出                         |
-
-<a href="docs/screenshots/flow-canvas-frame-1.png"><img src="docs/screenshots/flow-canvas-frame-1.png" width="48%" alt="Run 画布 帧1：0/6 待处理"></a>
-<a href="docs/screenshots/flow-canvas-frame-2.png"><img src="docs/screenshots/flow-canvas-frame-2.png" width="48%" alt="Run 画布 帧2：1/6 数据包飞行"></a>
-
-*帧 1 → 帧 2：第一个种子节点点亮完成，金色数据包沿端口飞行；*
-
-<a href="docs/screenshots/flow-canvas-frame-3.png"><img src="docs/screenshots/flow-canvas-frame-3.png" width="48%" alt="Run 画布 帧3：2/6"></a>
-<a href="docs/screenshots/flow-canvas-frame-4.png"><img src="docs/screenshots/flow-canvas-frame-4.png" width="48%" alt="Run 画布 帧4：3/6 汇聚节点处理中"></a>
-
-*帧 3 → 帧 4：两路下游并行推进，审计底稿编制作为汇聚节点同时接收两路输入；*
-
-<a href="docs/screenshots/flow-canvas-frame-5.png"><img src="docs/screenshots/flow-canvas-frame-5.png" width="48%" alt="Run 画布 帧5：4/6"></a>
-<a href="docs/screenshots/flow-canvas-frame-6.png"><img src="docs/screenshots/flow-canvas-frame-6.png" width="48%" alt="Run 画布 帧6：5/6"></a>
-
-*帧 5 → 帧 6：证据索引与问题金额核算依次接力，链路逐段变绿；*
-
-<a href="docs/screenshots/flow-canvas-frame-7.png"><img src="docs/screenshots/flow-canvas-frame-7.png" width="48%" alt="Run 画布 帧7：6/6 全导通"></a>
-
-*帧 7：最终输出节点落定，全部连线绿色虚线，一次组网闭环完成（合成演示数据，零后端 / 零执行）。*
-
-### C. 网页版可视化（9 张）
-
-> 说明：`audit-brain/`、`plugin-flow-showcase/`、`web/` 为仓库内已入库页面；`.data/demo/*.html`（含 `starmap-demo/`）位于被 git 忽略的 `.data/` 目录（仅本机运行），因此仓库内统一以截图呈现。下方截图均为本地实测渲染结果。
-
-#### 01 项目功能演示页 —— 桌面控制平面综合演示
-
-一个深色主题、10 个演示区块的单页（运行总览 / 任务编排 / 知识库 / 图谱治理 / 插件拓扑 / 审计 / 量化 / AIOps / 审批 / 策略模拟），作为桌面控制平面的对外演示入口（.data/demo/index.html），下方每块都内嵌本仓库的真实界面截图。
-
-<a href="docs/screenshots/demo-home.png"><img src="docs/screenshots/demo-home.png" width="72%" alt="项目功能演示首页"></a>
-
-#### 02 组网业务网络图 —— 按业务域的 SVG 组网拓扑（4 张）
-
-从插件契约目录**确定性推导「理论上谁能连谁」**：按业务阶段分列（列=阶段），颜色=层（核心业务循环层 / 数据支撑层 / 治理优化层），data 边（传数据，实线）/ call 边（能力调用不传数据，虚线，可开关）/ 孤岛（有角色依据，菱形）分别染色，支持表格视图与同一份数据对照。四个业务域独立成页，统计如下：
-
-| 业务域   | 插件  | 边   | data 边 | call 边 | 种子输入 | 孤岛  |
-| ----- | --- | --- | ------ | ------ | ---- | --- |
-| 审计    | 107 | 110 | 76     | 34     | 49   | 15  |
-| 量化金融  | 5   | 2   | 2      | 0      | 4    | 2   |
-| AIOps | 7   | 5   | 5      | 0      | 5    | 1   |
-| 知识库   | 4   | 3   | 3      | 0      | 2    | 0   |
-
-<a href="docs/screenshots/network-audit.png"><img src="docs/screenshots/network-audit.png" width="48%" alt="审计业务域组网网络图"></a>
-<a href="docs/screenshots/network-quant.png"><img src="docs/screenshots/network-quant.png" width="48%" alt="量化业务域组网网络图"></a>
-
-<a href="docs/screenshots/network-aiops.png"><img src="docs/screenshots/network-aiops.png" width="48%" alt="AIOps 业务域组网网络图"></a>
-<a href="docs/screenshots/network-knowledge.png"><img src="docs/screenshots/network-knowledge.png" width="48%" alt="知识业务域组网网络图"></a>
-
-#### 03 展示组网星图 —— 交互式星图
-
-Canvas 2D 星图：业务域枢纽 + 插件卫星节点，拖拽平移 / 滚轮缩放 / 点击逐级展开，统计栏实时显示星点/连线/层级（.data/starmap-demo/index.html）。
-
-<a href="docs/screenshots/starmap-demo.png"><img src="docs/screenshots/starmap-demo.png" width="72%" alt="展示组网星图"></a>
-
-#### 04 审计插件大脑 —— 100 插件树状组网与数据接口流
-
-100 个插件挂入一棵树（根=审计大脑 → 治理优化层 6 → 核心业务循环层 76（8 阶段子树）→ 数据支撑层 18），实线=流程流转、菱形=判断分支、灰虚线=聚合数据输入流；无限画布 + 图层开关 + 视图二"接口批量设计"（94 条接口契约表）（audit-brain/index.html）。
-
-<a href="docs/screenshots/audit-brain.png"><img src="docs/screenshots/audit-brain.png" width="72%" alt="审计插件大脑树状组网"></a>
-
-#### 05 插件数据流全景 —— 契约级连线一页通
-
-节点卡片 + 契约级连线：绿色流动线=输出契约匹配到另一插件输入契约（真实配对）、灰色虚线=共享外部输入、金标 DB=已落库拓扑，拖拽平移 / 缩放 / 拖动节点重排、连线自动跟随（plugin-flow-showcase/index.html）。
-
-<a href="docs/screenshots/plugin-flow-showcase.png"><img src="docs/screenshots/plugin-flow-showcase.png" width="72%" alt="插件数据流全景"></a>
-
-#### 06 审计智能中枢 Web 端 —— 控制平面 Shell
-
-由 API 同源托管的控制系统页面（非用户入口），运行总览 / 知识库 / 插件工作台 / 审批中心 / 风险模拟五个视图，所有可执行操作仍会经过策略网关（web/index.html）。
-
-<a href="docs/screenshots/control-plane-web.png"><img src="docs/screenshots/control-plane-web.png" width="72%" alt="审计智能中枢 Web 端"></a>
-
 ## 真实端到端案例
 
 **目标**：让 AI 自己组一条"总账质量质检 + 量化回测"的链并真实执行（`run 3b6667c3-…`，2026-09-11 云端 AI 真实组网成功——模型自定节点名，2 节点全 succeeded）。
@@ -345,6 +180,24 @@ Canvas 2D 星图：业务域枢纽 + 插件卫星节点，拖拽平移 / 滚轮�
 
 > 最硬的一条证据：不依赖项目任何代码，独立实现 6 条质检规则重算，得到与插件产物**逐条一致**的 6 项候选——这就是"结论可被独立复算"的含义。
 
+## 可视化界面（精选）
+
+全套界面截图统一维护在 [docs/screenshots/](docs/screenshots/)：桌面驾驶舱 13 个工作台视图 + Run 画布过程序列 + 网页版可视化。核心姿态：**所有工具调用强制经过策略网关，GUI 不能绕过策略**；每个读取携带租户与 Trace ID、每次写入具备幂等键与 ChangeRequest 审计。这里只保留三张代表性画面。
+
+**运行总览** —— 以「租户隔离 · 策略优先」为默认姿态的控制平面首页：
+
+<a href="docs/screenshots/desktop/overview.png"><img src="docs/screenshots/desktop/overview.png" width="80%" alt="运行总览"></a>
+
+**审计证据链血缘** —— 点击项目行下钻：证据（类型 / 工件 ID / rows+sha256）→ 异常候选 → 已确认发现，评审人留痕，confirm 为幂等操作：
+
+<a href="docs/screenshots/desktop/audit-lineage.png"><img src="docs/screenshots/desktop/audit-lineage.png" width="80%" alt="审计证据链血缘"></a>
+
+**Run 画布：AI 组网过程** —— 一次组网（凭证穿透 → 底稿编制 → 证据索引 → 问题定性）从"全员待命"到"全链路导通"的动画：播放 / 暂停 / 单步 / 变速，边三态（未导通灰 → 流动金 → 导通青绿虚线，失败红），下钻面板带 sha256。
+
+<a href="docs/screenshots/flow-canvas-frame-1.png"><img src="docs/screenshots/flow-canvas-frame-1.png" width="48%" alt="Run 画布 帧1：待处理"></a>
+<a href="docs/screenshots/flow-canvas-frame-7.png"><img src="docs/screenshots/flow-canvas-frame-7.png" width="48%" alt="Run 画布 帧7：全导通"></a>
+
+> 其余界面（任务编排四层下钻、知识库、多级图谱治理、插件拓扑与影子模拟执行账本、量化 / AIOps 工作台、审批中心、风险模拟，以及四张业务域组网网络图、交互式星图、审计大脑树状图、插件数据流全景等）见 [docs/screenshots/](docs/screenshots/)。
 ## 技术栈
 
 | 层次    | 选型                                                                             |
@@ -478,9 +331,17 @@ npm --prefix desktop run test
 
 ## 相关文档
 
+**组网实验报告（核心，详见上文[组网实战](#组网实战四份实验报告核心)）：**
+
+- [docs/AI画布组网与全链路日志优化方案-20260908.md](docs/AI画布组网与全链路日志优化方案-20260908.md)：组网演进方向与 P0 缺口立项
+- [docs/组网业务实战报告-20260909.md](docs/组网业务实战报告-20260909.md)：日记账质检 → 回测的真实业务组网
+- [docs/AI组网Demo-全链路功能验证报告-20260911.md](docs/AI组网Demo-全链路功能验证报告-20260911.md)：独立验证（实跑 + 复算 + 对照实验）
+- [docs/审计报告-多源业务数据组网Demo.md](docs/审计报告-多源业务数据组网Demo.md)：21 节点 / 23 边 / 6 层 DAG 合格性审计
+
+**其他：**
+
 - [docs/status.md](docs/status.md)：当前阶段真实状态与已验证结论
 - [项目说明（完整版）](docs/项目说明-审计智能中枢.md)：本 README 的原始素材，含全部设计细节
 - [docs/独立化可迁移改造方案-20260912.md](docs/独立化可迁移改造方案-20260912.md)：跨机迁移与离线打包方案
 - [docs/仓库可迁移性检查报告-20260913.md](docs/仓库可迁移性检查报告-20260913.md)：仓库"别人下载能否运行"的体检结论
 - [docs/plugin-topology-M10.md](docs/plugin-topology-M10.md)：图谱驱动组网规划（最近验收里程碑）
-- [docs/组网业务实战报告-20260909.md](docs/组网业务实战报告-20260909.md) 与 [docs/AI组网Demo-全链路功能验证报告-20260911.md](docs/AI组网Demo-全链路功能验证报告-20260911.md)：端到端实战与验证报告
