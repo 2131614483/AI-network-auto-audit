@@ -47,7 +47,11 @@
 
 ## 展示视频
 
-**[audit-network-showcase.mp4](docs/showcase-video/audit-network-showcase-v3.mp4)** — 25 个真实界面镜头，中文旁白 + 字幕，4 分 11 秒。
+
+
+
+
+— 25 个真实界面镜头，中文旁白 + 字幕，4 分 11 秒。
 
 分镜文案见 [docs/showcase-video/storyboard-v2.md](docs/showcase-video/storyboard-v2.md)。
 
