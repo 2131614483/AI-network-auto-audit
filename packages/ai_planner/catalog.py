@@ -91,9 +91,21 @@ _CONTRACT_FIELDS = (
 )
 
 
-def _contract_json(port_id: str) -> str:
+def _contract_json(port_id: str, registry: Mapping[str, dict[str, object]]) -> str:
+    """Serialize the contract fields *this registry* actually pins.
+
+    The registry is an argument rather than the module-level ``PORT_CONTRACTS``
+    because a directory-derived one (``build_port_contracts``) deliberately
+    omits ``required``/``cardinality`` — those follow the direction, not the
+    contract — and echoing a field the registry does not pin would ask the
+    model to reproduce a value no gate will accept.  Iterating the registry's
+    own keys mirrors ``draft._validate_port_contract``, which also compares
+    only the registered fields.  The ``_CONTRACT_FIELDS`` order is preserved so
+    the hand-written registry keeps emitting its historical byte-for-byte text.
+    """
+    contract = registry[port_id]
     return json.dumps(
-        {field: PORT_CONTRACTS[port_id][field] for field in _CONTRACT_FIELDS},
+        {field: contract[field] for field in _CONTRACT_FIELDS if field in contract},
         ensure_ascii=False,
         separators=(",", ":"),
     )
@@ -152,15 +164,46 @@ def capability_catalog_from_db(
     return entries
 
 
-def recall_snapshot(catalog: dict[str, CapabilityEntry]) -> str:
+def _capability_order(
+    catalog: dict[str, CapabilityEntry], prior: Mapping[str, float] | None
+) -> list[str]:
+    """能力清单的呈现顺序：**先验降序 → capability 字典序**。
+
+    环 7（回流生效）的落点。它只改顺序：本函数不做任何截断，返回的成员集合与
+    ``sorted(catalog)`` 逐项相同 —— 这正是设计 §6.3「仅改概率分布、不得新增能力或
+    端口」所要求的最小影响面。没有先验时输出与从前逐字节一致。
+    """
+    if not prior:
+        return sorted(catalog)
+    return sorted(catalog, key=lambda cap: (-float(prior.get(catalog[cap].plugin_id, 0.0)), cap))
+
+
+def recall_snapshot(
+    catalog: dict[str, CapabilityEntry],
+    port_contracts: Mapping[str, dict[str, object]] | None = None,
+    *,
+    prior: Mapping[str, float] | None = None,
+) -> str:
     """Compact deterministic prompt block: capability -> ports/contracts.
 
     Ports carry their full registered contract so the model reproduces the
     exact schema values (never invents a schema_ref).  The header states the
     verbatim-copy rule; a draft that deviates is rejected by ``validate_draft``.
+
+    ``port_contracts`` must be the *same* registry handed to
+    ``validate_draft``/``compile_plan``.  It defaults to the hand-written
+    :data:`PORT_CONTRACTS` (seven legacy ports) for backward compatibility, but
+    a caller planning against the real plugin directory must pass the
+    directory-derived registry from :func:`build_port_contracts` — otherwise
+    every port outside the seven is omitted from the prompt while validation
+    still demands it be copied verbatim, and the draft can only fail with
+    ``contract_mismatch``.
     """
+    registry: Mapping[str, dict[str, object]] = (
+        port_contracts if port_contracts is not None else PORT_CONTRACTS
+    )
     lines = ["能力清单（只能使用这些 capability；端口的契约字段必须逐字段原样复制，不得省略、修改或新增）："]
-    for capability in sorted(catalog):
+    for capability in _capability_order(catalog, prior):
         entry = catalog[capability]
         lines.append(
             f"- {capability} (plugin={entry.plugin_id}, inputs={','.join(entry.inputs) or 'none'}, "
@@ -168,10 +211,10 @@ def recall_snapshot(catalog: dict[str, CapabilityEntry]) -> str:
         )
         for direction, names in (("input", entry.inputs), ("output", entry.outputs)):
             for port_id in names:
-                if port_id not in PORT_CONTRACTS:
+                if port_id not in registry:
                     continue
                 lines.append(
-                    f"  - {direction} port \"{port_id}\" contract: {_contract_json(port_id)}"
+                    f"  - {direction} port \"{port_id}\" contract: {_contract_json(port_id, registry)}"
                 )
     return "\n".join(lines) if lines else "(no capabilities recalled)"
 

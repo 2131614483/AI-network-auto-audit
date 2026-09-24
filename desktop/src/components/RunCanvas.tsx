@@ -156,8 +156,14 @@ export default function RunCanvas({ projection, busy, mode = "run", onDraftEdit 
     event.preventDefault();
   };
   const movePan = (event: React.MouseEvent) => {
-    if (!dragRef.current) return;
-    setTransform((c) => ({ ...c, tx: dragRef.current!.tx + (event.clientX - dragRef.current!.x), ty: dragRef.current!.ty + (event.clientY - dragRef.current!.y) }));
+    // Snapshot the drag before scheduling the update: the updater runs later,
+    // and endPan() nulls the ref on mouseup, so reading `dragRef.current` from
+    // inside it races and throws (reading 'tx' of null) — which, with no error
+    // boundary above the canvas, unmounted the whole console. moveNodeDrag below
+    // already takes this snapshot-first shape; keep the two consistent.
+    const drag = dragRef.current;
+    if (!drag) return;
+    setTransform((c) => ({ ...c, tx: drag.tx + (event.clientX - drag.x), ty: drag.ty + (event.clientY - drag.y) }));
   };
   const endPan = () => { dragRef.current = null; };
 

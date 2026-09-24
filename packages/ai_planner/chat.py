@@ -8,7 +8,7 @@ AiPlanner 的受控规划请求。
 
 from __future__ import annotations
 
-from typing import Any
+from typing import Any, Mapping
 
 from .planner import AiPlanner, PlanningOutcome, ProgressCallback
 
@@ -90,6 +90,8 @@ class CanvasChatPlanner:
         budget: dict[str, int] | None = None,
         template_keys: tuple[str, ...] | None = None,
         on_progress: ProgressCallback = None,
+        port_contracts: Mapping[str, dict[str, Any]] | None = None,
+        capability_prior: Mapping[str, float] | None = None,
     ) -> PlanningOutcome:
         goal = build_chat_goal(message, history=history, base_draft=base_draft)
         return self.planner.plan(
@@ -99,4 +101,6 @@ class CanvasChatPlanner:
             budget=budget,
             template_keys=template_keys or (),
             on_progress=on_progress,
+            port_contracts=port_contracts,
+            capability_prior=capability_prior,
         )

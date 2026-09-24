@@ -1,9 +1,0 @@
-﻿account_code,account_name,category
-1001,银行存款,asset
-1101,应收账款,asset
-1201,原材料,asset
-1401,应付账款,asset
-2001,主营业务收入,revenue
-2201,管理费用,expense
-2301,销售费用,expense
-3101,固定资产,asset

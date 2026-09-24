@@ -11,12 +11,28 @@ import re
 from pathlib import Path
 
 import psycopg2
+from alembic.config import Config
+from alembic.script import ScriptDirectory
 
 MIGRATIONS_DIR = Path(__file__).resolve().parents[2] / "migrations" / "versions"
-EXPECTED_HEAD = "0062_archive_link"
 TEST_DB = "postgresql://audit_app:admin@localhost:5432/audit_network_test"
 
 _PREFIX_RE = re.compile(r"^(\d{4})_[a-z0-9_]+\.py$")
+
+
+def _alembic_head() -> str:
+    """从 Alembic 脚本目录推导当前 head。
+
+    期望头曾以常量形式写死（0051 → 0054 → 0062 …），每次新增迁移都会让本文件和
+    ``/api/v1/health/ready``、运维健康检查一起误报。这里改用与 ``alembic upgrade
+    head`` 同源的权威结果，豁免值的维护成本为零。
+    """
+
+    config = Config(str(Path(__file__).resolve().parents[2] / "alembic.ini"))
+    return str(ScriptDirectory.from_config(config).get_current_head())
+
+
+EXPECTED_HEAD = _alembic_head()
 
 
 def test_migration_files_numbered_in_order() -> None:

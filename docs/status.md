@@ -1,8 +1,89 @@
 # 开发状态
 
-更新时间：2026-09-15
+更新时间：2026-09-23
 
-## 本轮交付：知识库管理界面 · 统一信息中枢（2026-09-15）
+## 本轮交付：连通性只读端点 · 进化闭环七环打通 · 三处缺陷修复（2026-09-23）
+
+### 1. 连通性与供需闭合：补上 `/api/v1/connectivity/report`
+
+页面上此前写着"端点未接线，请手动运行 `scripts/report-connectivity.py`"。现在补上只读端点，并**把口径收成一份**：
+
+| 新增/改动 | 内容 |
+|---|---|
+| `packages/catalog/connectivity_view.py` | **新增**。`connectivity_report(lifecycle, include_invokes)` —— 指标 + 孤岛分类 + 口径标注。**脚本与端点共用这一份实现**（此前口径只活在脚本里，照抄到端点就是两套实现，看板与 CI 基线闸门迟早给出相反结论） |
+| `scripts/report-connectivity.py` | 改为调用上述共享实现。**文本与 `--json` 输出逐字节不变**（已 diff 验证），CI 基线格式未动 |
+| `apps/api/main.py` | `GET /api/v1/connectivity/report`（`connectivity.report.read`，read_only，fail-closed）；`?lifecycle=` / `?include_invokes=` 为**口径开关**，非法值 422 |
+| `migrations/versions/0068_connectivity_read_policy.py` | **新增**。种下 `local-connectivity-read`（1 条 allow，rule_id `2c3d4e5f-…`，与既有 15 个 rule_id 无撞车）；`EXPECTED_MIGRATION_HEAD` 0067→0068（`packages/ops/supervisor.py` 与 `apps/api/main.py` 两处；测试是引用常量，无重复硬编码） |
+| `desktop/src/components/pages/ConnectivityPage.tsx` | 重写：10 张指标卡 + 口径开关（lifecycle / invokes）+ 口径卡片（显式声明"不同口径数字不可比"）+ 悬空插件表（带分类依据）；端点不可用时如实报错并保留离线脚本这条路 |
+| `desktop/electron/main.ts` | 无需改动 —— `/api/v1/connectivity/report` **早已在允许清单里**（注释写着"被白名单漂移打空的页面"），缺口在服务端 |
+
+实测：107 插件 / 69 边 / 35 完全孤立 / 42 弱连通分量；`--include-invokes` 口径下 103 边 / 15 孤立；唯一"真缺口"是 `audit.evidence.evidence-archive`（应有上游但全库无生产者）。
+
+新增 `tests/integration/test_connectivity_report.py`（**7 用例**）：视图自洽、每个孤岛必须有分类依据、口径随结果返回、`include_invokes` 不是空开关（边数必增、悬空必减）、非法口径 422、**无 CAP 时 409 fail-closed**。
+
+### 2. 进化闭环七环打通（`ok 1/partial 4/broken 2` → `ok 7/partial 0/broken 0`）
+
+根因、方案与逐步实测见 `docs/进化闭环断点-根因与修复方案-20260923.md`。三步：回填历史 run（新增 `scripts/backfill-experience.py`，幂等已验证）→ 一次人工采纳（模拟人操作，走真实界面）→ 接通环 7 读路径（`packages/ai_planner/experience_prior.py`，开关 `AI_PLANNER_EXPERIENCE_PRIOR` **默认关**，只在 `recall_snapshot` 重排、不改清单成员）。
+
+### 3. 三处缺陷修复
+
+| 缺陷 | 根因 | 修法 |
+|---|---|---|
+| **Run 画布布局塌陷**：选中 100 节点 run 后运行列表与画布整块移出屏幕（x=-2988） | `.runcanvas-view` 兼带 `.detail-head`，在**纵向** flex 容器上继承了 `align-items: flex-end` → 子元素按内容宽度右对齐、不拉伸 | `align-items: stretch` + `.runcanvas-split { min-width: 0 }` |
+| **Run 画布平移可打崩整个桌面端**（白屏：`#root` 0 子节点、侧栏 42 项消失） | `movePan` 把 `dragRef.current` 的读取放进 `setTransform` 的 updater，`endPan` 会先把它置空 → reducer 执行时读到 null；**树里没有错误边界**，未捕获异常卸载整棵树 | ① 快照 ref 后再闭包（与紧邻的 `moveNodeDrag` 一致）② **新增 `PageErrorBoundary`**，崩溃只影响当前页，外壳与导航保持可用 |
+| **antd 静态 `message.*` 静默失效**：点"复制路径"无任何提示；**3 处"复验失败/搜索失败"也因此无声** | React 19 下 antd v5 静态方法不报错、只是什么都不弹（`[antd: compatible]` 告警） | 装 `@ant-design/v5-patch-for-react-19@1.0.3`，在 `main.tsx` **首行**导入（必须早于任何 antd 使用） |
+
+另修：审批中心表 `rowKey` 用 `index`（配合 `expandable` 会让展开态挂到错行）→ 改用记录主键；进化闭环"校验时间：Invalid Date"（`checked` 实为溯源描述串）；"实测数字"里数组/布尔渲成空白或 `true`（`planner_imports = `）。
+
+### 4. 图谱总览页（多级图谱治理）整修
+
+用户反馈"做的不好"。实地走查后定位到四个问题，根因各不相同：
+
+| 问题 | 根因 | 修法 |
+|---|---|---|
+| **网络"还是那么少"**（画布上只有 2 个点） | 后端默认空间的选择是"**按名称排序后第一个有边的空间**"（`sorted by name` → `next(row for row if edge_count > 0)`），于是落在一个 2 节点的演示空间 `audit-l1` 上；而真正的能力网络 `capability-l2`（**147 节点 / 203 边**）躺在库里没人看 | `packages/graph/service.py::visualization` 默认改为**内容最多**的空间（节点数 → 边数 → key 保证确定性）；实测默认空间变为 `capability-l2`，147 节点 / 203 边全部落在预算内（`partial=false`） |
+| **图例在撒谎**：图例里"公司"和"人"两个图例项**同色** | 节点颜色按类型查 CSS 令牌 `--graph-*`，但那 8 个令牌只映射到 **4 个颜色**（control/cluster/finding 同为 accent，blueprint/document 同为 flat）；数据里真实出现的 `person` / `company` 压根没登记，一律落到灰 `--graph-default` | 改为**按层级上色**（见下条），图例变成"一级 · 能力族 / 二级 · 能力契约" |
+| **圆圈太大、层级看不出来** | `symbolSize` 基础 22、封顶 48，上百个节点铺满画布时相邻节点糊在一起；且配色按类型而非层级，看不出主干与展开 | 圆圈收小一档（`min(26, 9 + 度数 × 2.2)`，上层节点度数高自然略大）；配色改为**按 `contains` 层级推导**：一级（能力族，暖黄）/ 二级（能力，蓝）/ 三级 / 四级（色板见 `graphLayout.TIER_PALETTE`） |
+| **画布像空的**：1418×570 的画布里两个点挤在正中偏左一小坨 | ECharts `force` 布局在 1–2 个节点时会塌成一团；改用 `circular` 后又会把 2 个节点放到圆的上下两极，在超宽画布上拉成一根几百像素的竖线 | ≤12 个节点改用**显式椭圆坐标**（起点 0°），2 个节点即自然左右排布；>60 个节点用收紧一档的 force（原参数会把网络撑出画布、底排标签被裁） |
+| **"已登记桥接 124"与目录里每行"桥接 0"并列，看起来自相矛盾** | 两者口径不同（全局 vs 本空间）却都没标注；且 225 个空间里只有 **5 个**带桥接 | 卡片改注"全空间合计"、列头改"本空间桥接"；目录表**有内容的排前面**（原按 level+name 排、每页 6 条，真正有内容的要翻三十多页才看到） |
+| 空间下拉 200+ 项、看不出哪个有内容 | 选项只有"名称 · 层级"，且按接口顺序排 | 选项带规模（`N 节点 / M 边`），并按内容多少排序 |
+
+**关于层级只有两级**：层级用 `contains` 边推导（`hierarchyTiers`，支持任意深度、最多 4 色）。实测 `capability-l2` 的结构是 `capability_family (24) --contains--> capability (123)` —— 只有两层；第三级"业务域"（`domain` 节点）落在 L3 空间（`audit-l3` 等 5 个）且**没有任何出边**，L2↔L3 靠的是 bridge 而非 `contains`。所以单空间内最深就是两层；要看到三级需要先把域–族之间的包含关系接起来（属数据/建图工作，本轮未动）。
+
+**没有改的**：`governance_overview` 的统计口径经核查是**正确**的 —— 逐空间 `active_bridge_count` 把同一条桥在源/目标空间各计一次，5 个空间相加正好 124×2，与全局 `COUNT(*) FROM graph.bridge_edges WHERE status='active'`= 124 自洽。dev 库里 225 个空间中 220 个为空壳是既有的测试残留问题（本文档已登记），本次不动数据。
+
+新增 `desktop/src/model/graphLayout.{ts,test.ts}`（**19 用例**，本轮从 11 增至 19）：层级推导（根为一级、支持三级、`depends_on` 不参与分层、无父即根、环与自环就地终止、多父确定）、层级配色（前四级互异、超色板收敛而非无色、中文层级名）、稀疏布局（2 个节点必须水平排布、对称居中、稀疏范围内不出画布）。两处纯函数从组件抽进 model 正是为了能钉住这类**静默**缺陷 —— 配色退化成同色时画布照常渲染，肉眼极难发现。
+
+### 4.1 图谱第二轮：缩放失效、权重智能、关系文字梳理（同日）
+
+| 问题 | 根因 | 修法 |
+|---|---|---|
+| **缩放失效**：加号/滚轮/复位都在动，**画面纹丝不动** | `applyZoomTo` 用手动 `dispatchAction({type:"graphRoam"})` 实现缩放，而该 action 注册为 `update: 'none'` —— 它只改坐标系、**不触发节点/连线重算**。ECharts 内部在 action 之外还调了 `_updateNodeAndLinkScale` / `adjustEdge` / `updateLabelLayout`，所以官方路径（roam 控制器）会重绘、手动路径不会。标签由本地 ref 记账，于是"数字在变、画面不变" | 缩放统一交给 **roam 控制器**（`roam: true`）：滚轮/拖拽/按钮 dispatch 都汇到它；本组件只把结果从 `graphRoam` **事件回读**进标签。实测 canvas 像素校验和随缩放变化，A/B 截图（100% → 195%）节点与标签显著放大 |
+| **权重全是 1，固定模式** | 画布边的 weight 直接取 `graph.edges.weight`，而建图器写入的就是常量 1 | 权重改为**由真实证据推出**，并随边返回**依据**（`basis`）：① 经验实测（`experience.edge_stats`：交接次数 × Wilson 置信度 × 时间衰减，归一化到 0..1）② 契约衔接（两端输出端口 ∩ 输入端口，实测 80 条 `depends_on` 里 79 条端口相接）③ 声明层级（`contains` 保持 1.0，因为是声明出来的确定事实）④ 都没有则保留原值并如实标注"无证据"。实测分布：**经验实测 66 条 / 契约衔接 14 条 / 声明层级 123 条**，权重出现真实梯度（0.771 ← 31 次交接、0.729 ← 27 次、0.333 ← 1 个共享端口） |
+| **只有点线，没有关系说明** | 可视化接口只回 `{id,label,node_type}` 与 `{source,target,relation,weight}` —— 节点 `properties` 里的 `description`（能力做什么）、`inputs`/`outputs`（吃什么吐什么）、`family`/`lifecycle` 全被丢掉 | 接口带出这些字段；检查器显示**能力描述 + 产出/输入端口标签**；关系列表显示**中文关系名 + 权重 + 依据**，例如「依赖 · 风险等级赋值 · 权重 0.53 · 经验实测：14 成功 / 0 失败（共 14 次交接）」「依赖 · 审计疑点汇总 · 权重 0.33 · 契约衔接：共享端口 suspicion-set」 |
+
+**"三级"为什么只做到两级**：层级由 `contains` 边推导（`hierarchyTiers`，支持任意深度、四色）。实测 `capability-l2` 只有 `capability_family (24) --contains--> capability (123)` 两层；第三级「业务域」（`domain` 节点）按**建图器的设计**就落在 L3 空间（`audit-l3` 等），域↔族之间是**跨空间桥接**（`bridge_edges`）而不是同空间 `contains`，且那 5 个 domain 节点当前没有任何出边。所以要在同一张图上看到三级，需要**跨空间聚合**（比单个 `space_key` 的投影大一圈）或改数据模型 —— 这是设计层决定，**未动**。
+
+新增 `tests/unit/test_graph_visualization_weights.py`（**11 用例**）：四档依据的判定顺序（运行实测必须盖过契约衔接）、权重归一化而非原样透出、实测次数为 0 时不得伪装成"实测过"、每条边必须带依据、节点载荷只带解释关系所需的字段。
+
+
+
+`ruff check` 全过 · `mypy packages apps` Success 138 files · `pytest tests/contract` **812 passed / 0 failed** · `pytest tests/unit/test_desktop_shell.py` 13 passed · 桌面 `typecheck` + **90 tests**（10 文件）+ `build` 通过 · 迁移已对 **dev 与 test 两库**执行至 head=0068 · 页面实测截图见 `video_shots/raw/Q1_connectivity_wired.png`、`U1_graph_tiers.png`（147 节点按层级上色）。
+
+### 5. 验证
+
+`ruff check` 全过 · `mypy packages apps` Success 138 files · `pytest tests/contract` **812 passed / 0 failed** · 图谱相关测试 **186 passed / 2 skipped** · `tests/unit/test_desktop_shell.py` 13 passed · 桌面 `typecheck` + **90 tests**（10 文件）+ `build` 通过 · 迁移已对 **dev 与 test 两库**执行至 head=0068。
+
+页面实测截图：`video_shots/raw/Q1_connectivity_wired.png`（连通性）· `U1_graph_tiers.png`（147 节点按层级上色）· `A_zoom_100.png` / `B_zoom_after.png`（缩放 A/B）· `V1_graph_node_description.png`（节点描述 + 端口 + 带依据的关系列表）。
+
+### 6. 已知影响
+
+- **新增一个 npm 依赖**（`@ant-design/v5-patch-for-react-19`）：`docs/独立化可迁移改造方案-20260912.md` 的离线包需重新打一次才能带上它。
+- dev 库现有 14 条候选建议（13 条 proposed + 1 条 accepted），环 5 尚未由人工全部决策。
+
+---
+
+## 前序交付：知识库管理界面 · 统一信息中枢（2026-09-15）
 
 依据 `docs/知识库管理界面-统一信息中枢设计-20260915.md`（820 行、15 章），完成信息架构 v2 两级导航（8 组 / 37 页）+ P0–P2 全部 29 个新建/提级页面 + 5 个后端只读端点 + Ctrl+K 命令面板。8 个不动页面（runcanvas/graph/audit/quant/aiops/approvals/aisettings/logs）保持内联未动。
 

@@ -1,1 +1,0 @@
-{"contract_id": "document-content", "contract_version": "1.0.0", "artifact": {"period": "2026", "control_steps": [{"step_id": "S1", "name": "付款申请", "control": true, "approval": true}, {"step_id": "S2", "name": "资金支付", "control": false, "approval": true}, {"step_id": "S3", "name": "对账复核", "control": true, "approval": false}]}}

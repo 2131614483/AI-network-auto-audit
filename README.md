@@ -11,7 +11,7 @@
 ![Electron 37](https://img.shields.io/badge/Electron-37-47848F?logo=electron&logoColor=white)
 ![React 19](https://img.shields.io/badge/React-19-61DAFB?logo=react&logoColor=black)
 ![TypeScript strict](https://img.shields.io/badge/TypeScript-strict-3178C6?logo=typescript&logoColor=white)
-![tests: 1200+](https://img.shields.io/badge/tests-1200%2B-green)
+![tests: 2100+](https://img.shields.io/badge/tests-2100%2B-green)
 
 ---
 
@@ -207,7 +207,7 @@ flowchart LR
 | 迁移    | Alembic 显式迁移（60 个版本），应用启动**不允许**自动升级                                           |
 | 桌面端   | Electron 37 + React 19 + Ant Design 5 + Zustand + ECharts + Three.js（13 工作台视图） |
 | AI 通道 | 统一网关（Ollama 本地 / OpenAI 兼容云端双协议），一份配置、一个客户端                                    |
-| 质量工具  | ruff + mypy strict（107 源文件）+ pytest（1200+ 用例）+ vitest + tsc strict             |
+| 质量工具  | ruff + mypy strict（128 源文件）+ pytest（2100+ 用例）+ vitest + tsc strict                |
 
 ## 目录结构
 
@@ -296,7 +296,7 @@ npm --prefix desktop run typecheck
 npm --prefix desktop run test
 ```
 
-最近一次实测：pytest **1215 passed / 6 skipped / 0 failed**、`mypy packages` strict Success（107 源文件）、桌面 `vitest --pool=forks` 73 passed、`electron-vite build` 通过。`.github/workflows/quality.yml` 在 ubuntu + pgvector 容器上执行同一套门禁，是上述步骤的权威参照。**测试设计原则**：先写契约测试再实现（先红后绿）；写入类测试重定向到临时路径，从不触碰真实 `.env` 与生产库。
+最近一次实测（2026-09-22）：pytest **2138 passed / 10 skipped / 18 failed**、`mypy packages` strict Success（128 源文件）、桌面 `vitest --pool=forks` 73 passed、`electron-vite build` 通过。那 18 个失败经 `git stash` 对照确认**与产品代码无关**（用同一批测试在改动前重跑，失败项逐条一致），成因是测试自身的断言与仓库结构漂移：迁移 head 断言仍停留在 `0062`/`0064`（实际已是 `0066_rules_lineage_read_policy`），以及若干用例指向已移动的文件（`审计项目案例\`、仓库根的 md）；另有 `test_desktop_shell` / `test_health_ready` / `test_library_index` / `test_ops_supervisor` 依赖本机服务状态。`.github/workflows/quality.yml` 在 ubuntu + pgvector 容器上执行同一套门禁，是上述步骤的权威参照。**测试设计原则**：先写契约测试再实现（先红后绿）；写入类测试重定向到临时路径，从不触碰真实 `.env` 与生产库。
 
 ## 里程碑
 

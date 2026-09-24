@@ -1,4 +1,4 @@
-"""Read-only case x stage matrix over ``审计项目案例/``.
+"""Read-only case x stage matrix over ``审计项目案例报告效果展示/``.
 
 The three audit cases are organised on disk as directories named ``00_`` …
 ``08_``, which *is* the stage machine -- nine stages, zero configuration.  This
@@ -24,7 +24,23 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
 
-CASES_ROOT = "审计项目案例"
+#: The case assets live here.  The tree was renamed from ``审计项目案例`` to
+#: ``审计项目案例报告效果展示``; both names are probed so that a future rename
+#: surfaces as a reported ``missing_root`` rather than silently emptying the
+#: case workbench (which is exactly how the old name produced a blank page).
+CASES_ROOT = "审计项目案例报告效果展示"
+LEGACY_CASES_ROOTS: tuple[str, ...] = ("审计项目案例",)
+
+
+def resolve_cases_root(project_root: Path, *, root_name: str | None = None) -> tuple[Path, str] | None:
+    """Return ``(cases_root, repo-relative name)`` for the first candidate that exists."""
+
+    candidates = ((root_name,) if root_name else ()) + (CASES_ROOT, *LEGACY_CASES_ROOTS)
+    for name in candidates:
+        candidate = project_root / name
+        if candidate.is_dir():
+            return candidate, name
+    return None
 
 #: The nine stages, in order.  A directory whose name starts with the two-digit
 #: prefix belongs to that stage, regardless of its trailing label -- ``07_审计报告``
@@ -112,34 +128,46 @@ def _reports_for(case_dir: Path, project_root: Path) -> list[dict[str, Any]]:
     return reports
 
 
-def case_matrix(project_root: Path, *, root_name: str = CASES_ROOT) -> dict[str, Any]:
+def case_matrix(project_root: Path, *, root_name: str | None = None) -> dict[str, Any]:
     """One row per case, nine stage columns plus the report table; read-only."""
 
-    cases_root = project_root / root_name
-    cases: list[dict[str, Any]] = []
-    if cases_root.is_dir():
-        for case_dir in sorted(path for path in cases_root.iterdir() if path.is_dir() and not path.name.startswith("_")):
-            valid_keys = {key for key, _ in STAGES}
-            stage_counts: dict[str, int] = {}
-            for child in case_dir.iterdir():
-                if not child.is_dir():
-                    continue
-                name = child.name
-                if len(name) >= 3 and name[2] == "_" and name[:2] in valid_keys:
-                    stage_counts[name[:2]] = stage_counts.get(name[:2], 0) + _md_count(child)
+    resolved = resolve_cases_root(project_root, root_name=root_name)
+    # A missing case root used to yield ``{"cases": []}`` with nothing to say why,
+    # so every case page rendered empty and looked like a service outage.
+    if resolved is None:
+        return {"cases": [], "case_root": None, "missing_root": True}
 
-            stages = [
-                {"key": key, "name": name, "count": stage_counts.get(key, 0)}
-                for key, name in STAGES
-            ]
-            reports = _reports_for(case_dir, project_root)
-            cases.append(
-                {
-                    "case": case_dir.name,
-                    "stages": stages,
-                    "file_count": sum(stage["count"] for stage in stages),
-                    "report_count": len(reports),
-                    "reports": reports,
-                }
-            )
-    return {"cases": cases}
+    cases_root, resolved_name = resolved
+    cases: list[dict[str, Any]] = []
+    for case_dir in sorted(path for path in cases_root.iterdir() if path.is_dir() and not path.name.startswith("_")):
+        valid_keys = {key for key, _ in STAGES}
+        stage_counts: dict[str, int] = {}
+        for child in case_dir.iterdir():
+            if not child.is_dir():
+                continue
+            name = child.name
+            if len(name) >= 3 and name[2] == "_" and name[:2] in valid_keys:
+                stage_counts[name[:2]] = stage_counts.get(name[:2], 0) + _md_count(child)
+
+        # A "case" is a directory that actually carries the on-disk stage
+        # machine.  The case tree also holds run-log archives, demo raw-data
+        # dumps and render builders; without this filter each of those shows up
+        # as a nine-zero row and the workbench looks broken.
+        if not stage_counts:
+            continue
+
+        stages = [
+            {"key": key, "name": name, "count": stage_counts.get(key, 0)}
+            for key, name in STAGES
+        ]
+        reports = _reports_for(case_dir, project_root)
+        cases.append(
+            {
+                "case": case_dir.name,
+                "stages": stages,
+                "file_count": sum(stage["count"] for stage in stages),
+                "report_count": len(reports),
+                "reports": reports,
+            }
+        )
+    return {"cases": cases, "case_root": resolved_name, "missing_root": False}

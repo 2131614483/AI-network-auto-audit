@@ -175,7 +175,9 @@ body { overflow: hidden; }
 .graph-relation-list { display: grid; gap: 8px; margin-top: 18px; }
 .graph-relation { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 6px 8px; align-items: center; padding: 9px; background: var(--bg-panel-2); border: 1px solid var(--border); border-radius: 3px; }
 .graph-relation span { overflow: hidden; color: var(--text); font-size: 13px; text-overflow: ellipsis; white-space: nowrap; }
-.graph-relation small { grid-column: 2; color: var(--text-faint); }
+.graph-relation small { grid-column: 2; color: var(--text-faint); line-height: 1.5; white-space: normal; }
+/* 节点检查器里的能力描述：取自插件目录的登记文本，是"这段关系为什么存在"的正文。 */
+.graph-node-description { margin: 6px 0 8px !important; color: var(--text-dim) !important; font-size: 12.5px; line-height: 1.65; }
 .graph-route-summary { display: grid; gap: 8px; margin-top: 18px; padding-top: 16px; border-top: 1px solid var(--border); }
 .graph-route-summary .ant-typography { margin: 0; color: var(--text-dim); font-size: 13px; word-break: break-word; }
 .graph-revision-table { margin-top: 8px; }
@@ -229,9 +231,14 @@ body { overflow: hidden; }
 
 @media (max-width: 1240px) { .brand { min-width: 180px; } .index-item { min-width: 110px; padding: 0 10px; } .tenant-switch { width: 260px; } }
 
-/* CW4: Run canvas view */
-.runcanvas-view { display: flex; flex-direction: column; min-height: 0; }
-.runcanvas-split { display: flex; gap: 14px; flex: 1; min-height: 0; }
+/* CW4: Run canvas view.
+   This section also carries `.detail-head`, which sets `align-items: flex-end`
+   for the one-line page headers. On a COLUMN flex container that aligns children
+   to the right and sizes them to content instead of stretching them, so a wide
+   graph (100 nodes ≈ 4300px) blew the split out and pushed the run list off the
+   left edge of the viewport. Stretch explicitly. */
+.runcanvas-view { display: flex; flex-direction: column; align-items: stretch; justify-content: flex-start; min-height: 0; }
+.runcanvas-split { display: flex; gap: 14px; flex: 1; min-width: 0; min-height: 0; }
 .canvas-mode-col { flex: 1; min-width: 0; display: flex; flex-direction: column; min-height: 0; }
 .canvas-mode-bar { display: flex; align-items: center; gap: 8px; padding: 6px 10px; background: var(--bg-panel); border: 1px solid var(--border-light); border-radius: 12px 12px 0 0; }
 .canvas-mode-title { font-size: 13px; font-weight: 600; color: var(--text); }
@@ -375,4 +382,14 @@ body { overflow: hidden; }
 .ai-field-label .ant-tag { margin-inline-end: 0; font-size: 11px; }
 .ai-field-hint { color: var(--text-faint); font-size: 12px; line-height: 1.5; }
 .ai-field .ant-input, .ai-field .ant-input-affix-wrapper, .ai-field .ant-select { width: 100%; }
+
+/* 内嵌可视化视图：原独立 Electron 窗口（插件大脑 / 知识星云 / Run 画布 / 数据流全景）
+   收编进主控台，以 iframe 承载。负 margin 抵消 .content 的内边距，让视图铺满内容区；
+   高度 = 100vh − 54px 顶栏，与 .toolbar 的高度一致。 */
+.showcase-frame { display: flex; flex-direction: column; height: calc(100vh - 54px); margin: -20px -26px -30px; }
+.showcase-bar { display: flex; flex: none; align-items: center; gap: 14px; height: 44px; padding: 0 18px; background: var(--bg-panel); border-bottom: 1px solid var(--border); }
+.showcase-title { font-size: 13.5px; font-weight: 600; color: var(--text); }
+.showcase-hint { font-size: 12px; color: var(--text-dim); }
+.showcase-scope { margin-left: auto; padding: 2px 9px; font-size: 11.5px; color: var(--text-dim); border: 1px solid var(--border); border-radius: 999px; }
+.showcase-iframe { display: block; flex: 1 1 auto; width: 100%; min-height: 0; border: 0; background: #05070e; }
 

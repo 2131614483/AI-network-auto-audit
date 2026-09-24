@@ -1,1 +1,0 @@
-{"period": "2026", "demands": [{"demand_id": "DM-0001", "dept": "财务部", "title": "资金流向核查", "priority": "high", "detail": "核查大额资金流向与异常支付"}, {"demand_id": "DM-0002", "dept": "采购部", "title": "采购合规检查", "priority": "medium", "detail": "抽查采购合同与比价记录"}, {"demand_id": "DM-0003", "dept": "运营部", "title": "日常费用报销", "priority": "low", "detail": "一般性复核"}]}

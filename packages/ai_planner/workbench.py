@@ -30,6 +30,8 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any, Iterable, Mapping
 
+import psycopg2
+
 from packages.plugin_topology.compiler import CompileError
 from packages.plugin_topology.ports import PortContractError
 
@@ -587,6 +589,100 @@ def domain_catalog(domain: str) -> dict[str, Any]:
         )
         for plugin_id, spec in _specs_for(domain).items()
     }
+
+def planning_directory(
+    domain: str,
+) -> tuple[dict[str, Any], dict[str, dict[str, object]]]:
+    """A domain's ``(catalog, port_contracts)`` — returned as a pair on purpose.
+
+    The catalog names the ports and the registry pins their contracts; they are
+    only meaningful *together*.  Handing ``AiPlanner.plan`` a catalog listing a
+    port that the registry does not carry produces a prompt that omits that
+    port's contract while ``validate_draft`` still demands it be copied
+    verbatim — a draft that can only fail with ``contract_mismatch``.  Building
+    both from one ``_specs_for`` call removes the chance of them diverging.
+
+    Raises ``ValueError`` when two plugins disagree about a port's
+    ``schema_ref``: a conflict is reported, never silently resolved, because
+    either choice would validate a draft against a contract the model never saw.
+    """
+    specs = _specs_for(domain)
+    contracts, conflicts = build_port_contracts(specs)
+    if conflicts:
+        raise ValueError(f"端口契约目录在域 {domain!r} 内有冲突：{conflicts}")
+    return domain_catalog(domain), contracts
+
+
+def recall_planning_directory(
+    database_url: str,
+    domain: str,
+    intent_text: str,
+    *,
+    tenant_slug: str = "local-dev",
+    max_matches: int = 16,
+    expand_hops: int = 1,
+) -> tuple[dict[str, Any], dict[str, dict[str, object]], tuple[str, ...]]:
+    """The part of a domain's ``(catalog, port_contracts)`` this intent recalls.
+
+    Returns ``(catalog, port_contracts, recalled_capabilities)``.  An **empty**
+    ``recalled_capabilities`` means the graph matched nothing; the caller must
+    then fall back to the full directory.  That case is distinguishable on
+    purpose — planning against an empty catalog can only fail, and silently
+    returning everything instead would quietly undo the narrowing.
+
+    Why narrow at all: the audit directory is 107 plugins / 161 ports, which
+    renders to **81 000 characters (roughly 20–30k tokens)** in the prompt.  That
+    does not survive the 100 000-plugin graph this system targets.  The graph
+    already answers "which capabilities does this phrase name" deterministically
+    and offline (S1–S3), so the model is handed only what the intent reached.
+
+    ``catalog`` and ``port_contracts`` are derived from **one filtered spec
+    set**, never from two independent filters.  Filtering capabilities by one
+    rule and ports by another is precisely how a port ends up named in the
+    catalog with its contract missing from the registry — an unwinnable draft,
+    since the prompt is built from the registry while validation demands every
+    catalogued port's contract be copied verbatim.
+
+    Raises ``FileNotFoundError`` for an unknown domain (from ``load_pack``) and
+    ``ValueError`` when the recalled plugins disagree about a port's
+    ``schema_ref``.
+    """
+    from packages.graph.graph_planning import CapabilityGraphAdapter
+
+    adapter = CapabilityGraphAdapter(database_url, tenant_slug=tenant_slug)
+    try:
+        matches = adapter.match_nodes(intent_text, max_matches=max_matches)
+        if not matches:
+            return {}, {}, ()
+        expanded = adapter.expand_to_capabilities(
+            [str(match["node_key"]) for match in matches], expand_hops=expand_hops,
+        )
+    except (psycopg2.Error, ValueError):
+        # Unreachable graph, unknown tenant, or a graph nobody has built yet:
+        # report "recalled nothing" and let the caller fall back to the full
+        # directory.  Recall is an optimisation — turning a missing graph into a
+        # 500 would break a planning endpoint that used to work without it.  The
+        # caller-visible errors (unknown domain from ``load_pack``, port-contract
+        # conflict below) are deliberately *not* swallowed here.
+        return {}, {}, ()
+    recalled: set[str] = set()
+    for item in (*matches, *expanded.get("expanded", ())):
+        node_key = str(item["node_key"])
+        if node_key.startswith("capability:"):
+            recalled.add(node_key.split(":", 1)[1])
+    if not recalled:
+        return {}, {}, ()
+
+    selected = {cap: entry for cap, entry in domain_catalog(domain).items() if cap in recalled}
+    if not selected:
+        return {}, {}, ()
+
+    specs = {pid: spec for pid, spec in _specs_for(domain).items() if spec.capability in selected}
+    contracts, conflicts = build_port_contracts(specs)
+    if conflicts:
+        raise ValueError(f"端口契约目录在域 {domain!r} 内有冲突：{conflicts}")
+    return selected, contracts, tuple(sorted(selected))
+
 
 def revise_with_ai(
     draft: Mapping[str, Any],

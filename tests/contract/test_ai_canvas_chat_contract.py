@@ -303,6 +303,181 @@ def test_recall_snapshot_carries_port_contracts() -> None:
     assert "原样复制" in text
 
 
+def _directory_port_pair() -> tuple[dict[str, Any], dict[str, dict[str, Any]]]:
+    """A catalog + registry whose ports exist only in the plugin *directory*.
+
+    ``document-content`` / ``audit-evidence-index`` are real contracts on disk
+    and are deliberately absent from the hand-written seven, so they reproduce
+    exactly the situation every real audit plugin is in.
+    """
+    from packages.ai_planner.catalog import CapabilityEntry
+    from packages.ai_planner.composer import schema_sha256
+
+    catalog = {
+        "audit.workpaper.compile": CapabilityEntry(
+            capability="audit.workpaper.compile",
+            plugin_id="audit.workpaper-compile",
+            inputs=("document-content",),
+            outputs=("audit-evidence-index",),
+        )
+    }
+    registry = {
+        port: {
+            "schema_ref": port,
+            "schema_version": "1.0.0",
+            "schema_sha256": schema_sha256(port),
+            "media_type": "application/json",
+            "classification": "internal",
+            "transport": "artifact_ref",
+        }
+        for port in ("document-content", "audit-evidence-index")
+    }
+    return catalog, registry
+
+
+def test_recall_snapshot_carries_directory_port_contracts() -> None:
+    """Regression: the recall block hard-referenced the module-level seven.
+
+    A directory-derived registry was therefore invisible to the prompt while
+    ``validate_draft`` still judged the draft against it, so a draft of a real
+    audit flow could only ever fail with ``contract_mismatch`` — the model was
+    asked to copy contracts it had never been shown.
+    """
+    from packages.ai_planner.catalog import recall_snapshot
+
+    catalog, registry = _directory_port_pair()
+    text = recall_snapshot(catalog, registry)
+    assert "document-content" in text
+    assert "audit-evidence-index" in text
+    assert text.count("contract:") == 2  # one line per port, carrying the values
+
+    # The default (legacy) registry does not know these ports: the recall block
+    # still *names* them in the capability line, but carries no contract for
+    # either — which is what made the omission silent rather than a loud
+    # failure.  The model was told to copy fields it was never shown.
+    legacy_text = recall_snapshot(catalog)
+    assert "document-content" in legacy_text  # named as an input port...
+    assert legacy_text.count("contract:") == 0  # ...with no contract to copy
+    assert '"schema_sha256":"' not in legacy_text  # no serialized contract either
+
+
+def test_planner_prompt_and_validator_share_one_registry() -> None:
+    """The contracts the model is told to copy must be the ones it is judged by.
+
+    Asserting the prompt *and* the accepted outcome together is the point: a
+    prompt built from one registry and validated against another is a draft
+    that cannot succeed whatever the model emits.
+    """
+    from packages.ai_planner.planner import AiPlanner
+
+    catalog, registry = _directory_port_pair()
+
+    def _port(name: str, direction: str) -> dict[str, Any]:
+        return {**registry[name], "port_id": name, "direction": direction}
+
+    class _CapturingLLM:
+        def __init__(self) -> None:
+            self.prompts: list[str] = []
+
+        def complete_json(
+            self, messages: list[dict[str, str]], *, temperature: float
+        ) -> dict[str, Any]:
+            self.prompts.append(messages[-1]["content"])
+            return {
+                "plan_key": "plan-shared-registry-1",
+                "nodes": [{
+                    "node_instance_id": "workpaper-compile-001",
+                    "capability": "audit.workpaper.compile",
+                    "plugin_id": "audit.workpaper-compile",
+                    "input_ports": [_port("document-content", "input")],
+                    "output_ports": [_port("audit-evidence-index", "output")],
+                }],
+                "edges": [],
+                "budget": {"max_chain_length": 8, "max_candidates": 8, "max_latency_ms": 5000},
+                "seed_inputs": [["canvas-doc-a", "document-content"]],
+            }
+
+    llm = _CapturingLLM()
+    outcome = AiPlanner(llm, max_revision_rounds=1).plan(
+        goal="把文档内容编译成底稿并建立证据索引",
+        catalog=catalog,
+        authorized_sources={("canvas-doc-a", "document-content")},
+        port_contracts=registry,
+    )
+
+    assert "document-content" in llm.prompts[0]  # the prompt carried the contract
+    assert outcome.status == "draft_ready"  # and the same registry accepted the draft
+    assert outcome.revisions == 1
+
+
+def test_planner_prompt_carries_the_registry_it_is_given() -> None:
+    """Without the registry argument the prompt must not invent contracts.
+
+    Pins the pairing: passing ``port_contracts`` changes what the model sees,
+    so a caller that validates with a directory registry and forgets to pass it
+    here is a caller whose drafts can never validate.
+    """
+    from packages.ai_planner.planner import AiPlanner
+
+    catalog, registry = _directory_port_pair()
+
+    class _Recorder:
+        def __init__(self) -> None:
+            self.prompts: list[str] = []
+
+        def complete_json(
+            self, messages: list[dict[str, str]], *, temperature: float
+        ) -> dict[str, Any]:
+            self.prompts.append(messages[-1]["content"])
+            return {"plan_key": "plan-x", "nodes": [], "edges": []}
+
+    with_registry = _Recorder()
+    AiPlanner(with_registry, max_revision_rounds=1).plan(
+        goal="把文档内容编译成底稿", catalog=catalog,
+        authorized_sources=set(), port_contracts=registry,
+    )
+    without_registry = _Recorder()
+    AiPlanner(without_registry, max_revision_rounds=1).plan(
+        goal="把文档内容编译成底稿", catalog=catalog, authorized_sources=set(),
+    )
+
+    # Two contract lines when the registry is handed in; none when it is not,
+    # because neither directory port exists in the hand-written seven.  (The
+    # template block also carries contract *values* inline, so only the recall
+    # block's own `contract:` marker discriminates the two prompts.)
+    assert with_registry.prompts[0].count("contract:") == 2
+    assert without_registry.prompts[0].count("contract:") == 0
+
+
+def test_canvas_chat_passes_the_registry_through_to_the_planner() -> None:
+    """``CanvasChatPlanner`` must not silently drop the registry on the way in."""
+    from packages.ai_planner.catalog import CapabilityEntry
+
+    catalog = {"audit.workpaper.compile": CapabilityEntry(
+        capability="audit.workpaper.compile", plugin_id="audit.workpaper-compile",
+        inputs=("document-content",), outputs=("audit-evidence-index",),
+    )}
+
+    class _KwargRecorder:
+        def __init__(self) -> None:
+            self.kwargs: dict[str, Any] = {}
+
+        def plan(self, **kwargs: Any) -> PlanningOutcome:
+            self.kwargs = kwargs
+            return _outcome("gap_report")
+
+    recorder = _KwargRecorder()
+    CanvasChatPlanner(recorder).chat(  # type: ignore[arg-type]
+        message="把文档编译成底稿",
+        catalog=catalog,
+        authorized_sources=set(),
+        port_contracts={"document-content": {"schema_ref": "document-content"}},
+    )
+    assert recorder.kwargs["port_contracts"] == {
+        "document-content": {"schema_ref": "document-content"}
+    }
+
+
 def test_validate_draft_accepts_external_canvas_seed_source() -> None:
     """A seed source authorized from the canvas (an existing data outlet that is
     NOT declared among this draft's nodes) must be legal — the new flow consumes

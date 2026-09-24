@@ -4,7 +4,7 @@ import hashlib
 import re
 from dataclasses import dataclass
 from time import monotonic
-from typing import Any
+from typing import Any, Mapping
 from uuid import UUID, uuid4
 
 import psycopg2
@@ -67,6 +67,115 @@ _ROLE_BY_LEVEL = {
     "L4": "runtime_evidence",
 }
 _BRIDGE_RELATION_TYPES = frozenset({"artifact_ref", "capability_contract", "released_graph_ref", "health_signal"})
+
+#: 画布节点从 properties 里带出的字段 —— 它们是"这段关系为什么存在"的证据：
+#: 能力做什么（description）、吃什么吐什么（inputs/outputs）、属于哪个族与阶段。
+#: 其余字段要么与 label/node_type 重复，要么太细；载荷要能一眼读懂，不做字段倾倒。
+_VISUALIZATION_NODE_KEYS = ("description", "inputs", "outputs", "family", "stage", "lifecycle")
+
+
+def _visualization_node(row: tuple[Any, ...]) -> dict[str, Any]:
+    """画布节点：id / label / node_type + 能解释关系的 properties 子集。"""
+    properties = row[3] if isinstance(row[3], dict) else {}
+    node: dict[str, Any] = {"id": str(row[0]), "label": row[1], "node_type": row[2]}
+    for key in _VISUALIZATION_NODE_KEYS:
+        value = properties.get(key)
+        if value in (None, "", [], {}):
+            continue
+        node[key] = value
+    return node
+
+
+def _as_str_list(value: Any) -> list[str]:
+    if not isinstance(value, (list, tuple)):
+        return []
+    return [str(item) for item in value if isinstance(item, (str, int))]
+
+
+#: 实测权重的参考上限：经验层 weight = 交接次数 × Wilson 置信度 × 90 天时间衰减，
+#: 实测最大约 2.6（`staff-schedule → effort-budget`），取 4 作满强度留出余量。
+_MEASURED_WEIGHT_REFERENCE = 4.0
+#: 契约衔接的参考端口数：共享 3 个端口即视为满强度。
+_PORT_REFERENCE = 3.0
+
+
+def _visualization_edge(
+    row: tuple[Any, ...],
+    *,
+    plugin_by_node: Mapping[str, str],
+    ports_by_node: Mapping[str, tuple[list[str], list[str]]],
+    measured: Mapping[tuple[str, str], Mapping[str, Any]],
+) -> dict[str, Any]:
+    """画布边：把"权重"从常量 1 换成**有依据的强度**，并把依据一起返回。
+
+    原先所有边的 weight 都是 1 —— 那是固定模式，看不出哪条关系更要紧。真实可用的证据有两类：
+
+    * **经验实测**：该对插件在历史运行里真的交接过的次数/成败（``experience.edge_stats``）；
+    * **契约衔接**：两端能力的输出端口 ∩ 输入端口 —— 边之所以存在，多数就是因为共享契约
+      （实测 ``capability-l2`` 的 80 条 ``depends_on`` 里有 79 条端口相接）。
+
+    有实测用实测，没有就用契约重合度；层级关系（``contains``）是声明出来的确定事实，保持 1.0。
+    ``basis`` 必须由界面显示出来 —— 只说"权重 0.53"而不说依据，等于换个方式不说真话。
+    """
+    source, target = str(row[0]), str(row[1])
+    relation = str(row[2])
+    if relation == "contains":
+        return {
+            "source": source, "target": target, "relation": relation,
+            "weight": 1.0, "basis": "声明层级：族包含能力",
+        }
+
+    source_plugin = plugin_by_node.get(source)
+    target_plugin = plugin_by_node.get(target)
+    stats = measured.get((source_plugin, target_plugin)) if source_plugin and target_plugin else None
+    if stats is not None and (stats["success"] or stats["fail"]):
+        attempts = int(stats["success"]) + int(stats["fail"])
+        return {
+            "source": source, "target": target, "relation": relation,
+            "weight": round(min(1.0, float(stats["weight"]) / _MEASURED_WEIGHT_REFERENCE), 4),
+            "basis": f"经验实测：{stats['success']} 成功 / {stats['fail']} 失败（共 {attempts} 次交接）",
+        }
+
+    outputs, _ = ports_by_node.get(source, ([], []))
+    _, inputs = ports_by_node.get(target, ([], []))
+    shared = sorted(set(outputs) & set(inputs))
+    if shared:
+        return {
+            "source": source, "target": target, "relation": relation,
+            "weight": round(min(1.0, len(shared) / _PORT_REFERENCE), 4),
+            "basis": f"契约衔接：共享端口 {', '.join(shared)}",
+        }
+
+    return {
+        "source": source, "target": target, "relation": relation,
+        "weight": round(float(row[3] or 0.0), 4),
+        "basis": "声明关系：无端口衔接记录，也无运行实测",
+    }
+
+
+def _measured_pairs(cur: Any, tenant_id: Any, plugin_ids: list[str]) -> dict[tuple[str, str], dict[str, Any]]:
+    """经验层实测协作，按 (源插件, 目标插件) 索引。
+
+    键刻意不含 ``contract_id``：画布上两点之间只画一条边，而经验层是按 (源,目标,契约)
+    分行的 —— 同一对插件有多个契约时在这里合并（次数相加、权重取最大），否则边会去找
+    一个并不存在的单行契约而对不上，权重又退回常量。
+    """
+    if not plugin_ids:
+        return {}
+    cur.execute(
+        """SELECT source_plugin_id, target_plugin_id,
+                  sum(success_count), sum(fail_count), max(weight)
+           FROM experience.edge_stats
+           WHERE tenant_id=%s AND source_plugin_id = ANY(%s) AND target_plugin_id = ANY(%s)
+           GROUP BY source_plugin_id, target_plugin_id""",
+        (tenant_id, plugin_ids, plugin_ids),
+    )
+    return {
+        (row[0], row[1]): {
+            "success": int(row[2] or 0), "fail": int(row[3] or 0), "weight": float(row[4] or 0.0),
+        }
+        for row in cur.fetchall()
+    }
 
 
 class GraphService:
@@ -493,24 +602,28 @@ class GraphService:
                 ]
                 if not space_rows:
                     return {"space_key": None, "spaces": spaces, "nodes": [], "edges": [], "partial": False}
-                matching = (
-                    next((row for row in space_rows if row[1] == space_key), None)
-                    if space_key
-                    else next((row for row in space_rows if row[5] > 0), space_rows[0])
-                )
+                if space_key:
+                    matching = next((row for row in space_rows if row[1] == space_key), None)
+                else:
+                    # 默认选**内容最多**的空间。原先取"按名称排序后第一个有边的空间"，
+                    # 于是默认落在一个 2 节点的演示空间上，而真正的能力网络（147 节点 /
+                    # 203 边）在 capability-l2 里躺着 —— 页面看起来像空的。
+                    # 按规模降序（节点数 → 边数 → key 保证确定性），默认就有东西看。
+                    richest = sorted(space_rows, key=lambda row: (-row[4], -row[5], row[1]))
+                    matching = next((row for row in richest if row[4] > 0), space_rows[0])
                 if matching is None:
                     raise ValueError(f"graph space not found: {space_key}")
                 space_id, selected_key = matching[0], matching[1]
                 if node_type:
                     cur.execute(
-                        """SELECT id,label,node_type FROM graph.nodes
+                        """SELECT id,label,node_type,properties FROM graph.nodes
                         WHERE tenant_id=%s AND space_id=%s AND deleted_at IS NULL AND node_type=%s
                         ORDER BY label,id LIMIT %s""",
                         (tenant_id, space_id, node_type, max_nodes + 1),
                     )
                 else:
                     cur.execute(
-                        """SELECT id,label,node_type FROM graph.nodes
+                        """SELECT id,label,node_type,properties FROM graph.nodes
                         WHERE tenant_id=%s AND space_id=%s AND deleted_at IS NULL
                         ORDER BY label,id LIMIT %s""",
                         (tenant_id, space_id, max_nodes + 1),
@@ -519,7 +632,23 @@ class GraphService:
                 partial = len(node_rows) > max_nodes
                 visible_nodes = node_rows[:max_nodes]
                 node_ids = [row[0] for row in visible_nodes]
-                nodes = [{"id": str(row[0]), "label": row[1], "node_type": row[2]} for row in visible_nodes]
+                # 节点的 properties 里带着这段关系网络**为什么存在**的证据：能力做什么
+                # （description）、吃什么吐什么（inputs/outputs）、属于哪个族与阶段。
+                # 只回 id/label/type 的话，界面就只能画点线、说不出关系，等于把图变成装饰。
+                nodes = [_visualization_node(row) for row in visible_nodes]
+                node_plugin: dict[str, str] = {}
+                node_ports: dict[str, tuple[list[str], list[str]]] = {}
+                for row in visible_nodes:
+                    properties = row[3] if isinstance(row[3], dict) else {}
+                    key = str(row[0])
+                    plugin_id = properties.get("plugin_id")
+                    if isinstance(plugin_id, str) and plugin_id:
+                        node_plugin[key] = plugin_id
+                    node_ports[key] = (
+                        _as_str_list(properties.get("outputs")),
+                        _as_str_list(properties.get("inputs")),
+                    )
+                measured_pairs = _measured_pairs(cur, tenant_id, sorted(set(node_plugin.values())))
                 if not node_ids:
                     return {"space_key": selected_key, "spaces": spaces, "nodes": nodes, "edges": [], "partial": partial}
                 placeholders = ",".join(["%s"] * len(node_ids))
@@ -533,7 +662,12 @@ class GraphService:
                 edge_rows = cur.fetchall()
                 partial = partial or len(edge_rows) > max_edges
                 edges = [
-                    {"source": str(row[0]), "target": str(row[1]), "relation": row[2], "weight": float(row[3])}
+                    _visualization_edge(
+                        row,
+                        plugin_by_node=node_plugin,
+                        ports_by_node=node_ports,
+                        measured=measured_pairs,
+                    )
                     for row in edge_rows[:max_edges]
                 ]
                 return {"space_key": selected_key, "spaces": spaces, "nodes": nodes, "edges": edges, "partial": partial}

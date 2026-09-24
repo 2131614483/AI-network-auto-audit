@@ -193,8 +193,8 @@ function createAuditBrainWindow(): void {
       }, 8000);
     });
   }
-  if (process.env.ELECTRON_RENDERER_URL) void window.loadURL(`${process.env.ELECTRON_RENDERER_URL}/audit-brain.html`);
-  else void window.loadFile(join(__dirname, "../renderer/audit-brain.html"));
+  if (process.env.ELECTRON_RENDERER_URL) void window.loadURL(`${process.env.ELECTRON_RENDERER_URL}/showcase/audit-brain.html`);
+  else void window.loadFile(join(__dirname, "../renderer/showcase/audit-brain.html"));
 }
 
 function createKnowledgeNebulaWindow(): void {
@@ -318,8 +318,8 @@ function createFlowCanvasWindow(): void {
       }, 900);
     });
   }
-  if (process.env.ELECTRON_RENDERER_URL) void window.loadURL(`${process.env.ELECTRON_RENDERER_URL}/flow-canvas-demo.html`);
-  else void window.loadFile(join(__dirname, "../renderer/flow-canvas-demo.html"));
+  if (process.env.ELECTRON_RENDERER_URL) void window.loadURL(`${process.env.ELECTRON_RENDERER_URL}/showcase/flow-canvas-demo.html`);
+  else void window.loadFile(join(__dirname, "../renderer/showcase/flow-canvas-demo.html"));
 }
 
 function clampZoom(factor: number): number {
@@ -385,12 +385,15 @@ function installApplicationMenu(): void {
 const controlPlaneUrl = (process.env.AUDIT_NETWORK_API_URL ?? "http://127.0.0.1:8010").replace(/\/$/, "");
 const allowedPaths = new Set([
   "/health",
+  "/api/v1/health/ready",
   "/api/v1/ui/bootstrap",
   "/api/v1/ui/contributions",
   "/api/v1/ui/tenant-context",
   "/api/v1/ui/operations",
   "/api/v1/ui/operations/detail",
   "/api/v1/plugins/verified",
+  "/api/v1/plugins/lifecycle",
+  "/api/v1/plugins/versions",
   "/api/v1/graph/visualization",
   "/api/v1/graph/routes",
   "/api/v1/graph/governance",
@@ -414,7 +417,29 @@ const allowedPaths = new Set([
   "/api/v1/topology/plans",
   "/api/v1/topology/bridges",
   "/api/v1/topology/chains",
+  // Topology evidence pack + run feed: read/anchor/verify/export the audit
+  // evidence pack and stream the live run feed. These were added to the API
+  // after the original allow-list was frozen and must stay reachable from the
+  // desktop, otherwise the preload rejects them as "未声明的控制平面接口".
+  "/api/v1/topology/evidence/status",
+  "/api/v1/topology/evidence/anchors",
+  "/api/v1/topology/evidence/verify",
+  "/api/v1/topology/evidence/export",
+  "/api/v1/topology/runs",
   "/api/v1/approvals",
+  // Experience + observability dashboards (Hub / Health / Diagnose / Evidence /
+  // Evolution / Publications / Runs / Schedules / Suggestions pages). These were
+  // added to the API after the original allow-list was frozen.
+  "/api/v1/experience/evolution",
+  "/api/v1/observability/failures",
+  "/api/v1/observability/runs",
+  // Knowledge search / case library / rules registry / connectivity probe:
+  // pages that were blanked by the same allow-list drift.
+  "/api/v1/search",
+  "/api/v1/cases",
+  "/api/v1/library/index",
+  "/api/v1/rules/registry",
+  "/api/v1/connectivity/report",
   "/api/v1/policy/simulate",
   "/api/v1/knowledge/upload",
   "/api/v1/knowledge/stats",
@@ -490,7 +515,12 @@ function isAllowedControlPlanePath(path: string): boolean {
     || /^\/api\/v1\/topology\/runs$/i.test(path)
     || /^\/api\/v1\/topology\/canvas\/[0-9a-f-]{36}$/i.test(path)
     || /^\/api\/v1\/topology\/planning\/intents\/[0-9a-f-]{36}$/i.test(path)
-    || /^\/api\/v1\/topology\/nebula-experience\/suggestions\/[0-9a-f-]{36}\/decision$/i.test(path);
+    || /^\/api\/v1\/topology\/nebula-experience\/suggestions\/[0-9a-f-]{36}\/decision$/i.test(path)
+    // Experience + observability detail routes (per-run bundle verify / evidence
+    // export / trace locate) — segment-shaped, so whitelist by prefix.
+    || /^\/api\/v1\/observability\/bundles\/[^/]+\/verify$/i.test(path)
+    || /^\/api\/v1\/observability\/evidence\/[^/]+$/i.test(path)
+    || /^\/api\/v1\/observability\/trace\/[^/]+$/i.test(path);
 }
 
 function headersFor(request: SafeRequest): Headers {
@@ -517,22 +547,49 @@ function readableControlPlaneError(payload: unknown): string {
 }
 
 async function controlPlaneRequest(request: SafeRequest): Promise<unknown> {
-  if (!isAllowedControlPlanePath(request.path)) throw new Error("桌面端拒绝未声明的控制平面接口。");
+  if (!isAllowedControlPlanePath(request.path)) throw new Error(`桌面端拒绝未声明的控制平面接口：${request.path}`);
   const headers = headersFor(request);
   const init: RequestInit = { method: request.method ?? "GET", headers };
   if (request.body) {
     headers.set("Content-Type", "application/json");
     init.body = JSON.stringify(request.body);
   }
-  let response: Response;
-  try {
-    const url = new URL(`${controlPlaneUrl}${request.path}`);
-    for (const [key, value] of Object.entries(request.query ?? {})) {
-      if (value !== undefined) url.searchParams.set(key, String(value));
+  // Connection-level retries: the first request of a freshly spawned window
+  // can hit a transient refusal (firewall first-allow delay, socket teardown
+  // of the previous instance) while the API is perfectly healthy — one retry
+  // turned every failing screenshot healthy, so three with backoff is ample.
+  // HTTP error statuses are NOT retried here; they carry real semantics and
+  // are surfaced by the response handling below.
+  const MAX_ATTEMPTS = 3;
+  const url = new URL(`${controlPlaneUrl}${request.path}`);
+  for (const [key, value] of Object.entries(request.query ?? {})) {
+    if (value !== undefined) url.searchParams.set(key, String(value));
+  }
+  let response: Response | undefined;
+  let lastFailure = "";
+  for (let attempt = 1; attempt <= MAX_ATTEMPTS && !response; attempt++) {
+    try {
+      response = await fetch(url, init);
+    } catch (error) {
+      const cause = error instanceof Error ? error.cause : undefined;
+      lastFailure =
+        error instanceof Error
+          ? `${error.message}${cause === undefined ? "" : `（${String(cause)}）`}`
+          : String(error);
+      if (attempt < MAX_ATTEMPTS) {
+        console.warn(
+          "controlPlaneRequest retry", attempt, "/", MAX_ATTEMPTS,
+          request.method ?? "GET", request.path, "->", lastFailure,
+        );
+        await new Promise((resolve) => setTimeout(resolve, 300 * 2 ** (attempt - 1)));
+      }
     }
-    response = await fetch(url, init);
-  } catch {
-    throw new Error("无法连接本机控制平面。请先启动 Audit Network 服务后重试。");
+  }
+  if (!response) {
+    console.error("controlPlaneRequest", request.method ?? "GET", request.path, "->", lastFailure);
+    throw new Error(
+      `无法连接本机控制平面（重试 ${MAX_ATTEMPTS} 次仍失败：${lastFailure}）。请先启动 Audit Network 服务后重试。`,
+    );
   }
   const payload: unknown = await response.json().catch(() => ({}));
   if (!response.ok) {
@@ -716,13 +773,41 @@ function createWindow(initialZoom: number | null): void {
   const captureView = process.env.AUDIT_NETWORK_CAPTURE_VIEW;
   if (capturePath) {
     const configuredCaptureDelay = Number(process.env.AUDIT_NETWORK_CAPTURE_DELAY_MS ?? "3500");
-    const captureDelayMs = Number.isFinite(configuredCaptureDelay)
+    const captureDeadlineMs = Number.isFinite(configuredCaptureDelay)
       ? Math.min(30_000, Math.max(500, Math.trunc(configuredCaptureDelay)))
       : 3500;
     window.webContents.once("did-finish-load", () => {
-      setTimeout(() => {
-        void window.webContents.capturePage().then((image) => writeFile(capturePath, image.toPNG()));
-      }, captureDelayMs);
+      const startedAt = Date.now();
+      // 等渲染进程报告连接终态（App.tsx 把 connection 写到 <html data-connection>），
+      // 就绪后再留 1.2s 让表格/图表完成渲染。终态是 online 或 error——错误态也是
+      // 合法画面。到 deadline 仍未就绪则照拍（旧行为兜底），不无限等待。
+      const poll = (): void => {
+        const elapsed = Date.now() - startedAt;
+        void window.webContents
+          .executeJavaScript("document.documentElement.dataset.connection ?? ''", true)
+          .then((state) => {
+            if (state === "online" || state === "error" || elapsed >= captureDeadlineMs) {
+              if (state !== "online" && state !== "error") {
+                console.warn("capture: connection not settled within deadline, state =", state);
+              }
+              // Settle window after the connection reaches a terminal state:
+              // page-level panels (Hub / Evidence / Evolution …) mount and fetch
+              // AFTER loadWorkspace flips data-connection to online, so keep the
+              // default short but allow a longer window for verification shots.
+              const settleRaw = Number(process.env.AUDIT_NETWORK_CAPTURE_SETTLE_MS ?? "1200");
+              const settleMs = Number.isFinite(settleRaw)
+                ? Math.min(30_000, Math.max(0, Math.trunc(settleRaw)))
+                : 1_200;
+              setTimeout(() => {
+                void window.webContents.capturePage().then((image) => writeFile(capturePath, image.toPNG()));
+              }, settleMs);
+              return;
+            }
+            setTimeout(poll, 400);
+          })
+          .catch(() => setTimeout(poll, 400));
+      };
+      setTimeout(poll, 800);
     });
   }
   if (process.env.ELECTRON_RENDERER_URL) {

@@ -44,13 +44,22 @@ _m7_check.py
 # %VAR% is run from a shell that does not expand it (Git Bash).  It ends up
 # holding copies of Windows' own ProgramData caches, which must never be
 # committed.  Junk — safe to delete, but ignored so it cannot leak in.
+%SystemDrive%/
 # A stray duplicate of the run archive appeared on disk during the CI work
 # (1712 files, created 14:47 on 2026-09-12); its origin is not accounted for.
 # It is NOT deleted — the retention rule is "keep everything" — but it must not
-# be committed, since it is a byte-for-byte copy of
-# `docs/全流程运行日志-20260912/` and would double that archive in git.
-docs/全流程运行日志-20260912-完整归档/
-%SystemDrive%/
+# be committed.  Verified 2026-09-22: its file list is identical to
+# `审计项目案例报告效果展示/全流程运行日志-20260912/` (1712 entries) and the
+# sampled files are byte-for-byte identical (`00-归档说明/README.md` =
+# f2889003…, `校验清单-sha256.csv` = d12bfb00…, `01-输入数据/audit-sim/ledger.csv`
+# = 79a9c4f0…), so committing it doubles that archive in git.
+#
+# This rule used to read `docs/全流程运行日志-20260912-完整归档/`, which matched
+# nothing: the copy actually lives under `审计项目案例报告效果展示/` and nests a
+# second directory of the same name inside it.  The rule never took effect and
+# all 1709 files were tracked — twice over.  `git rm -r --cached` removed the
+# redundant copy from the index; the files stay on disk.
+审计项目案例报告效果展示/全流程运行日志-20260912-完整归档/
 # IDE state.  Nothing here is needed to build or run the project, and the
 # per-user files (misc.xml, modules.xml) only describe one machine's checkout.
 # `git rm -r --cached .idea` removed the already-tracked copies; the files stay

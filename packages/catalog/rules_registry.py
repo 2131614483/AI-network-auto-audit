@@ -8,7 +8,7 @@ This answers "按什么规则做事" with four honest sources of truth:
   ``plugins/builtin/``; the lifecycle they declare (``verified`` /
   ``contract_only``) is carried verbatim, never upgraded.
 * **report_templates** -- the audit-report markdown documents under
-  ``审计项目案例/``; these are the human-facing templates a case produces.
+  ``审计项目案例报告效果展示/``; these are the human-facing templates a case produces.
 
 Policy sets themselves live in ``policy.policy_sets`` (the database is the
 source of truth for them) and are joined by the route, not duplicated here.
@@ -32,7 +32,7 @@ from typing import Any
 #: Project-relative roots that hold rule assets.  A missing root is surfaced in
 #: ``missing_roots``, never silently skipped.
 SCHEMA_GLOB = "contracts/jsonschema/*.json"
-PROJECT_ROOT_DIR = "审计项目案例"
+PROJECT_ROOT_DIR = "审计项目案例报告效果展示"
 
 
 _lock = threading.Lock()
@@ -47,7 +47,7 @@ def _iso(timestamp: float) -> str:
 def _is_report_template(path: Path) -> bool:
     """A report template is a markdown file whose name says so.
 
-    Deliberately narrow: the whole ``审计项目案例/`` tree is already indexed by the
+    Deliberately narrow: the whole ``审计项目案例报告效果展示/`` tree is already indexed by the
     library view; here we only surface the documents that read as report
     templates, not every working note under a case.
     """

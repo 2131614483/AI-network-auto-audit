@@ -75,6 +75,20 @@ def _is_fixture(path: Path) -> bool:
     return "contract" in parts and "builtin" in parts
 
 
+def _is_demo_data_builder(path: Path) -> bool:
+    """``desktop/src/public/showcase`` holds one-off builders for static demo payloads.
+
+    ``build_data.py`` / ``_survey*.py`` / ``_sample.py`` are executed by hand to
+    regenerate ``*.data.js`` from a local dataset drive; the browser only ever
+    loads their *output*.  Those ``E:\\数据\\...`` literals are evidence of where
+    a demo dataset came from, not configuration the app resolves at runtime —
+    the same category as the run archives already excluded under ``docs/``.
+    (``pyproject.toml`` ships the same exemption for ruff.)
+    """
+
+    return "showcase" in path.parts and "public" in path.parts
+
+
 def _scanned_files() -> list[Path]:
     files: list[Path] = []
     for root in SCAN_ROOTS:
@@ -84,7 +98,7 @@ def _scanned_files() -> list[Path]:
         for path in sorted(base.rglob("*")):
             if not path.is_file() or path.suffix not in SUFFIXES or path.name in SKIP_NAMES:
                 continue
-            if path.name.endswith((".test.ts", ".test.tsx")) or _is_fixture(path):
+            if path.name.endswith((".test.ts", ".test.tsx")) or _is_fixture(path) or _is_demo_data_builder(path):
                 continue
             files.append(path)
     return files

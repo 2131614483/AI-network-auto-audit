@@ -27,7 +27,7 @@ logger = logging.getLogger("audit.ops.supervisor")
 
 DEFAULT_API_URL = "http://127.0.0.1:8010"
 DEFAULT_DATABASE_URL = "postgresql://audit_app:admin@localhost:5432/audit_network"
-EXPECTED_MIGRATION_HEAD = "0051_deprecate_ops_dead_objects"
+EXPECTED_MIGRATION_HEAD = "0068_connectivity_read_policy"
 
 
 def check_api(api_url: str, *, timeout: float = 3.0) -> tuple[bool, str]:

@@ -202,4 +202,11 @@ def run_local_forever(database_url: str, poll_seconds: float = 1.0) -> None:
 
 
 if __name__ == "__main__":
-    run_local_forever(os.environ["DATABASE_URL"])
+    # Mirror apps/api/main.py Settings: read DATABASE_URL from the environment
+    # but never hard-crash when it is unset (e.g. launched directly instead of
+    # through scripts/start-brain.ps1, which exports it). The fallback targets
+    # the same native PostgreSQL instance the API uses.
+    database_url = os.environ.get(
+        "DATABASE_URL", "postgresql://audit_app:admin@localhost:5432/audit_network"
+    )
+    run_local_forever(database_url)

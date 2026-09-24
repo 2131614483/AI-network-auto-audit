@@ -172,7 +172,11 @@ def build_manifest(case_root: Path = DEFAULT_CASE_ROOT) -> dict[str, Any]:
     source_root = case_root / SOURCE_DIR_NAME
     evidence_path = case_root / "_tools" / EVIDENCE_FILE_NAME
     verifier_path = case_root / "_tools" / VERIFIER_FILE_NAME
-    report_path = case_root.parent / REPORT_NAME
+    # 高难度案例的审计报告就放在案例根目录下，而同系列另外两个案例放在父目录的
+    # 「07_审计成果/」子目录里；两处都探测，避免把布局差异当成「报告缺失」。
+    report_path = case_root / REPORT_NAME
+    if not report_path.is_file():
+        report_path = case_root.parent / REPORT_NAME
 
     source_files = build_source_inventory(source_root)
     csv_key_scans = scan_csv_key_duplicates(source_root)

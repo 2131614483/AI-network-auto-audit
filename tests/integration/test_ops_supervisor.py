@@ -18,6 +18,7 @@ from psycopg2.extras import Json
 from apps.worker.local import write_worker_heartbeat
 from packages.control.scheduler import Scheduler
 from packages.ops.checks import collect_findings, worker_liveness
+from packages.ops.supervisor import EXPECTED_MIGRATION_HEAD
 
 DB = os.getenv("AUDIT_NETWORK_TEST_DATABASE_URL", "postgresql://audit_app:admin@localhost:5432/audit_network_test")
 
@@ -170,7 +171,7 @@ def test_checks_return_structured_findings() -> None:
     data_dir = os.path.join(os.path.dirname(__file__), "..", "..", ".data")
     findings = collect_findings(
         DB, data_dir=data_dir,
-        expected_head="0062_archive_link",
+        expected_head=EXPECTED_MIGRATION_HEAD,
     )
     assert {f.check for f in findings} == {
         "disk_usage", "outbox_backlog", "stuck_tasks", "audit_growth", "worker_liveness", "migration_head",
@@ -179,4 +180,4 @@ def test_checks_return_structured_findings() -> None:
         assert finding.severity in {"ok", "warn", "crit"}
     migration = next(f for f in findings if f.check == "migration_head")
     assert migration.severity == "ok"
-    assert migration.message == "0062_archive_link"
+    assert migration.message == EXPECTED_MIGRATION_HEAD

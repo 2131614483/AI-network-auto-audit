@@ -387,3 +387,77 @@ def test_api_planning_rejects_malformed_sources(monkeypatch: pytest.MonkeyPatch)
         headers=_api_headers(tenant),
     )
     assert response.status_code == 422  # data_sources must be [node, port] pairs
+
+
+# -- 10. the planning directory merges both generations of catalog --------------
+
+
+def test_planning_directory_merges_legacy_and_domain_catalogs() -> None:
+    """The planner must recall the real plugin network, not only the legacy slots.
+
+    Regression: the CW5 endpoints recalled from ``topology.plugin_blueprints``
+    plus the two verified runtime plugins — five capabilities — while
+    validating against the seven hand-written port contracts.  A draft of a
+    real audit flow was therefore rejected with ``contract_mismatch`` before
+    the compiler was reached, and the catalog never offered the abilities to
+    plan with in the first place.
+    """
+    from apps.api.main import _planning_directory
+
+    catalog, contracts = _planning_directory(TEST_DB, _tenant(), "audit")
+
+    # The legacy cross-domain chain the CW5 demo runs on still resolves, under
+    # its historical port names — templates and existing drafts depend on them.
+    assert "audit.ledger.validate" in catalog
+    assert "quant.experiment.evaluate" in catalog
+    assert "ledger" in contracts
+    assert "candidates" in contracts
+
+    # ...and the on-disk audit network is recallable alongside it, under the
+    # shipped port names, with contracts derived from the schema files.  The
+    # directory-derived registry keeps the protocol's suffixed file name
+    # (`ledger-artifact-ref.schema.json`) where the legacy one uses the bare
+    # name — the two overloaded spellings are both supported by
+    # `composer.schema_sha256`, which is why the digest below is a real one.
+    assert len(catalog) > 50
+    assert len(contracts) > 50
+    assert contracts["ledger-artifact-ref"]["schema_ref"] == "ledger-artifact-ref.schema.json"
+    assert len(str(contracts["ledger-artifact-ref"]["schema_sha256"])) == 64
+
+    # The catalog and the registry describe the same ports: every port the
+    # catalog names for the domain is one the registry can pin, otherwise the
+    # prompt would omit a contract the validator still demands.
+    from packages.ai_planner.workbench import domain_catalog
+
+    domain_ports = {
+        port for entry in domain_catalog("audit").values()
+        for port in (*entry.inputs, *entry.outputs)
+    }
+    assert domain_ports <= set(contracts)
+
+
+def test_api_planning_rejects_an_unknown_domain() -> None:
+    tenant = _tenant()
+    with psycopg2.connect(TEST_DB) as connection:
+        _allow_planning(connection, tenant, f"cw5-dom-{uuid4().hex[:6]}")
+    client = TestClient(create_app(Settings(database_url=TEST_DB)))
+    response = client.post(
+        "/api/v1/topology/planning/ai",
+        json={"goal": "校验日记账质量并送入回测", "domain": "nosuchdomain"},
+        headers=_api_headers(tenant),
+    )
+    assert response.status_code == 422  # no pack for that domain -> not a silent empty plan
+
+
+def test_api_planning_rejects_a_path_traversing_domain() -> None:
+    """``domain`` names a directory under ``contracts/domains``.
+
+    ``load_pack`` joins it straight onto that root, so the request model is the
+    only thing standing between a caller and a path outside the domain packs.
+    """
+    response = TestClient(create_app(Settings(database_url=TEST_DB))).post(
+        "/api/v1/topology/planning/ai",
+        json={"goal": "校验日记账质量并送入回测", "domain": "../../etc"},
+        headers=_api_headers(_tenant()),
+    )
+    assert response.status_code == 422

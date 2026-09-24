@@ -80,7 +80,9 @@ CREATE INDEX IF NOT EXISTS topology_planning_intents_plan_idx
 -- RLS + FORCE + 租户策略；只 GRANT SELECT, INSERT，无 UPDATE/DELETE
 ```
 
-- **确定性匹配索引**：`graph.nodes.label` 与 `graph.node_aliases.alias` 各建 `gin (xxx gin_trgm_ops)`（`CREATE EXTENSION IF NOT EXISTS pg_trgm`），使意图打分查询可用 GIN 索引加速。
+- **确定性匹配索引**：`graph.nodes.label` 与 `graph.node_aliases.alias` 各有两类 trgm 索引（`CREATE EXTENSION IF NOT EXISTS pg_trgm`）：
+  - **GiST（`gist_trgm_ops`，迁移 `0067_graph_knn_gist_indexes`）—— 实际生效的那一类。** 召回用 KNN（`ORDER BY label <-> q LIMIT k`）走它：按距离有序扫、到 k 即停，**不需要选择性估计**，因此以应用角色（受 RLS 约束）执行时也照样走索引。
+  - GIN（`gin_trgm_ops`，迁移 `0048`）保留，服务 `%` / `LIKE`。**但召回不能靠它**：`similarity >= x` 写成 `a % b` 虽语义等价，计划器却需要选择性估计才肯选它；而 `graph.nodes` 受 RLS 保护，以非 superuser 角色执行时估计会塌成表行数的 1 %（50 000 节点实测：真实 7 行、估 1–509 行）→ 计划器改全表扫描。50 000 节点实测：KNN **6.0–6.6ms** vs 全表 **238–269ms**。
 
 - **种子数据**：`capability-l2`（L2 能力空间）+ `audit-l3`（L3 业务域空间），含中文/英文别名的能力节点 `audit.ledger.validate`、`quant.research-note.draft` 与域节点；内部 `depends_on` 边（`audit.ledger.validate → audit.finding.draft`）；active `capability_contract` 桥接规则与桥边（`audit-l3 域节点 → audit.ledger.validate / quant.research-note.draft`）；`blueprint_graph_links` 三条绑定将上述三能力节点分别链接到 seed 蓝图（`ledger-quality`、`research-note`、`finding-draft` 对应能力 token）。
 
@@ -92,7 +94,7 @@ CREATE INDEX IF NOT EXISTS topology_planning_intents_plan_idx
 
 纯读适配，面向 `graph` schema 只读查询：
 
-- `match_nodes(intent_text, max_matches=4)`：对每个 active 且未删除的 L2 能力 / L3 域节点计算 `score = GREATEST(similarity(label), max(similarity(alias)))`（相关子查询取别名最大相似），`score < 0.05` 剔除，`ORDER BY score DESC, kind` 取 `max_matches`；`match_kind` 为 `direct`（label 更优）或 `alias`（别名更优），`match_source="trigram"`。**确定性**：同一意图、同一图谱状态 → 同一排序结果。
+- `match_nodes(intent_text, max_matches=4)`：**两段式（KNN 取候选 → 候选内精排）**。候选由 label 与 alias **两个 KNN 分支**各取最近 `_candidate_budget(max_matches) = max(max_matches*4, 64)` 个节点（GiST `<->`）合并而成；随后在候选内按 `score = GREATEST(similarity(label), max(similarity(alias)))` 精排，`score < 0.05` 剔除，`ORDER BY score DESC, space_key, canonical_key` 取 `max_matches`；`match_kind` 为 `direct`（label 更优）或 `alias`（别名更优），`match_source="trigram"`。候选预算的**正确性依据**：节点若在 label 维度前 k 之外，就有 k 个节点 label 分更高、其 `GREATEST` 必然压制它（alias 维度同理），故 `k >= max_matches` 时 top-N 必落在并集内（4 倍余量覆盖并列）。**结果与全表扫描逐条一致**（`tests/integration/test_plugin_graph_recall.py` 保留全表实现作 oracle 对照）。**确定性**：同一意图、同一图谱状态 → 同一排序结果。
 
 - `expand_to_capabilities(node_keys, expand_hops=1)`：单跳有界扩展，硬上限 `_EXPANSION_CAP = 8` 节点/次。(a) 域节点经 active `capability_contract` 桥边扩展 L2 能力节点；(b) 剩余容量内能力节点经空间内 `depends_on` 边（`valid_to IS NULL`）扩展同层能力节点；每条扩展结果携带 `source_node_key` 溯源。Graph 侧仅暴露只读接口，无任何写入口。
 
@@ -169,4 +171,19 @@ M10 只**引用**既有 `TopologyService.plan()`（M1 已验收、`plan_only` �
 - 桌面 TypeScript typecheck、Vitest（25/25）与生产构建均通过；
 
 - 主库/测试库迁移头 `0048_graph_driven_planning`；实施计划与验收对照见本文档；M1–M10 全部完成，待下一阶段指示。
+
+## 11. 后续演进（2026-09-22）：图谱被填满、多级展开、召回按需取用
+
+M10 交付的是**骨架**：图谱里只有 3 个手工 capability 节点，召回打分全表扫描，而 AI 规划端点走的是全量目录。以下四项把它接到真实规模上。
+
+| 步 | 内容 | 关键结论 |
+| - | -- | ---- |
+| S1 | 插件目录 → 图谱（域/族/能力三层 + `contains`/`depends_on` + 别名 + 幂等 upsert） | 四域灌图：L2 能力 **123**、族 **24**、`contains` 123、`depends_on` 80。`packages/graph/plugin_indexer.py` + `scripts/index-plugin-graph.py` |
+| S3 | 多级展开（**多级 ≠ 多跳**） | `expand_hops` 保持 0/1（契约如此），改为**入口粒度**可切换：域→桥→能力；**族→`contains`→其下能力**；能力→`depends_on`→邻居。概略词「证据与底稿」命中族（0.556）后展开 8 个插件 |
+| S2 | 召回可扩展性 | 改用 **GiST KNN**（`ORDER BY label <-> q LIMIT k`，迁移 `0067_graph_knn_gist_indexes`）：50 000 节点下 238–269 ms → **6.0–6.6 ms**，结果与全表逐条一致。**不能用 `%`**：RLS 下选择性估计塌成 1%，计划器弃用 GIN 索引（详见迁移 0067 与 `_candidate_budget` 注释） |
+| S4 | 召回目录合流 | AI 规划端点改为**先图谱召回、再按需取契约**。audit 域提示词 **82 063 → 6 279–7 581 字符（约 11–13x）**；召回为空时回退全量，legacy 槽位永不裁剪（CW5 demo 与所有模板依赖它） |
+
+S4 的落点：`workbench.recall_planning_directory()`（catalog 与 contracts 从**同一次筛选**派生，避免端口有目录无名契约）+ `apps/api/main.py::_planning_directory(intent_text=...)`。图谱不可达时降级为全量目录 —— 召回是优化，不是前置条件。
+
+**仍未合并的一点**：`/topology/planning/ai` 与 `/canvas/chat*` 现在按召回收缩提示词，但仍走 `AiPlanner`；`GraphPlanningService`（`/topology/intent/plan`）是另一条独立路径。两条路的**目录来源已同源**，但编排入口尚未统一 —— 那是更大的重构，未做。
 

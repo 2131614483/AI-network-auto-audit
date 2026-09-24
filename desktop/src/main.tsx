@@ -1,3 +1,9 @@
+// 必须最先导入：antd v5 的静态方法（`message.*` / `notification.*` / `Modal.*`）在
+// React 19 下会**静默失效**——不报错，只是什么都不弹。本项目有 7 处 `message.*`
+// 调用（其中 3 处是"复验失败 / 搜索失败"的错误提示），用户点了操作、失败了却看不到
+// 任何反馈。这个官方补丁在 antd 被使用之前接管这些静态方法。
+// 注意：导入顺序不能下调，`./App` 与 `antd/dist/reset.css` 都会先用到 antd。
+import "@ant-design/v5-patch-for-react-19";
 import React from "react";
 import ReactDOM from "react-dom/client";
 import "antd/dist/reset.css";

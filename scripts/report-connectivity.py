@@ -32,21 +32,13 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))
 
-from packages.ai_planner.composer import discover_plugins  # noqa: E402
 from packages.ai_planner.connectivity import (  # noqa: E402
-    ISLAND_CATEGORIES,
-    ISLAND_NAMES_ZH,
     ConnectivityMetrics,
-    classify_islands,
-    connectivity_metrics,
-    contract_edges,
     format_metrics_table,
     format_provenance_table,
-    invokes_edges,
-    island_summary,
     provenance_report,
 )
-from packages.ai_planner.semantics import load_semantics  # noqa: E402
+from packages.catalog.connectivity_view import connectivity_report  # noqa: E402
 
 # 指标方向：+1 越大越好，-1 越小越好。用于判断"回归"。
 _DIRECTION = {
@@ -128,13 +120,11 @@ def main(argv: list[str] | None = None) -> int:
                 print("全部直连边的输入 sha256 与上游产出逐字节一致。")
         return 0 if report.ok else 1
 
-    specs = discover_plugins(lifecycle=args.lifecycle)
-    edges = contract_edges(specs)
-    include_invokes = args.include_invokes
-    if include_invokes:
-        edges = edges | invokes_edges(specs)
-    metrics = connectivity_metrics(specs, edges=edges, include_invokes=include_invokes)
-    current = metrics.as_dict()
+    # 口径来自 packages/catalog/connectivity_view.py —— 与只读端点共用同一份实现，
+    # 免得脚本与界面各算一套、对同一张网给出相反的结论。
+    report = connectivity_report(lifecycle=args.lifecycle, include_invokes=args.include_invokes)
+    current = report["metrics"]
+    metrics = _as_metrics(current)
 
     if args.write_baseline is not None:
         args.write_baseline.parent.mkdir(parents=True, exist_ok=True)
@@ -162,24 +152,18 @@ def main(argv: list[str] | None = None) -> int:
 
         # islands, explained by role.  Printed in text mode only: the JSON shape
         # is what --baseline compares, and it must stay stable.
-        islands = classify_islands(
-            specs,
-            edges=edges | (contract_edges(specs) if include_invokes else set()),
-            catalog=load_semantics(),
-        )
-        summary = island_summary(islands)
-        present = [(c, summary[c]) for c in ISLAND_CATEGORIES if summary[c]]
-        if present:
+        islands = report["islands"]
+        if islands["present"]:
             print()
-            print(f"## 孤岛解释（{len(islands)} 个，每个都有分类依据）")
-            for category, count in present:
-                print(f"  {ISLAND_NAMES_ZH[category]:<24} {count}")
+            print(f"## 孤岛解释（{islands['total']} 个，每个都有分类依据）")
+            for entry in islands["present"]:
+                print(f"  {entry['label']:<24} {entry['count']}")
             for category in ("missing_upstream", "unreviewed"):
-                flagged = [i for i in islands if i.category == category]
+                flagged = [i for i in islands["items"] if i["category"] == category]
                 if flagged:
-                    print(f"  ── {ISLAND_NAMES_ZH[category]} 明细：")
+                    print(f"  ── {flagged[0]['category_zh']} 明细：")
                     for island in flagged[:15]:
-                        print(f"     {island.plugin_id}  ({island.detail})")
+                        print(f"     {island['plugin_id']}  ({island['detail']})")
                     if len(flagged) > 15:
                         print(f"     … 另有 {len(flagged) - 15} 个")
 

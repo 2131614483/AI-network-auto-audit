@@ -12,6 +12,7 @@
   FileSearchOutlined,
   FileTextOutlined,
   FullscreenExitOutlined,
+  FundProjectionScreenOutlined,
   MinusOutlined,
   PlayCircleOutlined,
   PlusOutlined,
@@ -27,7 +28,9 @@ import ComingSoonPage from "./components/pages/ComingSoonPage";
 import AIChatPanel from "./components/AIChatPanel";
 import AISettings from "./components/AISettings";
 import LogView from "./components/LogView";
+import PageErrorBoundary from "./components/PageErrorBoundary";
 import PluginFlowGraph from "./components/PluginFlowGraph";
+import ShowcaseFrame from "./components/ShowcaseFrame";
 import RunCanvas from "./components/RunCanvas";
 import RunsPanel from "./components/RunsPanel";
 import { pageRegistry, type PageProps } from "./components/pages";
@@ -58,6 +61,57 @@ type OperationsWorkflowRun = { id: string; workflow_key: string; workflow_versio
 type OperationsDetailMission = { id: string; title: string; domain: string; autonomy_mode: string; status: string; created_at: string; workflows: OperationsWorkflowRun[] };
 type GraphSpace = { key: string; level: string; name: string; node_count: number; edge_count: number };
 type GraphPayload = GraphVisualization & { spaces: GraphSpace[] };
+
+/**
+ * 图空间下拉项：带规模，并**按内容多少排序**。
+ *
+ * 本库有 200+ 个图空间，其中绝大多数是 1 个节点的空壳（check-* / e2e-* 这类测试残留）。
+ * 原先按接口返回顺序排，用户第一眼看到的是空壳列表，默认还落在一个 2 节点的演示空间上，
+ * 画布自然几乎空白 —— 观感就是"这页坏了"。带上规模 + 有内容优先，用户才知道该点哪个。
+ */
+function graphSpaceOptions(spaces: GraphSpace[]): Array<{ value: string; label: string }> {
+  return [...spaces]
+    .sort((left, right) =>
+      (right.node_count + right.edge_count) - (left.node_count + left.edge_count)
+      || left.name.localeCompare(right.name, "zh-CN"))
+    .map((space) => ({
+      value: space.key,
+      label: `${space.name} · ${space.level} · ${space.node_count} 节点 / ${space.edge_count} 边`,
+    }));
+}
+
+/**
+ * 图空间目录行：**有内容的排前面**。
+ *
+ * 225 个空间里只有 5 个带桥接（capability-l2 124 / audit-l3 108 / aiops-l3 7 /
+ * quant-l3 5 / knowledge-l3 4），其余是 L1 空壳（check-* / e2e-* 这类测试残留）。
+ * 原顺序按 level+name 排、每页 6 条 —— 真正有内容的要翻三十多页才看得到，
+ * 第一眼看见的是一屏 0，观感就是"这页没数据"。
+ */
+/**
+ * 关系类型的中文名。
+ *
+ * 图上直接显示 `contains` / `depends_on` 对读图的人没有帮助 —— 界面文案说人话，
+ * 原始类型名放在 title 里备查即可。
+ */
+const GRAPH_RELATION_LABELS: Record<string, string> = {
+  contains: "包含",
+  depends_on: "依赖",
+  related_to: "相关",
+  links: "链接",
+  supported_by: "支撑",
+};
+
+function graphRelationLabel(relation: string): string {
+  return GRAPH_RELATION_LABELS[relation] ?? relation;
+}
+
+function graphGovernanceRows(spaces: GraphGovernanceSpace[]): GraphGovernanceSpace[] {
+  return [...spaces].sort((left, right) =>
+    (right.active_bridge_count + right.revision_count) - (left.active_bridge_count + left.revision_count)
+    || left.level.localeCompare(right.level)
+    || left.name.localeCompare(right.name, "zh-CN"));
+}
 type GraphGovernanceSpace = { key: string; level: string; name: string; graph_role: string; cluster_key: string; active_bridge_count: number; revision_count: number };
 type GraphGovernance = { spaces: GraphGovernanceSpace[]; active_bridge_count: number; open_conflict_count: number };
 type GraphRoute = { nodes: string[]; edges: Array<{ source: string; target: string; relation: string; weight: number; kind: "internal" | "bridge"; source_space_key: string; target_space_key: string }>; visited_space_keys: string[]; partial: boolean; truncation_reasons: string[]; budget: Record<string, unknown> };
@@ -174,6 +228,13 @@ const navItems: MenuProps["items"] = [
     { key: "policy", label: "策略与风险" },
     { key: "evidence", label: "证据链与复验" },
   ] },
+  { key: "group-showcase", icon: <FundProjectionScreenOutlined />, label: "可视化与演示", children: [
+    { key: "showcase-nebula", label: "知识星云（实时）" },
+    { key: "showcase-brain", label: "插件大脑 · 组网树" },
+    { key: "showcase-flow", label: "Run 画布 · 数据流" },
+    { key: "showcase-flow-audit", label: "画布审计（真实复算）" },
+    { key: "showcase-plugin-flow", label: "插件数据流全景" },
+  ] },
   { key: "group-system", icon: <SettingOutlined />, label: "系统", children: [
     { key: "aisettings", label: "AI 设置" },
     { key: "logs", label: "统一日志" },
@@ -191,6 +252,45 @@ const navPageIndex: NavPage[] = (navItems as unknown as NavItemGroup[]).flatMap(
     groupKey: group.key,
   })),
 );
+
+/**
+ * 内嵌可视化视图：view key → 打包进应用的**相对**资源路径。
+ *
+ * 这些页面原先是独立的 Electron 窗口，现在以 iframe 承载在主控台内（单窗口）。
+ * 路径一律以 `./` 开头：相对路径在开发（`ELECTRON_RENDERER_URL`）与生产
+ * （`file://.../renderer/index.html`）下都能解析，也天然排除了远程地址。
+ *
+ * `showcase-nebula` 与其余四项的区别：它经 postMessage 桥借用父窗口的
+ * `auditControl` 拉真实数据（`/api/v1/topology/plugin-nebula`），其余的是零后端
+ * 演示（合成数据）。
+ */
+const SHOWCASE_VIEWS: Record<string, { src: string; title: string; hint: string }> = {
+  "showcase-nebula": {
+    src: "./knowledge-nebula.html",
+    title: "知识星云 · 审计插件动态知识图谱",
+    hint: "实时数据 · 经 auditControl 拉取",
+  },
+  "showcase-brain": {
+    src: "./showcase/audit-brain.html",
+    title: "审计插件大脑 · 树状组网与数据接口流",
+    hint: "零后端演示",
+  },
+  "showcase-flow": {
+    src: "./showcase/flow-canvas-demo.html",
+    title: "Run 画布 · 数据流播放演示",
+    hint: "合成数据 · 零后端",
+  },
+  "showcase-flow-audit": {
+    src: "./showcase/flow-canvas-audit/flow-canvas-audit.html",
+    title: "画布审计 · AI 组网复算流水线",
+    hint: "真实数据逐行确定性重算（UCI audit_risk 776×27）",
+  },
+  "showcase-plugin-flow": {
+    src: "./showcase/plugin-flow-showcase.html",
+    title: "插件数据流全景",
+    hint: "零后端演示",
+  },
+};
 
 const approvalColumns: TableColumnsType<Approval> = [
   { title: "能力", dataIndex: "capability", key: "capability" },
@@ -401,6 +501,11 @@ export default function App() {
   const [verifiedPlugins, setVerifiedPlugins] = useState<VerifiedPlugin[]>([]);
   const [approvals, setApprovals] = useState<Approval[]>([]);
   const [connection, setConnection] = useState<Connection>("connecting");
+  // 主进程的截图工具（AUDIT_NETWORK_CAPTURE_*）靠轮询这个 DOM 标志等待
+  // 「连接就绪」再拍照，固定延时经常截到「正在建立安全工作区」加载占位。
+  useEffect(() => {
+    document.documentElement.dataset.connection = connection;
+  }, [connection]);
   const [notice, setNotice] = useState("正在读取本机控制平面…");
   const [busy, setBusy] = useState(false);
   const [policyResult, setPolicyResult] = useState<unknown>();
@@ -1380,7 +1485,42 @@ export default function App() {
     });
   }, []);
 
+  // 内嵌视图的 auditControl 桥：iframe 里没有 preload，所以需要后端数据的视图
+  // （目前只有知识星云）经 postMessage 把请求转到这里，由父窗口代调。
+  // 只接受同源 frame 的请求 —— 也正因为要显式写这个桥，才不必打开
+  // nodeIntegrationInSubFrames（那会把 preload 注入每一个子框架）。
+  useEffect(() => {
+    const onEmbedRequest = (event: MessageEvent) => {
+      const data = event.data as { source?: string; id?: string; request?: unknown } | null;
+      if (!data || data.source !== "audit-network-embed" || !data.id) return;
+      if (event.origin !== window.location.origin) return;
+      const reply = (payload: Record<string, unknown>) => {
+        // file:// 下 origin 是字符串 "null"，不能当 targetOrigin 用。
+        const target = event.origin === "null" || !event.origin ? "*" : event.origin;
+        (event.source as WindowProxy | null)?.postMessage(
+          { source: "audit-network-embed-response", id: data.id, ...payload },
+          target,
+        );
+      };
+      const api = window.auditControl;
+      if (!api) {
+        reply({ ok: false, error: "auditControl unavailable" });
+        return;
+      }
+      void api
+        .request(data.request as Parameters<typeof api.request>[0])
+        .then((result) => reply({ ok: true, data: result }))
+        .catch((error: unknown) => reply({ ok: false, error: String(error) }));
+    };
+    window.addEventListener("message", onEmbedRequest);
+    return () => window.removeEventListener("message", onEmbedRequest);
+  }, []);
+
   const renderView = () => {
+    const showcase = SHOWCASE_VIEWS[view];
+    if (showcase) {
+      return <ShowcaseFrame src={showcase.src} title={showcase.title} hint={showcase.hint} />;
+    }
     // 页面注册表：本批 9 页 + ComingSoon 全部从 components/pages/ 注入；
     // 8 个不动页面（runcanvas/graph/audit/quant/aiops/approvals/aisettings/logs）与
     // 既有 operations/policy 视图继续走下方内联分支，保持原样。
@@ -1414,17 +1554,17 @@ export default function App() {
               <span className="canvas-mode-title">Run 画布</span>
               <button
                 className="canvas-mode-btn"
-                onClick={() => { void window.auditControl.openAuditBrain(); }}
-                title="独立窗口打开审计插件大脑（树状组网 + 判断分支 + 数据接口流）"
+                onClick={() => navigateTo("showcase-brain")}
+                title="在主控台内打开审计插件大脑（树状组网 + 判断分支 + 数据接口流）"
               >
-                审计大脑 · 新窗口
+                审计大脑
               </button>
               <button
                 className="canvas-mode-btn canvas-mode-btn-nebula"
-                onClick={() => { void window.auditControl.openKnowledgeNebula?.(); }}
-                title="独立窗口打开动态知识星云（电子云轨道 + 星座网络 + 100 插件实时流转）"
+                onClick={() => navigateTo("showcase-nebula")}
+                title="在主控台内打开动态知识星云（电子云轨道 + 星座网络 + 插件实时流转）"
               >
-                知识星云 · 新窗口
+                知识星云
               </button>
               <span className="canvas-mode-hint">运行历史投影：节点 = 真实执行 attempt，边 = 数据流</span>
             </div>
@@ -1459,11 +1599,11 @@ export default function App() {
       const selectedSpace = graphVisualization.spaces.find((space) => space.key === graphSpaceKey);
       const selectedGovernanceSpace = graphGovernance.spaces.find((space) => space.key === graphSpaceKey);
       return <>
-        <section className="detail-head"><div><Typography.Title level={3}>多级图谱治理</Typography.Title><Typography.Text type="secondary">L0–L4 分层、已登记有限桥接和预算路由；拖拽、缩放或点击节点查看受限路径。</Typography.Text></div><Space><Select aria-label="图空间" value={graphSpaceKey} loading={busy} onChange={(value) => void chooseGraphSpace(value)} options={graphVisualization.spaces.map((space) => ({ value: space.key, label: `${space.name} · ${space.level}` }))} placeholder="暂无图空间" /><Button size="small" onClick={() => { if (tenant) void Promise.all([loadGraph(tenant.tenant_id, graphSpaceKey), loadGraphGovernance(tenant.tenant_id, graphSpaceKey)]); }}>刷新图谱</Button></Space></section>
-        <section className="data-bar"><Card className="metric-card" size="small"><span>当前图空间</span><strong>{selectedSpace?.level ?? "—"}</strong><small>{selectedSpace?.name ?? "暂无数据"}</small></Card><Card className="metric-card" size="small"><span>分层角色</span><strong>{selectedGovernanceSpace?.graph_role ?? "—"}</strong><small>{selectedGovernanceSpace?.cluster_key ?? "未归类"}</small></Card><Card className="metric-card" size="small"><span>已登记桥接</span><strong>{graphGovernance.active_bridge_count}</strong><small>仅四类有限关系</small></Card><Card className="metric-card" size="small"><span>待处理冲突</span><strong>{graphGovernance.open_conflict_count}</strong><small>来源主张保留，不自动删除</small></Card></section>
+        <section className="detail-head"><div><Typography.Title level={3}>多级图谱治理</Typography.Title><Typography.Text type="secondary">L0–L4 分层、已登记有限桥接和预算路由；拖拽、缩放或点击节点查看受限路径。</Typography.Text></div><Space><Select aria-label="图空间" value={graphSpaceKey} loading={busy} onChange={(value) => void chooseGraphSpace(value)} options={graphSpaceOptions(graphVisualization.spaces)} placeholder="暂无图空间" /><Button size="small" onClick={() => { if (tenant) void Promise.all([loadGraph(tenant.tenant_id, graphSpaceKey), loadGraphGovernance(tenant.tenant_id, graphSpaceKey)]); }}>刷新图谱</Button></Space></section>
+        <section className="data-bar"><Card className="metric-card" size="small"><span>当前图空间</span><strong>{selectedSpace?.level ?? "—"}</strong><small>{selectedSpace?.name ?? "暂无数据"}</small></Card><Card className="metric-card" size="small"><span>分层角色</span><strong>{selectedGovernanceSpace?.graph_role ?? "—"}</strong><small>{selectedGovernanceSpace?.cluster_key ?? "未归类"}</small></Card><Card className="metric-card" size="small"><span>已登记桥接</span><strong>{graphGovernance.active_bridge_count}</strong><small>全空间合计 · 仅四类有限关系</small></Card><Card className="metric-card" size="small"><span>待处理冲突</span><strong>{graphGovernance.open_conflict_count}</strong><small>来源主张保留，不自动删除</small></Card></section>
         {graphVisualization.partial ? <Alert className="search-alert" type="info" showIcon message="当前仅绘制受预算的局部关系网络。请通过图空间分层或节点检索继续收敛范围。" /> : null}
-        <section className="graph-workbench-grid"><Card className="chart-card graph-canvas-card" title="图空间关系网络" extra={<Tag className="gateway-tag">策略网关读取</Tag>}><GraphExplorer data={graphVisualization} selectedNodeId={selectedGraphNode?.id} onNodeClick={selectGraphNode} /></Card><Card className="chart-card graph-inspector" title="节点与路由检查器" extra={selectedGraphNode ? <Tag>{graphNodeTypeLabel(selectedGraphNode.node_type)}</Tag> : null}>{selectedGraphNode ? <><Typography.Title level={5}>{selectedGraphNode.label}</Typography.Title><Typography.Text type="secondary">节点 ID：{selectedGraphNode.id}</Typography.Text><div className="graph-relation-list">{selectedEdges.length ? selectedEdges.map((edge, index) => <div className="graph-relation" key={`${edge.relation}-${index}`}><Tag>{edge.relation}</Tag><span>{connectedNodes[index]?.label ?? "关联节点"}</span><small>权重 {edge.weight.toFixed(2)}</small></div>) : <div className="empty">该节点暂无可见同图关系。</div>}</div><div className="graph-route-summary"><Typography.Text strong>受预算路由</Typography.Text>{graphRoute ? <><Typography.Paragraph>{graphRoute.visited_space_keys.join(" → ")}</Typography.Paragraph><Space wrap><Tag>{graphRoute.nodes.length} 节点</Tag><Tag>{graphRoute.edges.filter((edge) => edge.kind === "bridge").length} 条桥接</Tag><Tag className={graphRoute.partial ? "pending-tag" : "ready-tag"}>{graphRoute.partial ? `已截断：${graphRoute.truncation_reasons.join("、")}` : "预算内完成"}</Tag></Space></> : <Typography.Paragraph type="secondary">正在按图数、跳数、前沿、节点、边和时延预算计算。</Typography.Paragraph>}</div><Typography.Title level={5}>版本历史</Typography.Title><Table className="stock-table graph-revision-table" size="small" rowKey="id" dataSource={graphRevisions} pagination={false} columns={[{ title: "版本", dataIndex: "row_version", key: "row_version", width: 56 }, { title: "事件", dataIndex: "event_type", key: "event_type", render: (value: string) => <Tag>{value}</Tag> }, { title: "快照标签", key: "label", render: (_value, row: GraphRevision) => row.snapshot.label ?? "—", ellipsis: true }, { title: "时间", dataIndex: "created_at", key: "created_at", render: (value: string) => new Date(value).toLocaleString("zh-CN"), width: 124 }]} locale={{ emptyText: "暂无历史版本；节点首次更新、回收、恢复或回滚后会保留快照。" }} /></> : <div className="empty">点击图中的节点，查看同图关系、跨图预算路径与可回滚的历史版本。</div>}</Card></section>
-        <section className="graph-governance-grid"><Card className="chart-card" title="图空间目录" extra={<Tag>有限桥接</Tag>}><Table className="stock-table" size="small" rowKey="key" dataSource={graphGovernance.spaces} pagination={{ pageSize: 6 }} columns={[{ title: "层级", dataIndex: "level", key: "level", width: 56 }, { title: "图空间", dataIndex: "name", key: "name" }, { title: "角色 / 集群", key: "role", render: (_value, row: GraphGovernanceSpace) => `${row.graph_role} · ${row.cluster_key}`, ellipsis: true }, { title: "桥接", dataIndex: "active_bridge_count", key: "active_bridge_count", width: 60 }, { title: "版本", dataIndex: "revision_count", key: "revision_count", width: 60 }]} locale={{ emptyText: "暂无已登记图空间" }} /></Card><Card className="chart-card" title="冲突收件箱" extra={<Tag className={graphConflicts.length ? "pending-tag" : "ready-tag"}>{graphConflicts.length ? "需人工处理" : "当前为空"}</Tag>}><Table className="stock-table" size="small" rowKey="id" dataSource={graphConflicts} pagination={{ pageSize: 5 }} columns={[{ title: "严重度", dataIndex: "severity", key: "severity", render: (value: string) => <Tag className={value === "high" ? "risk-high" : "pending-tag"}>{value}</Tag>, width: 74 }, { title: "冲突摘要", dataIndex: "summary", key: "summary", ellipsis: true }, { title: "来源", dataIndex: "item_count", key: "item_count", width: 54 }]} locale={{ emptyText: "暂无冲突；系统不会因路由而删除不同来源的主张。" }} /></Card></section>
+        <section className="graph-workbench-grid"><Card className="chart-card graph-canvas-card" title="图空间关系网络" extra={<Tag className="gateway-tag">策略网关读取</Tag>}><GraphExplorer data={graphVisualization} selectedNodeId={selectedGraphNode?.id} onNodeClick={selectGraphNode} /></Card><Card className="chart-card graph-inspector" title="节点与路由检查器" extra={selectedGraphNode ? <Tag>{graphNodeTypeLabel(selectedGraphNode.node_type)}</Tag> : null}>{selectedGraphNode ? <><Typography.Title level={5}>{selectedGraphNode.label}</Typography.Title><Typography.Text type="secondary">节点 ID：{selectedGraphNode.id}{selectedGraphNode.family ? ` · 族 ${selectedGraphNode.family}` : ""}{selectedGraphNode.lifecycle ? ` · ${selectedGraphNode.lifecycle}` : ""}</Typography.Text>{selectedGraphNode.description ? <Typography.Paragraph className="graph-node-description" title="取自插件目录的登记描述">{selectedGraphNode.description}</Typography.Paragraph> : null}<Space wrap size={4} style={{ marginBottom: 8 }}>{(selectedGraphNode.outputs ?? []).map((port) => <Tag key={`out-${port}`} className="ready-tag" title="产出端口：本节点把该契约交给下游">产出 {port}</Tag>)}{(selectedGraphNode.inputs ?? []).map((port) => <Tag key={`in-${port}`} className="pending-tag" title="输入端口：本节点需要上游提供该契约">输入 {port}</Tag>)}</Space><div className="graph-relation-list">{selectedEdges.length ? selectedEdges.map((edge, index) => <div className="graph-relation" key={`${edge.relation}-${index}`}><Tag>{graphRelationLabel(edge.relation)}</Tag><span>{connectedNodes[index]?.label ?? "关联节点"}</span><small title={edge.basis ?? ""}>权重 {edge.weight.toFixed(2)} · {edge.basis ?? "未标注依据"}</small></div>) : <div className="empty">该节点暂无可见同图关系。</div>}</div><div className="graph-route-summary"><Typography.Text strong>受预算路由</Typography.Text>{graphRoute ? <><Typography.Paragraph>{graphRoute.visited_space_keys.join(" → ")}</Typography.Paragraph><Space wrap><Tag>{graphRoute.nodes.length} 节点</Tag><Tag>{graphRoute.edges.filter((edge) => edge.kind === "bridge").length} 条桥接</Tag><Tag className={graphRoute.partial ? "pending-tag" : "ready-tag"}>{graphRoute.partial ? `已截断：${graphRoute.truncation_reasons.join("、")}` : "预算内完成"}</Tag></Space></> : <Typography.Paragraph type="secondary">正在按图数、跳数、前沿、节点、边和时延预算计算。</Typography.Paragraph>}</div><Typography.Title level={5}>版本历史</Typography.Title><Table className="stock-table graph-revision-table" size="small" rowKey="id" dataSource={graphRevisions} pagination={false} columns={[{ title: "版本", dataIndex: "row_version", key: "row_version", width: 56 }, { title: "事件", dataIndex: "event_type", key: "event_type", render: (value: string) => <Tag>{value}</Tag> }, { title: "快照标签", key: "label", render: (_value, row: GraphRevision) => row.snapshot.label ?? "—", ellipsis: true }, { title: "时间", dataIndex: "created_at", key: "created_at", render: (value: string) => new Date(value).toLocaleString("zh-CN"), width: 124 }]} locale={{ emptyText: "暂无历史版本；节点首次更新、回收、恢复或回滚后会保留快照。" }} /></> : <div className="empty">点击图中的节点，查看同图关系、跨图预算路径与可回滚的历史版本。</div>}</Card></section>
+        <section className="graph-governance-grid"><Card className="chart-card" title="图空间目录" extra={<Tag>有限桥接</Tag>}><Table className="stock-table" size="small" rowKey="key" dataSource={graphGovernanceRows(graphGovernance.spaces)} pagination={{ pageSize: 6 }} columns={[{ title: "层级", dataIndex: "level", key: "level", width: 56 }, { title: "图空间", dataIndex: "name", key: "name" }, { title: "角色 / 集群", key: "role", render: (_value, row: GraphGovernanceSpace) => `${row.graph_role} · ${row.cluster_key}`, ellipsis: true }, { title: "本空间桥接", dataIndex: "active_bridge_count", key: "active_bridge_count", width: 92 }, { title: "版本", dataIndex: "revision_count", key: "revision_count", width: 60 }]} locale={{ emptyText: "暂无已登记图空间" }} /></Card><Card className="chart-card" title="冲突收件箱" extra={<Tag className={graphConflicts.length ? "pending-tag" : "ready-tag"}>{graphConflicts.length ? "需人工处理" : "当前为空"}</Tag>}><Table className="stock-table" size="small" rowKey="id" dataSource={graphConflicts} pagination={{ pageSize: 5 }} columns={[{ title: "严重度", dataIndex: "severity", key: "severity", render: (value: string) => <Tag className={value === "high" ? "risk-high" : "pending-tag"}>{value}</Tag>, width: 74 }, { title: "冲突摘要", dataIndex: "summary", key: "summary", ellipsis: true }, { title: "来源", dataIndex: "item_count", key: "item_count", width: 54 }]} locale={{ emptyText: "暂无冲突；系统不会因路由而删除不同来源的主张。" }} /></Card></section>
         <section className="graph-merge-panel"><Card className="chart-card" title="合并/拆分账本" extra={<Tag className="gateway-tag">只读治理清单 · 可回滚</Tag>}><Tabs size="small" items={[
           { key: "merges", label: `合并记录 (${graphMerges.length})`, children: <Table className="stock-table" size="small" rowKey="id" dataSource={graphMerges} pagination={{ pageSize: 5 }} columns={[{ title: "时间", dataIndex: "created_at", key: "created_at", render: (value: string) => new Date(value).toLocaleString("zh-CN"), width: 124 }, { title: "目标节点", dataIndex: "target_node_key", key: "target_node_key", ellipsis: true }, { title: "来源数", dataIndex: "source_count", key: "source_count", width: 64 }, { title: "重指边", dataIndex: "redirected_edges", key: "redirected_edges", width: 64 }, { title: "状态", dataIndex: "status", key: "status", width: 84, render: (value: string) => <Tag className={value === "applied" ? "ready-tag" : value === "conflict" ? "pending-tag" : "risk-high"}>{value}</Tag> }, { title: "原因", dataIndex: "reason", key: "reason", render: (value: string | null) => value ?? "—", ellipsis: true }]} locale={{ emptyText: "当前图空间暂无合并记录。合并仅重指受限空间内的边并把源节点软删进回收站，历史证据不硬删除。" }} /> },
           { key: "splits", label: `拆分记录 (${graphSplits.length})`, children: <Table className="stock-table" size="small" rowKey="id" dataSource={graphSplits} pagination={{ pageSize: 5 }} columns={[{ title: "时间", dataIndex: "created_at", key: "created_at", render: (value: string) => new Date(value).toLocaleString("zh-CN"), width: 124 }, { title: "源节点", dataIndex: "source_node_key", key: "source_node_key", ellipsis: true }, { title: "子节点数", dataIndex: "part_count", key: "part_count", width: 72 }, { title: "重指边", dataIndex: "redirected_edges", key: "redirected_edges", width: 64 }, { title: "状态", dataIndex: "status", key: "status", width: 84, render: (value: string) => <Tag className={value === "applied" ? "ready-tag" : value === "conflict" ? "pending-tag" : "risk-high"}>{value}</Tag> }, { title: "原因", dataIndex: "reason", key: "reason", render: (value: string | null) => value ?? "—", ellipsis: true }]} locale={{ emptyText: "当前图空间暂无拆分记录。拆分只把声明关系类型的边重指到新子节点，源节点保持存活。" }} /> },
@@ -1612,7 +1752,7 @@ export default function App() {
       const decisionCount = operations.recent_decisions.length;
       return <><section className="detail-head"><div><Typography.Title level={3}>{current.title}</Typography.Title><Typography.Text type="secondary">{current.note}</Typography.Text></div><Button size="small" onClick={() => void loadWorkspace()}>刷新运行投影</Button></section><section className="data-bar">{current.metrics.map(([label, key]) => <Card className="metric-card" size="small" key={key}><span>{label}</span><strong>{key === "decisions" ? decisionCount : operations.counts[key] ?? 0}</strong><small>当前租户 · 实时数据库</small></Card>)}</section><Card className="chart-card" title="最近策略裁决" extra={<Tag className="gateway-tag">来源 / 规则 / 结果</Tag>}><Table className="stock-table" size="small" rowKey={(row) => `${row.trace_id}-${row.capability}`} dataSource={operations.recent_decisions} pagination={{ pageSize: 12 }} columns={[{ title: "时间", dataIndex: "decided_at", key: "decided_at", render: (value: string) => new Date(value).toLocaleString("zh-CN") },{ title: "能力", dataIndex: "capability", key: "capability" },{ title: "结果", dataIndex: "decision", key: "decision", render: (value: string) => <Tag className={value === "ALLOW" ? "ready-tag" : "pending-tag"}>{value}</Tag> },{ title: "风险分", dataIndex: "risk_score", key: "risk_score" },{ title: "规则说明", dataIndex: "reason", key: "reason", ellipsis: true },{ title: "Trace", dataIndex: "trace_id", key: "trace_id", ellipsis: true }]} locale={{ emptyText: "暂无策略裁决记录" }} /></Card><Card className="chart-card" title="运行投影明细" extra={<Tag className="gateway-tag">Mission → Workflow → Task → Agent</Tag>}><Table<OperationsDetailMission> className="stock-table" size="small" rowKey="id" dataSource={operationsDetail} pagination={{ pageSize: 10 }} columns={[{ title: "Mission", dataIndex: "title", key: "title" },{ title: "领域", dataIndex: "domain", key: "domain" },{ title: "自治模式", dataIndex: "autonomy_mode", key: "autonomy_mode", render: (value: string) => <Tag className="gateway-tag">{value}</Tag> },{ title: "状态", dataIndex: "status", key: "status", render: runStatusTag },{ title: "创建时间", dataIndex: "created_at", key: "created_at", render: (value: string) => new Date(value).toLocaleString("zh-CN") }]} expandable={{ expandedRowRender: (mission) => <Table<OperationsWorkflowRun> className="nested-table" size="small" rowKey="id" dataSource={mission.workflows} pagination={false} columns={[{ title: "工作流", dataIndex: "workflow_key", key: "workflow_key" },{ title: "版本", dataIndex: "workflow_version", key: "workflow_version" },{ title: "状态", dataIndex: "status", key: "status", render: runStatusTag },{ title: "开始", dataIndex: "started_at", key: "started_at", render: (value: string | null) => value ? new Date(value).toLocaleString("zh-CN") : "—" },{ title: "结束", dataIndex: "finished_at", key: "finished_at", render: (value: string | null) => value ? new Date(value).toLocaleString("zh-CN") : "—" },{ title: "Trace", dataIndex: "trace_id", key: "trace_id", ellipsis: true, render: (value: string | null) => value ?? "—" }]} expandable={{ expandedRowRender: (wf) => <Table<OperationsTaskRun> className="nested-table" size="small" rowKey="id" dataSource={wf.tasks} pagination={false} columns={[{ title: "节点", dataIndex: "node_key", key: "node_key", render: (value: string | null) => value ?? "—" },{ title: "能力", dataIndex: "capability", key: "capability" },{ title: "状态", dataIndex: "status", key: "status", render: runStatusTag },{ title: "尝试", key: "attempt", render: (_value, row) => `${row.attempt}/${row.max_attempts}` },{ title: "开始", dataIndex: "started_at", key: "started_at", render: (value: string | null) => value ? new Date(value).toLocaleString("zh-CN") : "—" },{ title: "结束", dataIndex: "finished_at", key: "finished_at", render: (value: string | null) => value ? new Date(value).toLocaleString("zh-CN") : "—" },{ title: "错误", dataIndex: "error_detail", key: "error_detail", ellipsis: true, render: (value: string | null) => value ?? "—" }]} expandable={{ expandedRowRender: (task) => <Table<OperationsAgentRun> className="nested-table" size="small" rowKey="id" dataSource={task.agents} pagination={false} columns={[{ title: "角色", dataIndex: "role_key", key: "role_key" },{ title: "模型", dataIndex: "model_key", key: "model_key" },{ title: "状态", dataIndex: "status", key: "status", render: runStatusTag },{ title: "Token 入/出", key: "tokens", render: (_value, row) => `${row.token_input} / ${row.token_output}` },{ title: "成本", dataIndex: "cost", key: "cost", render: (value: number) => value.toFixed(4) },{ title: "开始", dataIndex: "started_at", key: "started_at", render: (value: string | null) => value ? new Date(value).toLocaleString("zh-CN") : "—" },{ title: "结束", dataIndex: "finished_at", key: "finished_at", render: (value: string | null) => value ? new Date(value).toLocaleString("zh-CN") : "—" }]} locale={{ emptyText: "暂无 Agent 运行记录" }} /> }} locale={{ emptyText: "暂无任务运行记录" }} /> }} locale={{ emptyText: "暂无工作流运行记录" }} /> }} locale={{ emptyText: "暂无 Mission 运行投影；点击刷新从控制平面拉取。" }} /></Card></>;
     }
-    if (view === "approvals") return <Card className="chart-card" title="审批中心" extra={<Button size="small" onClick={() => void loadWorkspace()}>刷新</Button>}><Table className="stock-table" size="small" rowKey={(row, index) => `${row.capability}-${index}`} dataSource={approvals} columns={approvalColumns} pagination={false} expandable={{ expandedRowRender: (row) => <Descriptions className="nested-descriptions" size="small" column={2} bordered items={[
+    if (view === "approvals") return <Card className="chart-card" title="审批中心" extra={<Button size="small" onClick={() => void loadWorkspace()}>刷新</Button>}><Table className="stock-table" size="small" rowKey={(row) => row.id ?? `${row.capability}-${row.trace_id ?? row.created_at}`} dataSource={approvals} columns={approvalColumns} pagination={false} expandable={{ expandedRowRender: (row) => <Descriptions className="nested-descriptions" size="small" column={2} bordered items={[
       { key: "id", label: "审批 ID", children: row.id ?? "—" },
       { key: "tool_call", label: "工具调用 ID", children: row.tool_call_id ?? "—" },
       { key: "argument_hash", label: "参数哈希", children: row.argument_hash ?? "—" },
@@ -1633,7 +1773,7 @@ export default function App() {
 
   return <ConfigProvider theme={{ algorithm: theme.darkAlgorithm, token: { colorPrimary: "#2f81f7", borderRadius: 4, fontFamily: "Microsoft YaHei, Inter, system-ui, sans-serif" } }}><AntApp>
     <Layout className="app-shell"><Layout.Header className="toolbar"><div className="brand"><ExperimentOutlined /><span>审计智能中枢</span><small>DESKTOP CONTROL PLANE</small></div><div className="index-bar"><span className="index-item"><small>当前租户</small><strong>{tenant?.tenant_slug ?? "未连接"}</strong></span><span className="index-item"><small>策略模式</small><strong>{bootstrap?.features.policy_gated_actions ? "网关托管" : "读取中"}</strong></span><span className="index-item"><small>连接状态</small><Badge status={connectionBadge.tone} text={connectionBadge.label} /></span></div><div className="tenant-switch"><Input aria-label="租户标识" value={tenantSlug} onChange={(event) => setTenantSlug(event.target.value)} /><Button type="primary" loading={busy} onClick={() => void loadWorkspace()}>切换工作区</Button><Button size="small" icon={<FileTextOutlined />} title="打开统一日志（独立窗口）" aria-label="打开统一日志" onClick={() => void window.auditControl?.logOpenWindow?.()}>日志</Button></div><div className="window-controls" aria-label="窗口控制"><button className="window-control" type="button" aria-label="最小化窗口" title="最小化窗口" onClick={() => void controlWindow("minimize")}><MinusOutlined /></button><button className="window-control" type="button" aria-label={windowMaximized ? "还原窗口" : "最大化窗口"} title={windowMaximized ? "还原窗口" : "最大化窗口"} onClick={() => void controlWindow("toggle-maximize")}>{windowMaximized ? <FullscreenExitOutlined /> : <BorderOutlined />}</button><button className="window-control window-control-close" type="button" aria-label="关闭窗口" title="关闭窗口" onClick={() => void controlWindow("close")}><CloseOutlined /></button></div><div className="zoom-controls" role="group" aria-label="界面缩放"><button className="zoom-step" type="button" aria-label="缩小界面" title="缩小界面 (Ctrl+-)" onClick={() => void controlZoom("out")}><MinusOutlined /></button><button className="zoom-pct" type="button" aria-label="重置界面缩放" title="点击还原到 100% (Ctrl+0)" onClick={() => void controlZoom("reset")}>{zoomPercent}%</button><button className="zoom-step" type="button" aria-label="放大界面" title="放大界面 (Ctrl+=)" onClick={() => void controlZoom("in")}><PlusOutlined /></button></div></Layout.Header>
-    <Layout><Layout.Sider className="sidebar" width={224}><div className="sidebar-title">中枢导航</div><Menu mode="inline" theme="dark" selectedKeys={[view]} defaultOpenKeys={navOpenKeys} openKeys={navOpenKeys} onOpenChange={onNavOpenChange} items={navItems} onClick={({ key }) => onNavClick(key)} /></Layout.Sider><Layout.Content className="content"><div className="notice-row"><Typography.Text type={connection === "error" ? "danger" : "secondary"}>{notice}</Typography.Text></div>{renderView()}</Layout.Content></Layout>
+    <Layout><Layout.Sider className="sidebar" width={224}><div className="sidebar-title">中枢导航</div><Menu mode="inline" theme="dark" selectedKeys={[view]} defaultOpenKeys={navOpenKeys} openKeys={navOpenKeys} onOpenChange={onNavOpenChange} items={navItems} onClick={({ key }) => onNavClick(key)} /></Layout.Sider><Layout.Content className="content"><div className="notice-row"><Typography.Text type={connection === "error" ? "danger" : "secondary"}>{notice}</Typography.Text></div><PageErrorBoundary key={view}>{renderView()}</PageErrorBoundary></Layout.Content></Layout>
     </Layout>
     {contextHolder}
     <CommandPalette open={commandOpen} onClose={() => setCommandOpen(false)} onNavigate={navigateTo} pages={navPageIndex} tenantId={tenant?.tenant_id} />

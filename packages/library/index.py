@@ -1,4 +1,4 @@
-"""Read-only document asset index over ``docs/`` and ``审计项目案例/``.
+"""Read-only document asset index over ``docs/`` and ``审计项目案例报告效果展示/``.
 
 The repository already holds about 135 markdown documents across two roots.
 This view is a *filesystem index* -- path, title, kind, size, mtime, the run id
@@ -24,7 +24,8 @@ from typing import Any
 
 #: Project-relative roots that hold markdown assets.  Both are real directories
 #: in this repository; a missing root is surfaced in the summary, not skipped.
-ROOTS: tuple[str, ...] = ("docs", "审计项目案例")
+CASE_ROOT = "审计项目案例报告效果展示"
+ROOTS: tuple[str, ...] = ("docs", "审计项目案例报告效果展示")
 
 _HEX_RE = re.compile(r"(?<![0-9a-fA-F])[0-9a-f]{8}(?![0-9a-fA-F])")
 
@@ -90,7 +91,7 @@ def _scan(project_root: Path, roots: tuple[str, ...]) -> tuple[list[dict[str, An
             total += 1
             newest = max(newest, stat.st_mtime)
             rel = path.relative_to(project_root).as_posix()
-            under_cases = rel.startswith("审计项目案例/")
+            under_cases = rel.startswith(f"{CASE_ROOT}/")
             run_match = _HEX_RE.search(path.stem)
             related_run = run_match.group(0) if run_match else None
 

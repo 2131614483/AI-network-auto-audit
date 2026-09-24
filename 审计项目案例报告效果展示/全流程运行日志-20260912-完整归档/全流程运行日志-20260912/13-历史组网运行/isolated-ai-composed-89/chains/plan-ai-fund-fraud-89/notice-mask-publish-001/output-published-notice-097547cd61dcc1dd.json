@@ -1,1 +1,0 @@
-{"artifact": {"mask_fields": ["amount", "person_name", "evidence_uri"], "masked": true, "notice": "【审计公告】本轮专项审计已完成，相关问题已下发整改任务并跟踪销号。", "summary": "已对报告内容脱敏后对内发布，涉及金额与人名均作掩码处理", "title": "审计公告（脱敏发布）"}, "contract_id": "document-content", "contract_version": "1.0.0"}

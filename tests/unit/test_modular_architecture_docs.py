@@ -1,13 +1,15 @@
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[2]
-DESIGN = ROOT / "超级审计与量化智能中枢总体设计-模块自治版.md"
-DATABASE = ROOT / "数据库架构与AI开发实施方案-模块自治版.md"
+# 设计文档统一归档在 docs/ 下，测试不要再用已迁移走的根目录路径。
+DOCS = ROOT / "docs"
+DESIGN = DOCS / "审计智能中枢总体设计-模块自治版.md"
+DATABASE = DOCS / "数据库架构与AI开发实施方案-模块自治版.md"
 
 
 def test_modular_design_preserves_originals_and_defines_runtime_profiles() -> None:
-    assert (ROOT / "超级审计与量化智能中枢总体设计.md").is_file()
-    assert (ROOT / "数据库架构与AI开发实施方案.md").is_file()
+    assert DESIGN.is_file()
+    assert (DOCS / "数据库架构与AI开发实施方案.md").is_file()
     text = DESIGN.read_text(encoding="utf-8")
     for required in ("MODULE_DEV", "MODULE_TEST", "INTEGRATION", "PRODUCTION", "Integration Hub"):
         assert required in text

@@ -1,1 +1,0 @@
-{"checks": [{"check_id": "columns", "message": "整改证据 3/3 有效", "status": "pass"}], "contract_id": "dataset-validation", "contract_version": "1.0.0", "snapshot_sha256": "0000000000000000000000000000000000000000000000000000000000000000", "summary": {"checked_columns": 1, "checked_rows": 0, "missing_values": 0, "valid": true}, "violations": []}

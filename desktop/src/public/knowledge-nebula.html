@@ -178,6 +178,43 @@ body.editing canvas{cursor:crosshair;}
 <div id="detail"></div>
 
 <script>
+/* 嵌入模式（主控台 iframe）桥。
+ *
+ * 独立窗口运行时 preload 会注入 window.auditControl；iframe 里没有 preload，
+ * 所以这里经 postMessage 借用父窗口（主控台）的 auditControl 代调后端。
+ * 下面原有的调用点一行都不用改 —— 它们只认 window.auditControl。
+ * 三条早退：独立窗口（已有 preload 注入）不动；顶层直接打开（无 preload）保持
+ * 原有的"离线快照"兜底；只有"被父窗口嵌入"时才接管。
+ */
+(function () {
+  if (window.auditControl) return;
+  if (window.parent === window) return;
+  var seq = 0, pending = {};
+  window.addEventListener("message", function (event) {
+    var msg = event.data;
+    if (!msg || msg.source !== "audit-network-embed-response" || !msg.id) return;
+    var slot = pending[msg.id];
+    if (!slot) return;
+    delete pending[msg.id];
+    if (msg.ok) slot.resolve(msg.data);
+    else slot.reject(new Error(msg.error || "embed request failed"));
+  });
+  window.auditControl = {
+    request: function (request) {
+      return new Promise(function (resolve, reject) {
+        var id = "embed-" + (++seq) + "-" + Date.now();
+        pending[id] = { resolve: resolve, reject: reject };
+        window.parent.postMessage({ source: "audit-network-embed", id: id, request: request }, "*");
+        setTimeout(function () {
+          if (pending[id]) { delete pending[id]; reject(new Error("embed request timeout")); }
+        }, 30000);
+      });
+    }
+  };
+})();
+</script>
+
+<script>
 (function(){
 "use strict";
 /* =============================================================

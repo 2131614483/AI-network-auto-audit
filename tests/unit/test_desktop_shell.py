@@ -2,6 +2,18 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[2]
 
+PAGES = ROOT / "desktop" / "src" / "components" / "pages"
+
+
+def read_pages(*names: str) -> str:
+    """读取「信息架构 v2」下按页拆分的渲染器源码。
+
+    工作台内容已从单体 ``App.tsx`` 迁到 ``components/pages/*.tsx``，UI 契约必须跟着
+    拆分后的文件走——这里拼接同组页面，契约本身（控件存在、文案存在）不打折。
+    """
+
+    return "\n".join((PAGES / name).read_text(encoding="utf-8") for name in names)
+
 
 def test_desktop_shell_has_a_secure_electron_entrypoint() -> None:
     main = (ROOT / "desktop" / "electron" / "main.ts").read_text(encoding="utf-8")
@@ -65,7 +77,12 @@ def test_desktop_renderer_uses_component_library_and_stock_terminal_tokens() -> 
 
 def test_desktop_knowledge_workbench_exposes_real_management_and_retrieval() -> None:
     main = (ROOT / "desktop" / "electron" / "main.ts").read_text(encoding="utf-8")
-    app = (ROOT / "desktop" / "src" / "App.tsx").read_text(encoding="utf-8")
+    app = read_pages(
+        "KnowledgePage.tsx",
+        "KnowledgeSearchPage.tsx",
+        "KnowledgePendingPage.tsx",
+        "KnowledgeRecyclePage.tsx",
+    )
 
     for path in (
         "/api/v1/knowledge/stats",
@@ -98,7 +115,7 @@ def test_desktop_has_cross_domain_operations_workbenches() -> None:
     main = (ROOT / "desktop" / "electron" / "main.ts").read_text(encoding="utf-8")
     app = (ROOT / "desktop" / "src" / "App.tsx").read_text(encoding="utf-8")
     assert "/api/v1/ui/operations" in main
-    for label in ("任务编排", "图谱管理", "审计工作台", "量化工作台", "AIOps 工作台"):
+    for label in ("任务编排", "图谱总览", "审计工作台", "量化工作台", "AIOps 工作台"):
         assert label in app
 
 
@@ -123,7 +140,10 @@ def test_desktop_graph_workbench_uses_bounded_force_visualization() -> None:
     assert "/api/v1/graph/visualization" in main
     assert "GraphExplorer" in app
     assert "type: \"graph\"" in chart
-    assert "layout: \"force\"" in chart
+    # 稠密图仍走受预算约束的 force 布局；稀疏图（≤ SPARSE_LAYOUT_MAX_NODES）改用显式
+    # 坐标 —— force 在 1–2 个节点时会塌成画布正中一小坨，页面看起来像空的。
+    assert 'layout: sparseTopology ? "none" : "force"' in chart
+    assert "sparseLayoutPositions" in chart
     assert "focus: \"adjacency\"" in chart
 
 
@@ -143,7 +163,7 @@ def test_desktop_graph_workbench_shows_multigraph_governance_without_direct_exec
 
 def test_desktop_graph_extraction_proposals_use_only_exact_declared_paths() -> None:
     main = (ROOT / "desktop" / "electron" / "main.ts").read_text(encoding="utf-8")
-    app = (ROOT / "desktop" / "src" / "App.tsx").read_text(encoding="utf-8")
+    app = read_pages("GraphExtractPage.tsx")
 
     for path in (
         "/api/v1/graph/extractions/preview",
@@ -158,7 +178,7 @@ def test_desktop_graph_extraction_proposals_use_only_exact_declared_paths() -> N
 
 
 def test_desktop_plugin_topology_workbench_is_plan_only_and_uses_multi_axis_catalog() -> None:
-    app = (ROOT / "desktop" / "src" / "App.tsx").read_text(encoding="utf-8")
+    app = read_pages("PluginsPage.tsx")
     topology = (ROOT / "desktop" / "src" / "model" / "pluginTopology.ts").read_text(encoding="utf-8")
 
     assert "插件拓扑工作台" in app
@@ -173,12 +193,15 @@ def test_desktop_plugin_topology_workbench_is_plan_only_and_uses_multi_axis_cata
 
 
 def test_desktop_uses_one_bounded_scroll_surface_for_every_workspace_view() -> None:
-    """All views render inside ``.content``, so a single wheel surface is sufficient."""
+    """All views render inside ``.content``, so a single wheel surface is sufficient.
+
+    信息架构 v2 起总览页的 view key 由 ``overview`` 改为 ``hub``，其余 key 沿用。
+    """
 
     app = (ROOT / "desktop" / "src" / "App.tsx").read_text(encoding="utf-8")
     css = (ROOT / "desktop" / "src" / "styles" / "globals.css").read_text(encoding="utf-8")
 
-    for view in ("overview", "operations", "knowledge", "graph", "plugins", "audit", "quant", "aiops", "approvals", "policy"):
+    for view in ("hub", "operations", "knowledge", "graph", "plugins", "audit", "quant", "aiops", "approvals", "policy"):
         assert f'"{view}"' in app
     assert "<Layout.Content className=\"content\">" in app
     assert ".app-shell { height: 100%;" in css
@@ -190,7 +213,7 @@ def test_desktop_uses_one_bounded_scroll_surface_for_every_workspace_view() -> N
 def test_desktop_knowledge_folder_import_keeps_relative_paths_inside_main_process() -> None:
     main = (ROOT / "desktop" / "electron" / "main.ts").read_text(encoding="utf-8")
     preload = (ROOT / "desktop" / "electron" / "preload.ts").read_text(encoding="utf-8")
-    app = (ROOT / "desktop" / "src" / "App.tsx").read_text(encoding="utf-8")
+    app = read_pages("KnowledgePage.tsx")
 
     assert "openDirectory" in main
     assert "knowledgeSelections" in main

@@ -5,7 +5,7 @@ import importlib.util
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[2]
-CASE_ROOT = ROOT / "审计项目案例" / "黔岭酒业2025年度财务报表审计_实验组_高难度"
+CASE_ROOT = ROOT / "审计项目案例报告效果展示" / "黔岭酒业2025年度财务报表审计_实验组_高难度"
 TOOLS = CASE_ROOT / "_tools"
 
 

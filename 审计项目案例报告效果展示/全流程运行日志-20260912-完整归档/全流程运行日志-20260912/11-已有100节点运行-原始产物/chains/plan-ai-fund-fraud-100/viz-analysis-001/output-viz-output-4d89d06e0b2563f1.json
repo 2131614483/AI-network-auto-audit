@@ -1,1 +1,0 @@
-{"artifact": {"chart": {"chart_type": "line", "points": [{"at": "2026", "value": 1.0}], "series": "s1"}, "sha256": "892898d7f2c4758d8b022804ae6a5a590e6989e97920382a2d054224bca1937c", "size_bytes": 61, "uri": "file:///D:/pythonpro/audit_network/.data/isolated-ai-composed-100/inputs/viz-in.json"}, "contract_id": "artifact-ref", "contract_version": "1.0.0"}

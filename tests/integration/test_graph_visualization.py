@@ -45,6 +45,13 @@ def test_graph_visualization_api_returns_bounded_typed_topology() -> None:
     assert body["space_key"] == space_key
     assert len(body["nodes"]) == 2
     assert body["nodes"][0]["node_type"] in {"control", "evidence"}
-    assert body["edges"] == [{"source": str(control), "target": str(evidence), "relation": "supported_by", "weight": 0.9}]
+    # 边除权重外必须带**依据**：这两端是测试造的合成节点，既无端口衔接也无运行实测，
+    # 因此权重退回库里存的值、依据如实说明"没有证据"—— 不允许只说数字不说来源。
+    assert len(body["edges"]) == 1
+    edge = body["edges"][0]
+    assert {key: edge[key] for key in ("source", "target", "relation", "weight")} == {
+        "source": str(control), "target": str(evidence), "relation": "supported_by", "weight": 0.9,
+    }
+    assert edge["basis"], "每条边都要说明权重依据"
     assert body["partial"] is False
     assert any(space["key"] == space_key for space in body["spaces"])

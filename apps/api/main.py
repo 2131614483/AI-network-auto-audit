@@ -34,11 +34,15 @@ from packages.ai import env_store as ai_env_store
 from packages.ai import gateway as ai_gateway
 from packages.ai_planner import capability_catalog_from_db
 from packages.ai_planner import chat as ai_chat_module
+from packages.ai_planner import experience_prior as ai_experience_prior_module
 from packages.ai_planner import planner as ai_planner_module
+from packages.ai_planner import workbench as ai_workbench_module
+from packages.ai_planner.catalog import PORT_CONTRACTS
 from packages.ai_planner.nebula_graph import build_nebula_graph
 from packages.aiops.service import AIOpsGovernanceService
 from packages.audit.pipeline import AuditPipeline
 from packages.cases.matrix import case_matrix
+from packages.catalog.connectivity_view import connectivity_report
 from packages.catalog.lifecycle import plugin_lifecycle, plugin_version_history
 from packages.catalog.rules_registry import rules_registry
 from packages.control.scheduler import Scheduler
@@ -93,7 +97,7 @@ from packages.quant.service import QuantService
 from packages.search.fusion import search_all
 
 logger = logging.getLogger("audit.api")
-EXPECTED_MIGRATION_HEAD = "0062_archive_link"
+EXPECTED_MIGRATION_HEAD = "0068_connectivity_read_policy"
 
 # The project ``.env`` is the durable home of the AI settings the desktop
 # settings page writes.  Load it as *defaults* before any Settings is built.
@@ -114,7 +118,16 @@ class Settings:
 
     database_url: str = field(
         default_factory=lambda: os.getenv(
-            "DATABASE_URL", "postgresql://audit_app:audit_app@localhost:5432/audit_network"
+            # Must match `.env.example`, `scripts/start-brain.ps1` and the CI
+            # workflow, which all use the `admin` password created by
+            # `scripts/bootstrap.ps1`.  This fallback previously carried
+            # `audit_app` and was the only place in the repository with that
+            # value: running the API without `start-brain.ps1` (a bare
+            # `uvicorn apps.api.main:app`, an IDE run configuration, or a
+            # `.env` without DATABASE_URL) authenticated against a
+            # non-existent password, so every database-backed route returned
+            # 500 while the process itself looked healthy.
+            "DATABASE_URL", "postgresql://audit_app:admin@localhost:5432/audit_network"
         )
     )
     app_env: str = field(default_factory=lambda: os.getenv("APP_ENV", "development"))
@@ -503,6 +516,7 @@ class AiPlanningRequest(BaseModel):
 
     model_config = ConfigDict(extra="forbid")
 
+    domain: str = Field(default="audit", pattern=r"^[a-z][a-z0-9_-]{0,31}$")
     goal: str = Field(min_length=4, max_length=2000)
     data_sources: list[list[str]] = Field(default_factory=list, max_length=64)
     budget: dict[str, int] | None = None
@@ -536,6 +550,7 @@ class CanvasChatRequest(BaseModel):
 
     model_config = ConfigDict(extra="forbid")
 
+    domain: str = Field(default="audit", pattern=r"^[a-z][a-z0-9_-]{0,31}$")
     message: str = Field(min_length=1, max_length=2000)
     session_id: str | None = Field(default=None, min_length=8, max_length=64)
     history: list[ChatTurn] = Field(default_factory=list, max_length=24)
@@ -990,6 +1005,68 @@ class RulesRegistryResponse(BaseModel):
     policies: list[PolicySetItem]
     report_templates: list[RuleItem]
     skills: list[RuleItem]
+    trace_id: UUID
+
+
+class ConnectivityScopeModel(BaseModel):
+    """口径标注：不同口径下的连通性数字**不可比**，所以它必须随结果一起返回。"""
+
+    model_config = ConfigDict(extra="forbid")
+
+    lifecycle: str | None
+    include_invokes: bool
+    label: str
+
+
+class ConnectivityMetricsModel(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    edge_set: str
+    plugins: int
+    edges: int
+    isolated_nodes: int
+    no_incoming: int
+    no_outgoing: int
+    weakly_connected_components: int
+    component_sizes: list[int]
+    dead_end_outputs: int
+    unfillable_inputs: int
+    reusable_contracts: int
+    total_input_ports: int
+    unfillable_input_ports: int
+    seeds: int
+    pure_seed_nodes: int
+
+
+class ConnectivityIslandCategory(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    category: str
+    label: str
+    count: int
+
+
+class ConnectivityIsland(BaseModel):
+    """一个悬空插件，以及它为什么悬空（每一条都有分类依据，不是"没连上"了事）。"""
+
+    model_config = ConfigDict(extra="forbid")
+
+    plugin_id: str
+    role: str
+    category: str
+    category_zh: str
+    reason: str
+    detail: str
+
+
+class ConnectivityReportResponse(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    scope: ConnectivityScopeModel
+    metrics: ConnectivityMetricsModel
+    islands_total: int
+    islands_present: list[ConnectivityIslandCategory]
+    islands: list[ConnectivityIsland]
     trace_id: UUID
 
 
@@ -1713,6 +1790,13 @@ class GraphVisualizationNode(BaseModel):
     id: str
     label: str
     node_type: str
+    # 解释"这段关系为什么存在"的证据（取自节点的 properties，缺省即不返回）。
+    description: str | None = None
+    inputs: list[str] = Field(default_factory=list)
+    outputs: list[str] = Field(default_factory=list)
+    family: str | None = None
+    stage: str | None = None
+    lifecycle: str | None = None
 
 
 class GraphVisualizationEdge(BaseModel):
@@ -1722,6 +1806,8 @@ class GraphVisualizationEdge(BaseModel):
     target: str
     relation: str
     weight: float
+    #: 权重的依据（经验实测 / 契约衔接 / 声明层级）。界面必须显示它。
+    basis: str = ""
 
 
 class GraphVisualizationSpace(BaseModel):
@@ -2749,6 +2835,16 @@ def _tenant_context(connection: Any, tenant_id: UUID) -> tuple[Any, Any]:
     return connection, cursor
 
 
+def _canvas_capability_prior(database_url: str, tenant_id: UUID) -> dict[str, float] | None:
+    """环 7 读路径：把经验层的实测权重交给召回排序。
+
+    开关 ``AI_PLANNER_EXPERIENCE_PRIOR`` 未开时返回 ``None``，提示词与从前**逐字节
+    一致**；经验层不可达时也返回 ``None``（读路径不得成为规划的新故障点）。
+    该先验只重排能力清单的顺序，不改变清单成员，也不参与任何策略判定。
+    """
+    return ai_experience_prior_module.resolve_capability_prior(database_url, tenant_id)
+
+
 def _record_canvas_chat_intent(
     database_url: str,
     tenant_id: UUID,
@@ -3090,6 +3186,92 @@ def _reject_unknown_provider(value: str | None, supported: tuple[str, ...], fiel
         raise HTTPException(
             status_code=422, detail=f"{field} must be one of {', '.join(supported)}"
         )
+
+
+def _payload_intent(payload: Any) -> str | None:
+    """The user's own words in this request, for graph recall to work on.
+
+    Two request models feed the same directory assembly and name that text
+    differently — ``goal`` for planning, ``message`` for canvas chat — so the
+    difference is absorbed here rather than at each call site.
+    """
+    return getattr(payload, "goal", None) or getattr(payload, "message", None)
+
+
+def _planning_directory(
+    database_url: str,
+    tenant_id: UUID,
+    domain: str,
+    *,
+    intent_text: str | None = None,
+) -> tuple[dict[str, Any], dict[str, dict[str, Any]]]:
+    """The recall catalog and port-contract registry, built as one pair.
+
+    Two generations of directory coexist in this codebase, and the planner
+    needs both:
+
+    * the **DB blueprint directory** (``capability_catalog_from_db``) — the
+      legacy cross-domain slots plus the verified runtime plugins.  The CW5
+      demo chain runs on it, and its ports exist only under the legacy names
+      (``ledger`` / ``candidates`` / ``experiment`` / ``evaluation``).
+    * the **domain plugin directory** (``workbench.planning_directory``) — the
+      real on-disk network (107 audit plugins, 161 ports), whose ports carry
+      the shipped names (``ledger-artifact-ref`` / ``audit-quality-candidates``).
+
+    They are merged, not swapped.  Replacing the legacy one would strand every
+    existing template and draft, whose ports are only registered under the
+    legacy names; keeping only the legacy one is the original defect — five
+    recallable capabilities and seven contracts, so a draft of a real audit
+    flow is rejected with ``contract_mismatch`` before the compiler is reached.
+    On a port id both define, the legacy entry wins because it pins the fuller
+    field set.
+
+    The catalog and the registry are returned together and must be handed to
+    ``AiPlanner.plan`` together: the prompt is built from the registry, and
+    ``validate_draft`` judges the draft against it.  A prompt built from one
+    registry and validated against another is a draft that cannot succeed
+    whatever the model emits.
+
+    Raises ``FileNotFoundError`` for an unknown domain and ``ValueError`` for a
+    conflicting port contract; both are the caller's to map onto 422.
+
+    With ``intent_text`` the **domain half is recalled instead of loaded whole**
+    (S4).  The audit directory is 107 plugins / 161 ports and renders to ~81 000
+    characters, which does not scale to the 100 000-plugin graph this system
+    targets; the graph already answers "which capabilities does this phrase name"
+    offline and deterministically.  Only the recallable subset of the catalog and
+    of its contracts is handed over.
+
+    The **legacy half is never narrowed**.  It is the DB blueprint directory the
+    CW5 demo chain and every template run on, and its ports live only under the
+    legacy names (``ledger``/``candidates``); dropping entries there strands
+    existing drafts.  It is also small next to what dominates the prompt — the
+    contract lines, which come from the domain registry.
+
+    An intent that recalls nothing falls back to the full directory rather than
+    planning against an empty one: recall failing is a signal to widen, not to
+    hand the model no options at all.
+    """
+    legacy_catalog = capability_catalog_from_db(database_url, tenant_id)
+    if intent_text:
+        try:
+            recalled_catalog, recalled_contracts, recalled = (
+                ai_workbench_module.recall_planning_directory(
+                    database_url, domain, intent_text,
+                )
+            )
+        except psycopg2.Error:
+            # The graph is an optimisation, not a precondition: if it is
+            # unreachable the planner still works on the full directory.
+            recalled = ()
+        else:
+            if recalled:
+                return (
+                    {**recalled_catalog, **legacy_catalog},
+                    {**recalled_contracts, **PORT_CONTRACTS},
+                )
+    domain_catalog, domain_contracts = ai_workbench_module.planning_directory(domain)
+    return {**domain_catalog, **legacy_catalog}, {**domain_contracts, **PORT_CONTRACTS}
 
 
 def create_app(settings: Settings | None = None) -> FastAPI:
@@ -3981,6 +4163,48 @@ def create_app(settings: Settings | None = None) -> FastAPI:
             trace_id=trace_id,
         )
 
+    @app.get("/api/v1/connectivity/report", response_model=ConnectivityReportResponse, tags=["topology"])
+    async def connectivity_report_view(
+        request: Request,
+        tenant_id: Annotated[UUID, Header(alias="X-Tenant-Id")],
+        lifecycle: Annotated[str | None, Query()] = None,
+        include_invokes: Annotated[bool, Query()] = False,
+    ) -> ConnectivityReportResponse:
+        """Plugin-network connectivity and supply/demand closure; read-only.
+
+        Answers "is the network actually wired, and who is dangling".  The
+        numbers come from ``packages/catalog/connectivity_view.py`` — the *same*
+        implementation the offline script uses, so the dashboard and the CI
+        baseline gate can never disagree about the same network.
+
+        ``lifecycle`` / ``include_invokes`` are **口径 switches, not filters**:
+        figures from different scopes are not comparable, so the scope travels
+        with the result and the UI is expected to show it.  This route executes
+        no plugin, writes nothing and edits no plan; it is a filesystem
+        projection (plugin directory + reviewed semantics catalog).  A read is
+        still an access, so it goes through the policy gateway like every other
+        route.
+        """
+
+        trace_id = _trace_id(request)
+        require_policy(
+            "connectivity.report.read", tenant_id, trace_id,
+            risk_class="read_only", side_effects="read_only",
+        )
+        try:
+            payload = connectivity_report(lifecycle=lifecycle, include_invokes=include_invokes)
+        except ValueError as exc:
+            raise HTTPException(status_code=422, detail=str(exc)) from exc
+        islands = payload["islands"]
+        return ConnectivityReportResponse(
+            scope=ConnectivityScopeModel(**payload["scope"]),
+            metrics=ConnectivityMetricsModel(**payload["metrics"]),
+            islands_total=islands["total"],
+            islands_present=[ConnectivityIslandCategory(**entry) for entry in islands["present"]],
+            islands=[ConnectivityIsland(**item) for item in islands["items"]],
+            trace_id=trace_id,
+        )
+
     @app.get("/api/v1/rules/registry", response_model=RulesRegistryResponse, tags=["rules"])
     async def rules_registry_view(
         request: Request,
@@ -4269,7 +4493,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
         request: Request,
         tenant_id: Annotated[UUID, Header(alias="X-Tenant-Id")],
     ) -> CasesResponse:
-        """Case x stage matrix over 审计项目案例/; read-only.
+        """Case x stage matrix over 审计项目案例报告效果展示/; read-only.
 
         The nine stages are the on-disk ``00_``…``08_`` directories and every
         case reports all nine, including zero-count stages.  The audit reports
@@ -6574,9 +6798,16 @@ def create_app(settings: Settings | None = None) -> FastAPI:
             arguments={"goal": payload.goal[:200]},
         )
         try:
-            catalog = capability_catalog_from_db(config.database_url, tenant_id)
+            catalog, port_contracts = _planning_directory(
+                config.database_url, tenant_id, payload.domain,
+                intent_text=_payload_intent(payload),
+            )
         except psycopg2.Error as exc:
             raise HTTPException(status_code=503, detail="capability directory unavailable") from exc
+        except FileNotFoundError as exc:
+            raise HTTPException(status_code=422, detail=f"unknown domain: {payload.domain}") from exc
+        except ValueError as exc:
+            raise HTTPException(status_code=422, detail=str(exc)) from exc
         authorized: set[tuple[str, str]] = set()
         for pair in payload.data_sources:
             if len(pair) != 2 or not pair[0] or not pair[1]:
@@ -6589,6 +6820,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
                 authorized_sources=authorized,
                 budget=payload.budget,
                 template_keys=tuple(payload.template_keys or ()),
+                port_contracts=port_contracts,
             )
         except (AIClientError, OSError) as exc:
             raise HTTPException(status_code=503, detail=f"model backend unavailable: {exc}") from exc
@@ -6624,9 +6856,16 @@ def create_app(settings: Settings | None = None) -> FastAPI:
             idempotency_key=payload.idempotency_key,
         )
         try:
-            catalog = capability_catalog_from_db(config.database_url, tenant_id)
+            catalog, port_contracts = _planning_directory(
+                config.database_url, tenant_id, payload.domain,
+                intent_text=_payload_intent(payload),
+            )
         except psycopg2.Error as exc:
             raise HTTPException(status_code=503, detail="capability directory unavailable") from exc
+        except FileNotFoundError as exc:
+            raise HTTPException(status_code=422, detail=f"unknown domain: {payload.domain}") from exc
+        except ValueError as exc:
+            raise HTTPException(status_code=422, detail=str(exc)) from exc
         authorized: set[tuple[str, str]] = set()
         for pair in payload.data_sources:
             if len(pair) != 2 or not pair[0] or not pair[1]:
@@ -6644,6 +6883,8 @@ def create_app(settings: Settings | None = None) -> FastAPI:
                 base_draft=payload.base_draft,
                 budget=payload.budget,
                 template_keys=tuple(payload.template_keys or ()),
+                port_contracts=port_contracts,
+                capability_prior=_canvas_capability_prior(config.database_url, tenant_id),
             )
         except (AIClientError, OSError) as exc:
             detail = f"model backend unavailable: {exc}"
@@ -6703,9 +6944,16 @@ def create_app(settings: Settings | None = None) -> FastAPI:
             idempotency_key=payload.idempotency_key,
         )
         try:
-            catalog = capability_catalog_from_db(config.database_url, tenant_id)
+            catalog, port_contracts = _planning_directory(
+                config.database_url, tenant_id, payload.domain,
+                intent_text=_payload_intent(payload),
+            )
         except psycopg2.Error as exc:
             raise HTTPException(status_code=503, detail="capability directory unavailable") from exc
+        except FileNotFoundError as exc:
+            raise HTTPException(status_code=422, detail=f"unknown domain: {payload.domain}") from exc
+        except ValueError as exc:
+            raise HTTPException(status_code=422, detail=str(exc)) from exc
         authorized: set[tuple[str, str]] = set()
         for pair in payload.data_sources:
             if len(pair) != 2 or not pair[0] or not pair[1]:
@@ -6731,6 +6979,8 @@ def create_app(settings: Settings | None = None) -> FastAPI:
                     budget=payload.budget,
                     template_keys=tuple(payload.template_keys or ()),
                     on_progress=lambda event: emit({"type": "stage", "data": event}),
+                    port_contracts=port_contracts,
+                    capability_prior=_canvas_capability_prior(config.database_url, tenant_id),
                 )
                 intent_id: str | None = None
                 try:

@@ -43,7 +43,29 @@ target-version = "py311"
 # editing them, which would destroy exactly the provenance the archive exists
 # to provide — so the archive is excluded rather than "fixed".  Its own
 # `校验清单-sha256.csv` pins every file's hash.
-exclude = ["cankao", ".venv", "build", "dist", "docs/全流程运行日志-20260912"]
+#
+# The same reasoning covers the showcase/case material below: it is archived
+# *output*, not product code.  `审计项目案例报告效果展示/` holds the case
+# reports plus two copies of the run archive they were produced from (the
+# drivers inside are preserved verbatim for reproducibility), and
+# `desktop/src/public/showcase/` holds the standalone visualisations the desktop
+# shell embeds — one-off data-survey scripts (underscore-prefixed, and a
+# `build_data.py` that generates the canvas data) living in a static-asset
+# directory, neither of which belongs to a Python package.
+#
+# These entries are what keep the documented `ruff check .` equivalent to what
+# CI actually runs (`ruff check apps packages tests`).  Without them the
+# documented command reports 112 errors, none of them in product code, and
+# every reader concludes the project is red when CI is green.
+exclude = [
+  "cankao",
+  ".venv",
+  "build",
+  "dist",
+  "docs/全流程运行日志-20260912",
+  "审计项目案例报告效果展示",
+  "desktop/src/public/showcase",
+]
 
 [tool.ruff.lint]
 # ruff 0.16 起默认规则集显著扩大（SIM/UP/FLY/DTZ 等全量启用），会大面积

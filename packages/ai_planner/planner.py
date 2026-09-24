@@ -58,11 +58,24 @@ def _build_prompt(
     authorized_sources: set[tuple[str, str]],
     budget: dict[str, int],
     template_keys: tuple[str, ...],
+    port_contracts: Mapping[str, dict[str, Any]] | None = None,
+    prior: Mapping[str, float] | None = None,
 ) -> list[dict[str, str]]:
+    """The initial prompt.  ``port_contracts`` is threaded into the recall
+    block so the contracts the model is told to copy verbatim are the *same*
+    ones ``validate_draft`` and ``compile_plan`` will judge it against — a
+    prompt built from a different registry than the validator's is a draft
+    that can only ever fail with ``contract_mismatch``.
+
+    ``prior`` (ring 7) only **reorders** the recall list — the block still
+    lists exactly the same capabilities and ports.  It never filters, so the
+    set of things the model may use is unchanged; see
+    ``packages/ai_planner/experience_prior.py``.
+    """
     sources = "\n".join(sorted(f"{node}:{port}" for node, port in authorized_sources)) or "(none)"
     user_prompt = (
         f"目标：{goal}\n"
-        f"能力召回清单（只能使用这些 capability）：\n{recall_snapshot(catalog)}\n"
+        f"能力召回清单（只能使用这些 capability）：\n{recall_snapshot(catalog, port_contracts, prior=prior)}\n"
         f"可用模板（完整 JSON 示例，可直接参考其节点/端口/边结构，只替换能力与端口名）：\n{template_block(template_keys)}\n"
         f"授权数据源（唯一可引用的 seed 来源，逐字符一致）：\n{sources}\n"
         f"预算：{budget}\n"
@@ -168,9 +181,13 @@ class AiPlanner:
         on_progress: ProgressCallback = None,
         port_contracts: Mapping[str, dict[str, Any]] | None = None,
         max_draft_nodes: int | None = None,
+        capability_prior: Mapping[str, float] | None = None,
     ) -> PlanningOutcome:
         effective_budget = dict(budget or {"max_chain_length": 8, "max_candidates": 8, "max_latency_ms": 5000})
-        messages = _build_prompt(goal, catalog, authorized_sources, effective_budget, template_keys)
+        messages = _build_prompt(
+            goal, catalog, authorized_sources, effective_budget, template_keys, port_contracts,
+            capability_prior,
+        )
 
         def emit(event: ProgressEvent) -> None:
             if on_progress is not None:

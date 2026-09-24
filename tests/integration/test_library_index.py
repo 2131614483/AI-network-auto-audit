@@ -16,7 +16,7 @@ from fastapi.testclient import TestClient
 from psycopg2.extras import Json
 
 from apps.api.main import Settings, create_app
-from packages.library.index import library_index
+from packages.library.index import CASE_ROOT, library_index
 
 DB = os.getenv("AUDIT_NETWORK_TEST_DATABASE_URL", "postgresql://audit_app:admin@localhost:5432/audit_network_test")
 ROOT = Path(__file__).resolve().parents[2]
@@ -75,7 +75,7 @@ def test_filters_do_not_shrink_the_summary() -> None:
     assert cases["summary"] == full["summary"]
     assert 0 < len(cases["items"]) < len(full["items"])
     assert all(item["kind"] == "案例资料" for item in cases["items"])
-    assert all(item["path"].startswith("审计项目案例/") for item in cases["items"])
+    assert all(item["path"].startswith(f"{CASE_ROOT}/") for item in cases["items"])
     # Files directly under the cases root (not inside a named case) honestly
     # report related_case=None instead of inventing one.
     assert any(item["related_case"] for item in cases["items"])
