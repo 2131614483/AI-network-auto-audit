@@ -3,6 +3,9 @@
 > **一个可靠中枢 + 专业领域脑 + 一个确定性风控内核 + 一套可插拔的插件网络**
 >
 > 把"AI 会胡说、会越权、结果不可信"三个致命问题，收敛成一条**可授权、可追溯、可复算、可回滚**的执行链路：AI 只负责"提出方案"，确定性编译器与策略网关负责"审核方案"，隔离沙箱负责"执行方案"，证据链负责"证明结果"。
+> 但是2026年9月24日的https://github.com/affaan-m/ECC项目是一个很好的方向：
+> <img width="2560" height="1268" alt="image" src="https://github.com/user-attachments/assets/ccc5f2d4-4cc3-4bac-abb8-c9fc9e8c0a6f" />
+
 
 ![Python 3.11+](https://img.shields.io/badge/Python-3.11%2B-3776AB?logo=python&logoColor=white)
 ![PostgreSQL 16](https://img.shields.io/badge/PostgreSQL-16-4169E1?logo=postgresql&logoColor=white)
