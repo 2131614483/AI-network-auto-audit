@@ -47,9 +47,7 @@
 
 ## 展示视频
 
-
-
-
+https://github.com/user-attachments/assets/05a8a4e0-5e54-4e9d-8845-f499c43ae4b4
 
 — 25 个真实界面镜头，中文旁白 + 字幕，4 分 11 秒。
 
