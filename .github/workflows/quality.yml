@@ -77,6 +77,33 @@ jobs:
         env:
           DATABASE_URL: postgresql://audit_app:admin@localhost:5432/audit_network_test
         run: python -c "import os; from packages.demo.seed import seed_local_demo; print(seed_local_demo(os.environ['DATABASE_URL']))"
+      # Same class of gap as the seed above.  Registering the plugin catalog and
+      # indexing the plugin directory had only ever been done by hand locally —
+      # through `scripts/register-phase1-plugin.ps1` and
+      # `scripts/index-plugin-graph.py`, the former being PowerShell and so
+      # unrunnable on an ubuntu runner.  Locally the test database therefore
+      # already carried 124 plugin versions and ~1.2k graph nodes, while CI's was
+      # bare, and that difference showed up as two failures:
+      #
+      #   - test_plugin_lifecycle: `version` came back None because
+      #     `catalog.plugin_versions` had no row for the plugin at all;
+      #   - test_plugin_blueprint_index: intent planning failed closed
+      #     ("intent matched no capability with a linked blueprint") because the
+      #     capability graph was empty, so no blueprint had anything to link to.
+      #
+      # Both scripts are idempotent, and the graph/blueprint indexer is the
+      # documented one-shot for the whole plugin directory, so running it here
+      # makes the runner's database match the one the suite was developed on.
+      - name: Register the plugin catalog (test database)
+        env:
+          DATABASE_URL: postgresql://audit_app:admin@localhost:5432/audit_network_test
+        run: python -m packages.plugin_runtime.registration --database-url "$DATABASE_URL" --tenant-slug local-dev
+      - name: Index the capability graph and blueprint catalog (test database)
+        env:
+          DATABASE_URL: postgresql://audit_app:admin@localhost:5432/audit_network_test
+        run: |
+          python scripts/index-plugin-graph.py --database-url "$DATABASE_URL" \
+            --domain audit --domain aiops --domain quant --domain knowledge
       - name: Install web dependencies
         run: npm install
       # The desktop console is the only user-facing entry point the README
