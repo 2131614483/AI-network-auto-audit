@@ -184,25 +184,119 @@ flowchart LR
 
 ## 可视化界面
 
-全套界面截图在 [docs/screenshots/desktop/](docs/screenshots/desktop/)。核心姿态：**所有工具调用强制经过策略网关，GUI 不能绕过策略**。
+全套界面截图在 [docs/screenshots/desktop/](docs/screenshots/desktop/)。核心姿态：**所有工具调用强制经过策略网关，GUI 不能绕过策略**；每个读取携带租户与 Trace ID，每次写入具备幂等键与 ChangeRequest 审计。
+
+### 中枢与运行
 
 **信息中枢** —— 全站只读快照，断环与缺口如实标红：
 
 <a href="docs/screenshots/desktop/hub.png"><img src="docs/screenshots/desktop/hub.png" width="80%" alt="信息中枢"></a>
 
+**任务编排** —— Mission → Workflow → Task → Agent 四层运行投影：
+
+<a href="docs/screenshots/desktop/operations.png"><img src="docs/screenshots/desktop/operations.png" width="80%" alt="任务编排"></a>
+
+**运行与产物库** —— 126 次运行，证据包分列，孤儿包如实标注：
+
+<a href="docs/screenshots/desktop/runs.png"><img src="docs/screenshots/desktop/runs.png" width="80%" alt="运行与产物库"></a>
+
+**运行诊断** —— 63 次失败归成 15 个错误签名簇：
+
+<a href="docs/screenshots/desktop/diagnose.png"><img src="docs/screenshots/desktop/diagnose.png" width="80%" alt="运行诊断"></a>
+
+### 组网执行
+
 **Run 画布** —— 一次真实组网：100 节点 DAG，节点=真实执行 attempt：
 
 <a href="docs/screenshots/desktop/runcanvas.png"><img src="docs/screenshots/desktop/runcanvas.png" width="80%" alt="Run 画布"></a>
 
-**能力图谱** —— 147 节点按层级上色，关系带文字依据：
+**Run 画布节点检查器** —— 数据从哪来、产出什么、落在哪：
+
+<a href="docs/screenshots/desktop/runcanvas-node.png"><img src="docs/screenshots/desktop/runcanvas-node.png" width="80%" alt="Run 画布节点"></a>
+
+### 图谱与连通性
+
+**能力图谱** —— 147 节点按层级上色：
 
 <a href="docs/screenshots/desktop/graph-tiers.png"><img src="docs/screenshots/desktop/graph-tiers.png" width="80%" alt="能力图谱"></a>
 
-**进化闭环** —— 七环全通：
+**图谱关系依据** —— 每条关系都有文字依据，不只是权重：
 
-<a href="docs/screenshots/desktop/evolution.png"><img src="docs/screenshots/desktop/evolution.png" width="80%" alt="进化闭环"></a>
+<a href="docs/screenshots/desktop/graph-relations.png"><img src="docs/screenshots/desktop/graph-relations.png" width="80%" alt="图谱关系依据"></a>
 
-> 其余界面（任务编排、审计工作台、AIOps 工作台、审批中心、策略模拟器、运行诊断、连通性、知识星云等）见 [docs/screenshots/desktop/](docs/screenshots/desktop/)。
+**连通性与供需闭合** —— 谁悬空、缺什么上游：
+
+<a href="docs/screenshots/desktop/connectivity.png"><img src="docs/screenshots/desktop/connectivity.png" width="80%" alt="连通性"></a>
+
+### 知识与检索
+
+**知识工厂** —— 入库 / 分块 / 向量化全链路：
+
+<a href="docs/screenshots/desktop/knowledge.png"><img src="docs/screenshots/desktop/knowledge.png" width="80%" alt="知识工厂"></a>
+
+**文档资产库** —— 143 份文档索引，带关联 run 与案例：
+
+<a href="docs/screenshots/desktop/library.png"><img src="docs/screenshots/desktop/library.png" width="80%" alt="文档资产库"></a>
+
+**知识星云** —— 插件按业务阶段组成星系：
+
+<a href="docs/screenshots/desktop/nebula.png"><img src="docs/screenshots/desktop/nebula.png" width="80%" alt="知识星云"></a>
+
+### 插件与策略
+
+**插件拓扑工作台** —— 16 集群 / 10 蓝图 / 10 契约：
+
+<a href="docs/screenshots/desktop/plugins.png"><img src="docs/screenshots/desktop/plugins.png" width="80%" alt="插件拓扑"></a>
+
+**插件清单** —— 123 个插件的端口契约与生命周期：
+
+<a href="docs/screenshots/desktop/plugin-catalog.png"><img src="docs/screenshots/desktop/plugin-catalog.png" width="80%" alt="插件清单"></a>
+
+**策略网关** —— 209 个策略集，182 个疑似残留标红：
+
+<a href="docs/screenshots/desktop/policy.png"><img src="docs/screenshots/desktop/policy.png" width="80%" alt="策略网关"></a>
+
+**审批中心** —— 高风险动作先落审批，账本可查：
+
+<a href="docs/screenshots/desktop/approvals.png"><img src="docs/screenshots/desktop/approvals.png" width="80%" alt="审批中心"></a>
+
+### 业务证据链
+
+**审计工作台** —— 50 项目 / 16 已确认 / 102 待确认：
+
+<a href="docs/screenshots/desktop/audit.png"><img src="docs/screenshots/desktop/audit.png" width="80%" alt="审计工作台"></a>
+
+**审计证据链血缘** —— 证据 → 异常候选 → 已确认发现：
+
+<a href="docs/screenshots/desktop/audit-lineage.png"><img src="docs/screenshots/desktop/audit-lineage.png" width="80%" alt="审计血缘"></a>
+
+**回测工作台** —— 全部 simulated_only，指标可追溯：
+
+<a href="docs/screenshots/desktop/quant.png"><img src="docs/screenshots/desktop/quant.png" width="80%" alt="回测工作台"></a>
+
+**AIOps 工作台** —— 告警 → 提案 → 变更授权 → 模拟执行 → 核验：
+
+<a href="docs/screenshots/desktop/aiops.png"><img src="docs/screenshots/desktop/aiops.png" width="80%" alt="AIOps"></a>
+
+**证据链复验** —— 重算 sha256，不落盘：
+
+<a href="docs/screenshots/desktop/evidence.png"><img src="docs/screenshots/desktop/evidence.png" width="80%" alt="证据链复验"></a>
+
+### 自我进化
+
+**七环闭环** —— 1→7 全部打通：
+
+<a href="docs/screenshots/desktop/evolution.png"><img src="docs/screenshots/desktop/evolution.png" width="80%" alt="七环闭环"></a>
+
+**建议与决策** —— 设计外的真实协作被识别为候选关系：
+
+<a href="docs/screenshots/desktop/suggestions.png"><img src="docs/screenshots/desktop/suggestions.png" width="80%" alt="建议与决策"></a>
+
+### 系统
+
+**健康与自检** —— 每一项都标注数据来源：
+
+<a href="docs/screenshots/desktop/health.png"><img src="docs/screenshots/desktop/health.png" width="80%" alt="健康自检"></a>
 
 ## 技术栈
 
