@@ -1,0 +1,12 @@
+{
+  "schema_version": "1.0.0",
+  "reviewed_by": "declared plan-quality policy",
+  "note": "计划质量门的**策略口径**。硬检查（必填输入未绑定、种子为空）在代码里，因为那是确定性事实；这里的数字是人工定的口径，不是定律 —— 改口径就改这一行，并留下依据。门只判断、不改计划：不合格时把 issues 交回调用方去重规划或降级。",
+  "policy": {
+    "min_seed_rows": 1,
+    "min_planned_nodes": 1,
+    "max_planned_nodes": 16,
+    "min_rows_per_extra_node": 8,
+    "_min_rows_per_extra_node": "每多一个节点，数据至少要有 8 行。依据是 2026-09-26 的 5 次真实 AI 组网实测：6 行的月份被组了 2 个节点、下游评估器因输入不足 failed；10 行的两个月组 2 个节点两次都 succeeded；121/146/158 行也全部成功。所以失配边界落在 6 与 10 之间，取 8 作为中线。这条只拦'数据明显撑不起这张网'，不拦正常规模。"
+  }
+}

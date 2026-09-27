@@ -45,6 +45,11 @@ class ArtifactInput:
     sha256: str
     size_bytes: int
     classification: str
+    #: 该工件覆盖的期间（``YYYY-MM``）。只有需要它的契约用得上 —— 例如
+    #: ``ledger-artifact-ref`` 的 ``out_of_period`` 规则按 ``date[:7] != period``
+    #: 判定。``None`` = 沿用历史默认值，因此既有调用方行为不变。
+    #: 刻意**不进** ``as_payload()``：合同里的 ``period`` 在信封层，不在 artifact 对象里。
+    period: str | None = None
 
     def as_payload(self) -> dict[str, object]:
         return {

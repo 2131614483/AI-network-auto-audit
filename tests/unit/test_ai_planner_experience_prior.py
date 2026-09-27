@@ -145,3 +145,37 @@ def test_unreachable_database_degrades_to_empty_prior(monkeypatch: pytest.Monkey
 def test_invalid_tenant_id_degrades_to_empty_prior(monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.setenv(ENV_FLAG, "1")
     assert resolve_capability_prior(os.getenv("DATABASE_URL", "postgresql://audit_app@127.0.0.1:1/none"), "not-a-uuid") == {}
+
+
+# -- 理解面（A）：让模型看得懂"这个能力是干什么的" ---------------------------------
+
+
+def test_entry_context_omits_everything_when_empty() -> None:
+    """留空时必须返回空串 —— 提示词因此与从前逐字节一致（向后兼容）。"""
+    from packages.ai_planner.catalog import CapabilityEntry, _entry_context
+
+    assert _entry_context(CapabilityEntry("c", "p")) == ""
+
+
+def test_entry_context_carries_description_domains_and_lifecycle() -> None:
+    from packages.ai_planner.catalog import CapabilityEntry, _entry_context
+
+    entry = CapabilityEntry("c", "p", description="校验日记账 CSV", domains=("audit",), lifecycle="verified")
+    text = _entry_context(entry)
+    assert "校验日记账 CSV" in text and "域=audit" in text and "生命周期=verified" in text
+
+
+def test_entry_context_truncates_long_descriptions() -> None:
+    """描述进的是提示词，长度必须可控。"""
+    from packages.ai_planner.catalog import CapabilityEntry, _entry_context
+
+    text = _entry_context(CapabilityEntry("c", "p", description="很长" * 400))
+    assert len(text) < 300 and text.endswith("…")
+
+
+def test_recall_snapshot_is_byte_identical_without_the_surface() -> None:
+    from packages.ai_planner.catalog import CapabilityEntry, recall_snapshot
+
+    tiny = {"c": CapabilityEntry("c", "p", ("in",), ("out",))}
+    assert recall_snapshot(tiny) == recall_snapshot(dict(tiny))
+    assert "；域=" not in recall_snapshot(tiny)

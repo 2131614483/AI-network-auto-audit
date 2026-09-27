@@ -65,3 +65,7 @@ _m7_check.py
 # `git rm -r --cached .idea` removed the already-tracked copies; the files stay
 # on disk.
 .idea/
+github_software/
+video_shots/
+docs/showcase-video/audio/
+*.mp4

@@ -18,6 +18,7 @@ from packages.knowledge.ingest import default_drop_root
 from packages.knowledge.rich_media import MineruAdapter
 from packages.knowledge.rich_media_service import RichMediaJobClaim, process_next_rich_media_job
 from packages.observability import attach_spool_logging, configure_rotating_file_logging
+from packages.ops.networking_trigger import run_due_networking_once
 from packages.plugin_topology.dag_persistence import recover_and_retry_once
 
 
@@ -161,6 +162,13 @@ def run_local_forever(database_url: str, poll_seconds: float = 1.0) -> None:
     generate_every = int(os.getenv("AUDIT_NETWORK_DEMO_GENERATE_EVERY", "120"))
     if demo_generate:
         logger.info("demo data generator enabled (every %d loops)", generate_every)
+    # 自动组网触发：**默认关**。开启后按 contracts/networking-triggers.json 的声明，
+    # 到点把声明的数据集接进来跑一遍确定性组网计划（不调云端模型）。
+    # 节流按循环数粗筛，真正的到期判断在 run_due_networking_once 里（按分钟）。
+    auto_networking = os.getenv("AUDIT_NETWORK_AUTO_NETWORKING", "0") == "1"
+    networking_every = int(os.getenv("AUDIT_NETWORK_AUTO_NETWORKING_EVERY", "300"))
+    if auto_networking:
+        logger.info("自动组网已启用（每 %d 轮检查一次到期）", networking_every)
     loop_count = 0
     totals = {"published": 0, "rich": 0, "tasks": 0, "generated": 0}
     while True:
@@ -170,6 +178,15 @@ def run_local_forever(database_url: str, poll_seconds: float = 1.0) -> None:
         generated = 0
         if demo_generate and loop_count % max(1, generate_every) == 0:
             generated = len(run_demo_generation_once(database_url, tenant_slug=tenant_slug, cycles=1))
+        if auto_networking and loop_count % max(1, networking_every) == 0:
+            # 自动组网失败绝不打断主职责：这里整段兜住，只记日志。
+            # outbox 分发、富媒体处理与任务执行都在它之前完成，不受影响。
+            try:
+                fired = run_due_networking_once(database_url=database_url)
+                if fired:
+                    logger.info("自动组网触发 %d 个：%s", len(fired), [item["name"] for item in fired])
+            except Exception:  # noqa: BLE001 - 自动行为失败不得影响 outbox 与任务执行
+                logger.exception("自动组网触发失败（已隔离）")
         if loop_count % 60 == 0:
             # CW3: DAG attempt recovery sweep (stale lease -> failed, traced);
             # the retry policy itself stays explicit per node.

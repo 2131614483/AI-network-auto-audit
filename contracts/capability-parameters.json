@@ -22,6 +22,10 @@
       "availability_target": 0.99,
       "threshold_ratio": 1.0,
       "_range": "availability_target 0..1；threshold_ratio 0..10"
+    },
+    "audit.ledger.validate": {
+      "amount_threshold": 1000000,
+      "_range": "amount_threshold 0..1e12；应与被审计主体的重要性水平同量级（对照案例 2,140 万 / 高难案例 150 万），不是通用常数"
     }
   }
 }

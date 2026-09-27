@@ -16,7 +16,7 @@ from typing import Any, Callable, Mapping, Protocol
 from packages.plugin_topology.compiler import CompileError, compile_plan
 from packages.plugin_topology.ports import PortContractError
 
-from .catalog import PORT_CONTRACTS, CapabilityEntry, recall_snapshot
+from .catalog import PORT_CONTRACTS, CapabilityEntry, adapter_kinds, recall_snapshot
 from .draft import _MAX_REVISION_ROUNDS, validate_draft
 from .errors import CompileIssue, compile_issues, issues_to_dicts
 from .templates import TEMPLATES, template_block
@@ -73,9 +73,12 @@ def _build_prompt(
     ``packages/ai_planner/experience_prior.py``.
     """
     sources = "\n".join(sorted(f"{node}:{port}" for node, port in authorized_sources)) or "(none)"
+    # 适配器种类：让模型知道目录里的能力不止一种运行形态（协议枚举里含 mcp）。
+    adapters = ", ".join(adapter_kinds()) or "(unknown)"
     user_prompt = (
         f"目标：{goal}\n"
         f"能力召回清单（只能使用这些 capability）：\n{recall_snapshot(catalog, port_contracts, prior=prior)}\n"
+        f"可用适配器种类（协议允许的）：{adapters}\n"
         f"可用模板（完整 JSON 示例，可直接参考其节点/端口/边结构，只替换能力与端口名）：\n{template_block(template_keys)}\n"
         f"授权数据源（唯一可引用的 seed 来源，逐字符一致）：\n{sources}\n"
         f"预算：{budget}\n"

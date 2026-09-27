@@ -35,7 +35,10 @@ from packages.ai_planner.semantics import AliasGroup, SemanticCatalog
 
 ARCHIVE_DRIVER = (
     Path(__file__).resolve().parents[2]
-    / "docs" / "全流程运行日志-20260912" / "10-驱动脚本" / "_ai_compose_demo.py"
+    # 归档随案例资料一起搬到了 `审计项目案例报告效果展示/` 下；这里原先还指着旧的
+    # `docs/全流程运行日志-20260912/…`，于是 skipif 永远成立 —— 测试一直在"跳过"，
+    # 一条关于"手写主链已冗余"的强断言就这样静默失效了。
+    / "审计项目案例报告效果展示" / "全流程运行日志-20260912" / "10-驱动脚本" / "_ai_compose_demo.py"
 )
 
 

@@ -1,0 +1,15 @@
+{
+  "schema_version": "1.0.0",
+  "reviewed_by": "declared networking triggers (scheduled, deterministic plan)",
+  "note": "组网触发声明：哪个数据集、用哪份输入映射、多久跑一次。默认**不启用** —— 需在环境里设 AUDIT_NETWORK_AUTO_NETWORKING=1。定时任务走确定性两节点计划、不调云端模型（理由见 packages/ops/networking_trigger.py）。",
+  "triggers": [
+    {
+      "name": "hard-case-monthly",
+      "dataset": "审计项目案例报告效果展示/黔岭酒业2025年度财务报表审计_实验组_高难度",
+      "mapping": "audit-ledger-csv-v1",
+      "every_minutes": 1440,
+      "amount_threshold": 1500000,
+      "_why": "高难案例的重要性水平是 150 万（见该案例报告），用它作大额判定阈值 —— 声明在这里而不是埋在代码里，改阈值就是改这一行。every_minutes=1440 即每天一次。"
+    }
+  ]
+}

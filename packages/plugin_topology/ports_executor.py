@@ -19,7 +19,7 @@ import json
 from dataclasses import dataclass
 from datetime import datetime, timezone
 from pathlib import Path
-from typing import Any, Callable
+from typing import Any, Callable, Mapping
 from urllib.request import url2pathname
 from uuid import UUID
 
@@ -56,17 +56,38 @@ def register_adapter(name: str, fn: Callable[[Path, Path, UUID], dict[str, Any]]
 
 # Schema-ref aware payload builders for governed input ports.  Each builder
 # returns the value bound under the port id inside the child payload.
-def _ledger_artifact_value(ref: ArtifactInput) -> dict[str, object]:
-    return {
+def _ledger_artifact_value(
+    ref: ArtifactInput, capability: str, parameters: Mapping[str, Any]
+) -> dict[str, object]:
+    # 阈值是**运营策略**，不是数据属性 —— 所以走声明的能力参数
+    # （`contracts/capability-parameters.json`），而不是像期间那样挂在工件上；
+    # 计划可以用 `node.parameters` 按次覆盖，且该覆盖已进计划哈希、可审计。
+    #
+    # **只有声明过的能力才下发**：没有声明的能力必须保持原行为（插件回落到自己的默认值）。
+    # 第一版这里用了 `_required_param`，于是任何**消费同一端口但没声明该参数**的能力
+    # （如 audit.foundation.finance-clean）都会硬失败，整条审计链级联垮掉 —— 端口是共享的，
+    # 参数不是。
+    threshold = parameters.get("amount_threshold")
+    if threshold is None:
+        threshold = capability_parameters(capability).get("amount_threshold")
+    value: dict[str, object] = {
         "contract_id": "ledger-artifact-ref",
         "contract_version": "1.0.0",
         "artifact": ref.as_payload(),
         "schema_mapping_version": "1.0.0",
-        "period": "2026-01",
+        # 期间原本写死为 "2026-01"，于是任何非该月份的真实台账都会被 out_of_period
+        # 逐行判错 —— 产品实际上只能吃"刚好落在 2026-01"的数据。改为取工件自带的期间，
+        # 缺省仍回落到原值，既有调用方不受影响。
+        "period": ref.period or "2026-01",
     }
+    if threshold is not None:
+        value["amount_threshold"] = threshold
+    return value
 
 
-_PAYLOAD_BUILDERS: dict[str, Callable[[ArtifactInput], dict[str, object]]] = {
+_PAYLOAD_BUILDERS: dict[
+    str, Callable[[ArtifactInput, str, Mapping[str, Any]], dict[str, object]]
+] = {
     "ledger-artifact-ref": _ledger_artifact_value,
 }
 
@@ -286,6 +307,10 @@ class ArtifactRef:
     sha256: str
     size_bytes: int
     classification: str = "internal"
+    #: 该工件覆盖的期间（``YYYY-MM``），随 artifact 一路带到端口载荷构建器。
+    #: 刻意**不进** ``as_payload()`` —— 合同里 ``period`` 在信封层，不在 artifact 对象里，
+    #: 而 ``as_payload()`` 的形状被投影与报告依赖。
+    period: str | None = None
 
     def as_payload(self) -> dict[str, object]:
         return {
@@ -302,6 +327,7 @@ def _artifact_input_to_ref(seed: ArtifactInput) -> ArtifactRef:
         sha256=seed.sha256.lower(),
         size_bytes=seed.size_bytes,
         classification=seed.classification,
+        period=seed.period,
     )
 
 
@@ -646,14 +672,20 @@ class PortBoundExecutor:
                 )
             if port.cardinality == "many":
                 payload[port.port_id] = {
-                    "artifacts": [self._port_value(item, node_dir, port.schema_ref) for item in items]
+                    "artifacts": [
+                        self._port_value(item, node_dir, port.schema_ref, node.capability, node.parameters or {})
+                        for item in items
+                    ]
                 }
             else:
-                payload[port.port_id] = self._port_value(items[0], node_dir, port.schema_ref)
+                payload[port.port_id] = self._port_value(
+                    items[0], node_dir, port.schema_ref, node.capability, node.parameters or {}
+                )
         return payload
 
     def _port_value(
-        self, item: dict[str, Any], node_dir: Path, schema_ref: str
+        self, item: dict[str, Any], node_dir: Path, schema_ref: str,
+        capability: str, parameters: Mapping[str, Any],
     ) -> dict[str, object]:
         if item["adapter"]:
             adapter = ADAPTERS.get(item["adapter"])
@@ -663,7 +695,7 @@ class PortBoundExecutor:
             return converted
         builder = _PAYLOAD_BUILDERS.get(schema_ref)
         if builder is not None:
-            return builder(_ref_to_artifact_input(item["ref"]))
+            return builder(_ref_to_artifact_input(item["ref"]), capability, parameters)
         return {"artifact": item["ref"].as_payload()}
 
     def _binding_report(self, bindings: dict[str, list[dict[str, Any]]]) -> list[dict[str, object]]:
@@ -692,4 +724,5 @@ def _ref_to_artifact_input(ref: ArtifactRef) -> ArtifactInput:
         sha256=ref.sha256,
         size_bytes=ref.size_bytes,
         classification=ref.classification,
+        period=ref.period,
     )

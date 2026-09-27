@@ -10,6 +10,7 @@ from __future__ import annotations
 
 import json
 from dataclasses import dataclass
+from pathlib import Path
 from typing import TYPE_CHECKING, Any, Mapping
 
 if TYPE_CHECKING:  # `composer` imports nothing from here at runtime
@@ -27,6 +28,13 @@ class CapabilityEntry:
     plugin_id: str
     inputs: tuple[str, ...] = ()
     outputs: tuple[str, ...] = ()
+    #: 下面三个是**给模型看的理解面**，不参与校验。此前 recall 只给模型
+    #: `capability (plugin= inputs= outputs=)` —— 模型知道"能接什么、能吐什么"，
+    #: 却不知道"这个能力是干什么的"。实测后果：同一目标自由组网 5 次，每次都
+    #: 只能组出同一条两节点链。留空时提示词与从前**逐字节一致**（向后兼容）。
+    description: str = ""
+    domains: tuple[str, ...] = ()
+    lifecycle: str = ""
 
 
 # Verified runtime plugins (the CW3 execution engine really runs these through
@@ -164,6 +172,116 @@ def capability_catalog_from_db(
     return entries
 
 
+def _port_hints(catalog: dict[str, CapabilityEntry]) -> dict[str, str]:
+    """每条能力的"上游/下游"一句话，**从 catalog 自身推导**，不新增事实源。
+
+    模型的处境是：它知道有哪些能力、各自吃什么吐什么，但要自己把 107 条两两比对才能
+    发现"谁能喂饱谁"。实测后果正是它 5 次只组出同一条链。这里把匹配结果直接写出来，
+    等于替它做掉那一步；`←无` / `→无` 同时点出了**补链方案**里的两类缺口
+    （不可填输入 / 死端输出），模型也就知道哪些端口得靠外部注入。
+    """
+    producers: dict[str, list[str]] = {}
+    consumers: dict[str, list[str]] = {}
+    for capability, entry in catalog.items():
+        for port in entry.inputs:
+            consumers.setdefault(port, []).append(capability)
+        for port in entry.outputs:
+            producers.setdefault(port, []).append(capability)
+
+    def _names(capabilities: list[str], exclude: str) -> str:
+        # 排除自己（自产自销不构成上下游），最多列 2 个，其余计数收尾。
+        others = [name for name in capabilities if name != exclude]
+        if not others:
+            return "无"
+        shown = ",".join(sorted(others)[:2])
+        return shown if len(others) <= 2 else f"{shown}…({len(others)})"
+
+    hints: dict[str, str] = {}
+    for capability, entry in catalog.items():
+        parts = [f"{port}←{_names(producers.get(port, []), capability)}" for port in entry.inputs]
+        parts += [f"{port}→{_names(consumers.get(port, []), capability)}" for port in entry.outputs]
+        hints[capability] = " · ".join(parts)
+    return hints
+
+
+def adapter_kinds() -> tuple[str, ...]:
+    """插件协议允许的适配器种类（`python` / `node` / `http` / `mcp` / …）。
+
+    从 `contracts/jsonschema/unified-plugin-protocol.schema.json` 的枚举读，**不另抄一份**：
+    MCP 支持早就写在协议里（`adapters` 枚举含 `"mcp"`），抄一份出来就会与协议脱节。
+    提示词里给出这份清单，模型才知道目录里的能力不止一种运行形态。
+    读不到时返回空元组（提示词少一行，不影响其余内容）。
+    """
+    global _ADAPTER_CACHE
+    if _ADAPTER_CACHE is not None:
+        return _ADAPTER_CACHE
+    _ADAPTER_CACHE = ()
+    path = Path(__file__).resolve().parents[2] / "contracts" / "jsonschema" / "unified-plugin-protocol.schema.json"
+    try:
+        raw = json.loads(path.read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError):
+        return _ADAPTER_CACHE
+    # 递归找"包含 mcp 的那个枚举"，而不是硬编码路径 —— 它住在 $defs 下，
+    # 而 schema 的结构是会变的；写死路径会让这里静默返回空（我第一次就写错了）。
+    stack = [raw]
+    while stack:
+        node = stack.pop()
+        if isinstance(node, dict):
+            enum = node.get("enum")
+            if isinstance(enum, list) and any(str(item) == "mcp" for item in enum):
+                _ADAPTER_CACHE = tuple(str(item) for item in enum)
+                return _ADAPTER_CACHE
+            stack.extend(node.values())
+        elif isinstance(node, list):
+            stack.extend(node)
+    return _ADAPTER_CACHE
+
+
+_ADAPTER_CACHE: tuple[str, ...] | None = None
+
+
+def _entry_context(entry: CapabilityEntry) -> str:
+    """能力的一句话说明 + 域 + 生命周期；都为空时返回空串（提示词不变）。"""
+    parts: list[str] = []
+    if entry.description.strip():
+        # 截断：描述进的是提示词，长度必须可控。240 字足以说清"做什么"。
+        text = " ".join(entry.description.split())
+        parts.append(text if len(text) <= 240 else f"{text[:239]}…")
+    if entry.domains:
+        parts.append(f"域={','.join(entry.domains)}")
+    if entry.lifecycle:
+        parts.append(f"生命周期={entry.lifecycle}")
+    return "；".join(parts)
+
+
+def enrich_from_directory(
+    catalog: dict[str, CapabilityEntry], root: Path | None = None
+) -> dict[str, CapabilityEntry]:
+    """用插件目录里的描述补全理解面（就地返回同一个 catalog）。
+
+    描述的事实源是插件目录（`plugin.protocol.json` / manifest），不是 DB 蓝图 —— 蓝图只有
+    能力与契约。目录里没有对应插件的条目（例如运行时内置能力）保持留空，**不编造描述**。
+    """
+    from dataclasses import replace
+
+    from packages.ai_planner.composer import discover_plugins
+
+    specs = discover_plugins(root)
+    by_capability = {spec.capability: spec for spec in specs.values()}
+    for capability, entry in list(catalog.items()):
+        spec = by_capability.get(capability)
+        if spec is None:
+            continue
+        # CapabilityEntry 是 frozen 的 —— 必须造新对象，不能就地改。
+        catalog[capability] = replace(
+            entry,
+            description=spec.description or entry.description,
+            domains=spec.domains or entry.domains,
+            lifecycle=spec.lifecycle or entry.lifecycle,
+        )
+    return catalog
+
+
 def _capability_order(
     catalog: dict[str, CapabilityEntry], prior: Mapping[str, float] | None
 ) -> list[str]:
@@ -203,12 +321,21 @@ def recall_snapshot(
         port_contracts if port_contracts is not None else PORT_CONTRACTS
     )
     lines = ["能力清单（只能使用这些 capability；端口的契约字段必须逐字段原样复制，不得省略、修改或新增）："]
+    hints = _port_hints(catalog)
     for capability in _capability_order(catalog, prior):
         entry = catalog[capability]
         lines.append(
             f"- {capability} (plugin={entry.plugin_id}, inputs={','.join(entry.inputs) or 'none'}, "
             f"outputs={','.join(entry.outputs) or 'none'})"
         )
+        # 理解面：告诉模型"这个能力是干什么的、属于哪个域、处于什么生命周期"。
+        # 留空则整行不输出 —— 既有调用方的提示词因此逐字节不变。
+        context = _entry_context(entry)
+        if context:
+            lines.append(f"  {context}")
+        hint = hints.get(capability)
+        if hint:
+            lines.append(f"  · {hint}")
         for direction, names in (("input", entry.inputs), ("output", entry.outputs)):
             for port_id in names:
                 if port_id not in registry:

@@ -1,0 +1,43 @@
+{
+  "schema_version": "1.0.0",
+  "reviewed_by": "declared input mappings (data -> port contract)",
+  "note": "输入适配层：把**外部数据文件**映射成插件端口契约要求的工件。为什么需要声明而不是每个数据集手写一个脚本：真实资料是客户自己的表（列名各异、口径各异），而契约是固定的；中间那层映射承载着**判断**——分组口径是什么、空白该填什么、哪一列是业务主键。这些判断若散落在一次性脚本里，就既不可复核也不可复用。每条映射都必须显式声明这三类语义，不做任何猜测。",
+  "mappings": {
+    "audit-ledger-csv-v1": {
+      "target_contract": "ledger-artifact-ref",
+      "description": "记账凭证明细 CSV → 日记账台账工件（插件 audit.ledger.validate 的输入）",
+      "source": {
+        "glob": "01_被审计单位提供资料/**/记账凭证*.csv",
+        "encoding": "utf-8-sig"
+      },
+      "partition_by": {
+        "_why": "插件的 out_of_period 按 date[:7] != period 判定，即一份台账 = 一个月份。外部数据是全年凭证，所以按月份切开、每月一份台账，而不是把一年塞进一个月。",
+        "field": "period",
+        "from": "记账日期",
+        "transform": "year-month"
+      },
+      "columns": {
+        "_why": "entry_id 取**凭证号**而不是行号：插件的借贷平衡规则按 entry_id 分组求和，一行一个 id 会让每一行各自'不平'，整批分录都会变成假候选。",
+        "entry_id": "凭证号",
+        "date": "记账日期",
+        "account_code": "科目编码",
+        "description": "摘要"
+      },
+      "amount_columns": {
+        "_why": "借方分录没有贷方金额是**正常记账**，不是缺金额。留空会被 missing_or_invalid_amount 判为缺金额，同样刷一半假候选，所以空白显式填 0.00。",
+        "debit_amount": "借方金额",
+        "credit_amount": "贷方金额",
+        "blank_value": "0.00"
+      },
+      "artifact": {
+        "media_type": "text/csv",
+        "classification": "audit_ledger",
+        "name": "ledger"
+      },
+      "row_filter": {
+        "_why": "日期残缺的行不猜——按分区字段取不到有效月份时跳过，并计入统计而不是静默丢弃。",
+        "require": "partition_field"
+      }
+    }
+  }
+}
