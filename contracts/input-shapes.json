@@ -1,7 +1,7 @@
 {
   "schema_version": "1.0.0",
   "reviewed_by": "declared entry-input shapes",
-  "note": "组网入口的**输入形状**声明。54 个外部入口里有 45 个要 JSON、5 个要 CSV、4 个其它，而每个 JSON 入口期望的结构各不相同（`policy-input` 要顶层 policies 数组，别的可能要 artifact 或分层命名空间）—— 这些形状此前只存在于各插件的 runtime.py 里，只能靠读代码或撞报错才知道。声明在这里之后，案例资料就能按声明映射成任意入口的工件，不必为每个入口手写一份脚本。",
+  "note": "组网入口的**输入形状**声明。外部入口（被消费但没有插件产出）共 64 个，其中 audit 域 54 个。每个入口期望的结构此前只存在于各插件的 runtime.py 里，只能靠读代码或撞报错才知道；声明在这里之后，案例资料就能按声明映射成入口的工件。\n\n**两类条目，别混淆**：`shapes` 是**已声明**的（可用，且每条都对着真实案例资料验证过）；`unmet` 是**尚未声明**的，`shape()` 对它们照旧报错 —— 它们不是『待补的空白声明』，而是**已探明的形状 + 明确的缺什么**。把 unmet 里的条目写成声明是错的：glob 匹配不到文件会直接报错，等于埋一颗雷。\n\nblocker 取值：source_gap＝形状已探明但案例资料没有对应源文件；shape_gap＝现行两种粒度或单 root_key 表达不了该形状；ops_input＝它是运营指令（谁读什么、检索什么词、进度填多少），不是『资料→工件』；contract_shape＝它本是网络内部的中间契约，正常由上游插件产出；not_a_payload＝端口只取工件引用、没有 payload 顶层键；mapped_elsewhere＝CSV 端口，由 input-mappings.json 管；out_of_domain＝非 audit 域（aiops/quant/knowledge），案例数据集不含其数据。",
   "shapes": {
     "policy-input": {
       "format": "json",
@@ -12,6 +12,480 @@
       },
       "_why": "audit.risk.macro-policy-risk-scan 的运行时读 payload['policies']（本轮是从报错 `policy-input requires policies array` 反查出来的），逐条按关键词命中出风险候选。item 的三个字段名来自该运行时的 handle()。",
       "_source": "case governance documents (章程/内控自评/董事会决议/会计政策…)"
+    },
+    "inventory-input": {
+      "format": "json",
+      "root_key": "items",
+      "items_from": {
+        "glob": "01_被审计单位提供资料/**/存货盘点表.csv",
+        "encoding": "utf-8-sig",
+        "columns": { "sku": "存货类别", "book_qty": "账面数量", "count_qty": "实盘数量" },
+        "numbers": {
+          "_why": "案例盘点表的数量列带千分位与单位（'1,286,400 件' / '6,200.0 吨'），float() 会直接拒绝。单位按类别而变（成品按件、原辅料按吨），所以后缀要把这张表里出现过的两个都列上；只剥声明里列出的分隔符与单位后缀，剥不干净就报错，而不是把 '差异数量=-54 件(待查)' 这种带注记的值悄悄读成 -54。",
+          "fields": ["book_qty", "count_qty"],
+          "separators": [","],
+          "suffixes": ["件", "吨"]
+        },
+        "skip_rows": {
+          "_why": "表里有些类别（在产品、周转材料等）根本没盘，数量列写的是 '—'。这种行整行跳过并计数（返回值里有 skipped），**不填 0** —— 按 0 算会让插件刷出满屏'账实不符'的假差异。",
+          "tokens": ["—"]
+        }
+      },
+      "_why": "audit.field.inventory-count 读 payload['items']，逐条 float(book_qty) 与 float(count_qty) 比差、非零即出差异项；字段名来自该运行时的 handle()。sku 取『存货类别』而不是编一个物料编码：案例的盘点表按类别盘，编一个假编码会伪造出可追溯性。",
+      "_source": "case inventory count sheet（仅实验组变体有 02_业务资料/存货盘点表.csv；对照与高难度变体没有该文件 → 会明确报「找不到源文件」，不会静默产空）"
+    },
+    "sampling-input": {
+      "format": "json",
+      "root_key": "population",
+      "items_from": {
+        "glob": "01_被审计单位提供资料/01_账务资料/科目余额表_*.csv",
+        "encoding": "utf-8-sig",
+        "columns": { "item_id": "科目编码", "amount": "期末余额(借正贷负)" },
+        "numbers": {
+          "_why": "对照与实验组变体的余额带千分位（'200,000.00'），高难度变体不带；剥千分位后两者口径一致。",
+          "fields": ["amount"],
+          "separators": [","],
+          "suffixes": []
+        }
+      },
+      "_why": "audit.plan.sampling-select 读 payload['population']，逐条 float(amount)：>= 大额阈值的全选，其余按金额降序取一半。总体取科目余额表（三个主体各一份，glob 一次收齐）。金额用『期末余额(借正贷负)』原值、不取绝对值 —— 表头已写明借正贷负，取绝对值会把贷方余额的负债科目当成同额资产科目参与大额判定。",
+      "_source": "case trial balance（三个变体都有，列名一致）"
+    },
+    "raw-biz-set": {
+      "format": "json",
+      "root_key": "rows",
+      "items_from": {
+        "glob": "01_被审计单位提供资料/02_业务资料/*.csv",
+        "encoding": "utf-8-sig",
+        "columns": "*"
+      },
+      "_why": "audit.foundation.biz-standardize 读 payload['rows']，逐行把字符串值 strip 后原样输出（standard_rows）。既然它要的就是**原始**业务行，列就必须原样保留：这里自己挑列等于替下游决定了哪些业务字段算数。columns:'*' 正是这个意思。",
+      "_source": "case business tables（02_业务资料 下全部 CSV，三个变体都有）"
+    },
+    "evidence-input": {
+      "format": "json",
+      "root_key": "evidence",
+      "items_from": {
+        "glob": "04_实质性程序/*.md",
+        "item": { "source_ref": "name" }
+      },
+      "_why": "audit.evidence.evidence-archive 优先读 payload['evidence']，逐条取 kind（缺省 'other'）与 source_ref（缺省 'field'）后归档。这里只声明 source_ref=文件名、**故意不声明 kind**：案例的底稿没有机器可读的类型标记，硬编一个 kind 就是编数据；走运行时自己的缺省 'other' 是诚实的（11 份底稿确实都是『其它载体』）。若你不认『底稿算证据载体』这个口径，删掉此条即可。",
+      "_source": "case substantive-procedure workpapers（仅对照变体有 04_实质性程序/，11 份）"
+    }
+  },
+  "unmet": {
+    "access-request": {
+      "root_key": null,
+      "item_fields": ["role", "action"],
+      "blocker": "ops_input",
+      "need": "授权请求是运营指令（角色+动作），案例资料里没有『谁请求了什么权限』的记录；且形状是顶层标量而非数组。",
+      "_why": "audit_foundation_permission_control/runtime.py:32-33 读 payload['role'] / payload['action']，都在顶层。"
+    },
+    "asset-input": {
+      "root_key": "assets",
+      "item_fields": ["asset_code", "book_loc", "found_loc"],
+      "blocker": "source_gap",
+      "need": "一份带『账面位置』与『实盘位置』两列的资产盘点表。案例的盘点表只有数量（账面数量/实盘数量）或状态（在用/在），没有位置列 —— 而该插件只在 book_loc != found_loc 时才出违规，缺列等于这个入口永远无话可说。",
+      "_why": "audit_field_asset_check/runtime.py:37 读 payload['assets']；:47-49 读 asset_code/book_loc/found_loc，:50 比较两者。"
+    },
+    "audit-evidence-index": {
+      "root_key": null,
+      "item_fields": [],
+      "blocker": "not_a_payload",
+      "need": "它是 investigation 端口的**可选附带文件**（envelope.investigation.evidence_index 给一个路径后直读 JSON），没有 payload 顶层键可声明。",
+      "_why": "audit_investigation_plan/runtime.py:15-16 走 _read_verified(...) 直接读文件。"
+    },
+    "audit-source-request": {
+      "root_key": "sources",
+      "item_fields": [],
+      "blocker": "shape_gap",
+      "need": "该项是**字符串**（数据源名字），不是对象；现行两种粒度都产『键←值』的对象，表达不了『项就是文件/目录名本身』。源其实在：06_其他资料/资料提供清单与交接记录.md 就是『序号/资料名称/所属文件夹/份数』逐行的表格 —— 所以这条卡的是粒度，不是资料（但还要能读 Markdown 表格，比另两条重）。",
+      "_why": "audit_foundation_multi_source_collect/runtime.py:32 读 payload['sources']；:38 逐项 isinstance(s, str) 过滤。"
+    },
+    "borrow-request": {
+      "root_key": "requests",
+      "item_fields": ["request_id", "workpaper_id", "id", "purpose", "requester"],
+      "blocker": "source_gap",
+      "need": "底稿借阅申请单。案例只给客户资料与底稿成品，没有『谁申请借阅哪份底稿、为什么』的单据。",
+      "_why": "audit_evidence_workpaper_borrow_approve/runtime.py:32-33 读 payload['artifact']['requests']（也兼容顶层 requests）；:41-46 读四个字段。"
+    },
+    "checkin-input": {
+      "root_key": "checkins",
+      "item_fields": ["ts"],
+      "blocker": "source_gap",
+      "need": "外勤打卡记录（时间戳序列）。",
+      "_why": "audit_field_site_checkin_track/runtime.py:36 读 payload['checkins']；:44 读 item['ts']；:57 另读顶层 payload['period']。"
+    },
+    "confirm-input": {
+      "root_key": "confirmations",
+      "item_fields": ["counterparty", "amount", "currency", "replied_at", "reply_status"],
+      "blocker": "source_gap",
+      "need": "函证与回函记录（对方名称/金额/币种/回函时间/回函状态）。",
+      "_why": "audit_field_confirm_letter/runtime.py:36 读 payload['confirmations']；:47-57 读五个字段。"
+    },
+    "daily-progress": {
+      "root_key": null,
+      "item_fields": ["budget_hours", "completed_hours", "date", "period"],
+      "blocker": "ops_input",
+      "need": "项目进度填报（预算工时/已用工时/填报日期）是运营数据，案例资料不含；且形状是顶层标量而非数组。",
+      "_why": "audit_field_progress_report/runtime.py:45-52 全部读顶层。"
+    },
+    "demand-input": {
+      "root_key": "demands",
+      "item_fields": ["demand_id", "dept", "title", "priority", "detail", "source_ref"],
+      "blocker": "source_gap",
+      "need": "审计需求征集表（审计组内部单据：哪个部门提了什么需求、优先级）。",
+      "_why": "audit_mandate_demand_collect/runtime.py:35 读 payload['demands']；:44-49 读六个字段。"
+    },
+    "encrypt-request": {
+      "root_key": null,
+      "item_fields": [],
+      "blocker": "not_a_payload",
+      "need": "端口只取工件引用（uri/sha256/size）后转发给加密，payload 读了不用 —— 没有形状可声明。",
+      "_why": "audit_foundation_data_encrypt/runtime.py:31 read_artifact_json(...) 的返回值未被引用；:34-37 只用 artifact 三元组。"
+    },
+    "extension-request": {
+      "root_key": null,
+      "item_fields": ["request_id", "days", "reason", "due_date", "applicant"],
+      "blocker": "ops_input",
+      "need": "审计延期申请单（审计组内部），且是顶层标量。",
+      "_why": "audit_field_extension_approve/runtime.py:38-51 全部读顶层。"
+    },
+    "factor-input": {
+      "root_key": null,
+      "item_fields": [],
+      "blocker": "out_of_domain",
+      "need": "quant 域：envelope.dataset 给一个原始数据集文件 + reference_time/factors/lookback 端口参数。案例数据集不含行情/因子数据。",
+      "_why": "quant_factor_compute/runtime.py:96-99 dataset=…; 直接读原文件，无 payload 顶层键。"
+    },
+    "field-finding-input": {
+      "root_key": "field_findings",
+      "item_fields": ["rule_id", "rule_key", "severity", "row_ref", "entry_id", "source_ref", "score", "note"],
+      "blocker": "source_gap",
+      "need": "外勤发现记录表（每条带规则、严重度、行引用）。",
+      "_why": "audit_field_suspicion_flag/runtime.py:35 读 payload['field_findings']；:44-50 读条目字段，:56-59 另读顶层 period/ledger_sha256/rule_pack_sha256。"
+    },
+    "finding-set": {
+      "root_key": "findings",
+      "item_fields": ["finding_id", "title", "severity", "claim_id", "claim", "reviewer_label", "evidence_refs", "confirmed_at"],
+      "blocker": "contract_shape",
+      "need": "已审定的结构化发现集（含 claim/reviewer_label/evidence_refs/confirmed_at 四个字段）。案例 07_审计成果 只有成品报告 markdown 与『审计发现与错报清单』叙述文本，没有这个结构化集。",
+      "_why": "audit_report_draft/runtime.py:148-156 校验 contract_id == 'finding-set' 后读 findings；:176-183 逐字段取，缺任一 key 会 KeyError 而非默认值。"
+    },
+    "fraud-input": {
+      "root_key": "fraud_scenarios",
+      "item_fields": ["scenario_id", "name", "scenario", "signals"],
+      "blocker": "source_gap",
+      "need": "舞弊场景清单（场景 id/名称/特征项）。案例资料里没有舞弊风险清单。",
+      "_why": "audit_risk_fraud_risk_match/runtime.py:37 读 body['fraud_scenarios']；:45-55 按 _SIGNALS 逐项命中。"
+    },
+    "history-issue-set": {
+      "root_key": "findings",
+      "item_fields": ["category", "severity"],
+      "blocker": "source_gap",
+      "need": "历史年度问题清单（问题分类+严重度）。案例是单期审计，没有往年问题库。",
+      "_why": "audit_govern_issue_trend_analysis/runtime.py:32 读 payload['findings']；:41-43 读 category/severity。"
+    },
+    "ic-flow": {
+      "root_key": "control_steps",
+      "item_fields": ["control", "has_control", "approval", "has_approval"],
+      "blocker": "source_gap",
+      "need": "内控流程的**步骤级**结构（每一步有无控制点、有无审批）。案例只有叙述性的『内部控制自我评价报告摘要.md』，没有步骤级表格；从散文里抽步骤就是让模型编流程。",
+      "_why": "audit_risk_internal_control_risk_map/runtime.py:36 读 body['control_steps']；:44-45 读 control/has_control 与 approval/has_approval。"
+    },
+    "industry-benchmark": {
+      "root_key": "industry_risks",
+      "item_fields": ["name", "title", "severity", "score"],
+      "blocker": "source_gap",
+      "need": "行业高发风险基准（外部行业数据，含风险名与评分）。",
+      "_why": "audit_risk_industry_risk_benchmark/runtime.py:36 读 body['industry_risks']；:47-51 读 severity/score/name。"
+    },
+    "inquiry-request": {
+      "root_key": "requests",
+      "item_fields": ["status", "dept", "data_type", "purpose", "requested_by"],
+      "blocker": "source_gap",
+      "need": "跨部门问询单（向哪个部门要什么数据、用途、当前状态）。",
+      "_why": "audit_field_cross_dept_inquiry/runtime.py:37 读 payload['requests']；:46-61 读五个字段。"
+    },
+    "interview-input": {
+      "root_key": "interviews",
+      "item_fields": ["date", "qa[].q", "qa[].a"],
+      "blocker": "shape_gap",
+      "need": "访谈记录；且每条访谈的 qa 是**嵌套数组**（[{q,a}]），现行两种粒度都只能产扁平项。",
+      "_why": "audit_field_interview_record/runtime.py:36 读 payload['interviews']；:46-57 遍历 interview['qa'] 读 q/a。"
+    },
+    "issue-trace-input": {
+      "root_key": "findings",
+      "item_fields": ["row_ref", "source_ref"],
+      "blocker": "contract_shape",
+      "need": "已审定的发现集（另需 master-source 的行以按 row_ref 反查责任部门）—— 上游契约形状，案例里没有。",
+      "_why": "audit_finding_responsible_party_find/runtime.py:51 读 issues['findings']；:60-61 读 row_ref/source_ref；:65-83 反查 master 行。"
+    },
+    "issue-verify-input": {
+      "root_key": "findings",
+      "item_fields": ["row_ref"],
+      "blocker": "contract_shape",
+      "need": "已审定的发现集，另需**已清洗的账务行**（clean-finance-set）按 row_ref 反查金额 —— 上游契约形状。",
+      "_why": "audit_finding_issue_amount_compute/runtime.py:52-53 读 clean['rows'] 与 issues['findings']；:59-66 按 row_ref 交叉取金额。"
+    },
+    "journal-artifact-ref": {
+      "root_key": null,
+      "item_fields": [],
+      "blocker": "mapped_elsewhere",
+      "need": "CSV 端口，走 input-mappings.json。当前案例只声明了记账凭证→ledger-artifact-ref 一份映射；日记账（银行存款日记账）若要接入，另写一份映射声明。另有端口参数 schema_mapping_version/period/zscore_threshold 必须在种子侧给出。",
+      "_why": "audit_journal_anomaly/runtime.py:129-160 直读 CSV（csv.DictReader），:146-158 校验端口级 schema_mapping_version/period。"
+    },
+    "ledger-artifact-ref": {
+      "root_key": null,
+      "item_fields": [],
+      "blocker": "mapped_elsewhere",
+      "need": "已有声明：contracts/input-mappings.json 的 audit-ledger-csv-v1（记账凭证 CSV → 六列台账，按月分区）。",
+      "_why": "audit_ledger_quality/runtime.py:129-160 直读 CSV。"
+    },
+    "lineage-query": {
+      "root_key": ["nodes", "edges"],
+      "item_fields": [],
+      "blocker": "shape_gap",
+      "need": "**双根**（nodes 与 edges 同在一个载荷里）。现行声明只支持单一 root_key。",
+      "_why": "audit_foundation_lineage_track/runtime.py:32-33 同时读 payload['nodes'] 与 payload['edges']。"
+    },
+    "log-event": {
+      "root_key": "events",
+      "item_fields": ["ts", "op", "node", "detail", "actor"],
+      "blocker": "source_gap",
+      "need": "系统操作日志。案例资料里没有操作日志。",
+      "_why": "audit_field_audit_log/runtime.py:35 读 payload['events']；:40-55 读 ts/op/node/detail/actor；:62-63 另读顶层 log_id/tenant_id。"
+    },
+    "mask-request": {
+      "root_key": "rows",
+      "item_fields": [],
+      "blocker": "source_gap",
+      "need": "列名能被脱敏词表命中的明细。该插件按**列名里的英文关键词**（name/id/phone/account/card）决定打码，而案例 CSV 的列名全是中文（凭证号/科目编码/客户…），喂进去不会有任何列被打码 —— 会返回『成功且已脱敏』但实际一个字段都没动。要么给英文列名的明细，要么把脱敏词表改成中文口径。",
+      "_why": "audit_foundation_data_mask/runtime.py:32 读 payload['rows']；:44-49 用 key.lower() 匹配英文关键词。"
+    },
+    "master-source": {
+      "root_key": "mappings",
+      "item_fields": ["source_code", "target_code"],
+      "blocker": "source_gap",
+      "need": "一份『源编码→目标编码』的主数据对照表（科目级或主体级）。案例的科目余额表只有『主体代码(P/S1/S2)→主体名称』且逐行重复（每行都是一样的对照），没有主数据映射表。",
+      "_why": "audit_foundation_master_mapping/runtime.py:32 读 payload['mappings']；:35 要求 source_code 与 target_code 同时非空。"
+    },
+    "meeting-audio": {
+      "root_key": "segments",
+      "item_fields": ["speaker", "text", "ts"],
+      "blocker": "source_gap",
+      "need": "会议纪要的分段转写（说话人/文本/时间戳）。案例无音频、无转写；03_治理资料里的『董事会决议汇编』是决议文本，不是会议转写。",
+      "_why": "audit_field_meeting_minutes/runtime.py:36 读 payload['segments']；:45-49 读 speaker/text/ts；:58-59 另读顶层 meeting_id。"
+    },
+    "metadata-query": {
+      "root_key": "dictionary",
+      "item_fields": ["column"],
+      "blocker": "shape_gap",
+      "need": "粒度是**每列一项**（一列一条字典项）。资料来源其实在（案例 CSV 的表头就是数据字典的原料），缺的是这个粒度 —— 现行两种是每文件一项、每行一项。",
+      "_why": "audit_foundation_metadata_manage/runtime.py:32 读 payload['dictionary']；:35 只保留带 column 的项。"
+    },
+    "metric-input": {
+      "root_key": null,
+      "item_fields": [],
+      "blocker": "mapped_elsewhere",
+      "need": "端口直读 CSV（entry_id/debit_amount/credit_amount/date 等列），归 input-mappings.json 管。",
+      "_why": "audit_foundation_metric_compute/runtime.py:58-91 直读 CSV 并按列解析。"
+    },
+    "nlp-input": {
+      "root_key": null,
+      "item_fields": ["mode", "text", "keywords", "summary_sentences", "template"],
+      "blocker": "shape_gap",
+      "need": "顶层是**对象**（标量 + 关键词数组混在一起），且 text 要整篇文档正文。",
+      "_why": "audit_foundation_nlp_process/runtime.py:50-70 全部读顶层（payload['mode']/['text']/['keywords']/…）。"
+    },
+    "notice-accept": {
+      "root_key": "units",
+      "item_fields": ["unit_name", "submitted_at", "materials"],
+      "blocker": "source_gap",
+      "need": "被审计单位材料报送回执（哪个单位、何时、报了哪些材料）。案例的『资料提供清单与交接记录.md』是叙述文本，没有按单位×材料的结构。",
+      "_why": "audit_mandate_material_submit/runtime.py:35 读 body['units']；:43-50 读 materials/unit_name/submitted_at；:57-58 另读顶层 project/tenant_id。"
+    },
+    "ocr-image": {
+      "root_key": null,
+      "item_fields": [],
+      "blocker": "not_a_payload",
+      "need": "端口直读图片/文本文件取文本，没有 payload 顶层键；案例资料里也没有扫描件可喂。",
+      "_why": "audit_foundation_ocr_extract/runtime.py:37 起 read_verified_artifact 后直接解码文本。"
+    },
+    "photo-input": {
+      "root_key": "photos",
+      "item_fields": ["photo_id", "row_ref", "ts", "media_type", "sha256", "note"],
+      "blocker": "source_gap",
+      "need": "现场照片证据（含 sha256 与对应行引用）。案例无图片资料。",
+      "_why": "audit_field_evidence_photo/runtime.py:35 读 payload['photos']；:46-51 读六个字段；:58-59 另读顶层 evidence_bundle_id/period。"
+    },
+    "plan-change": {
+      "root_key": "changes",
+      "item_fields": ["description", "change", "author"],
+      "blocker": "source_gap",
+      "need": "审计计划变更记录（谁在何时把方案改了什么）。案例不含审计计划过程资料。",
+      "_why": "audit_plan_plan_version_control/runtime.py:34 读 body['changes']；:44-45 读 description/change 与 author；:38 另读 plan_key。"
+    },
+    "process-input": {
+      "root_key": "process_steps",
+      "item_fields": ["owner", "approval", "has_approval"],
+      "blocker": "source_gap",
+      "need": "业务流程的**步骤级**结构（每步负责人、是否需要审批）。同 ic-flow：案例只有叙述性流程说明，没有步骤级表格。",
+      "_why": "audit_risk_process_gap_detect/runtime.py:35 读 body['process_steps']；:43-44 读 owner 与 approval/has_approval。"
+    },
+    "project-flow-input": {
+      "root_key": "checks",
+      "item_fields": ["status", "total_checks", "passed_checks"],
+      "blocker": "shape_gap",
+      "need": "数组（checks）与标量（total_checks/passed_checks）**同处一根**。",
+      "_why": "audit_govern_project_quality_score/runtime.py:36-38 同时读 artifact_body['checks']、['total_checks']、['passed_checks']。"
+    },
+    "project-review-input": {
+      "root_key": "review_notes",
+      "item_fields": [],
+      "blocker": "shape_gap",
+      "need": "该项是**字符串**（一条复盘要点），不是对象；同 audit-source-request，现行两种粒度都产对象。",
+      "_why": "audit_govern_method_distill/runtime.py:36 读 body['review_notes']；:40-42 逐项 isinstance(note, str)。"
+    },
+    "quality-input": {
+      "root_key": null,
+      "item_fields": [],
+      "blocker": "mapped_elsewhere",
+      "need": "端口直读 CSV 并按行预算校验，归 input-mappings.json 管。",
+      "_why": "audit_foundation_quality_check/runtime.py:84-104 直读内容并按行处理。"
+    },
+    "raw-finance-set": {
+      "root_key": null,
+      "item_fields": [],
+      "blocker": "mapped_elsewhere",
+      "need": "端口直读 CSV（date/debit_amount/credit_amount 等列），归 input-mappings.json 管。",
+      "_why": "audit_foundation_finance_clean/runtime.py:58-97 直读 CSV 并按列清洗。"
+    },
+    "released-graph-ref": {
+      "root_key": null,
+      "item_fields": [],
+      "blocker": "not_a_payload",
+      "need": "graph_ref 端口，端口只给工件引用；没有 JSON payload 顶层键可声明。",
+      "_why": "audit_evidence_lineage/runtime.py:183-189 取 envelope['lineage'] 后读 graph_ref['artifact']。"
+    },
+    "remedy-evidence": {
+      "root_key": "evidence",
+      "item_fields": ["valid"],
+      "blocker": "source_gap",
+      "need": "整改证据（每条带有效/无效判定）。案例是首次审计，没有整改与验证记录。",
+      "_why": "audit_remedy_remedy_effect_verify/runtime.py:40 读 payload['evidence']（兼容 body['artifact']['evidence']）；:42 要求 it['valid'] is True。"
+    },
+    "report-draft-input": {
+      "root_key": "sections",
+      "item_fields": ["summary", "issues", "findings"],
+      "blocker": "contract_shape",
+      "need": "报告草稿的**结构化分节**（sections + summary + issues/findings）。案例 07_审计成果 只有成品报告 markdown，没有分节结构。",
+      "_why": "audit_report_report_data_check/runtime.py:38-56 读 payload['sections']/['summary']/['issues']/['findings']。"
+    },
+    "rule-input": {
+      "root_key": ["rules", "rows"],
+      "item_fields": ["rule_id", "operator", "field", "value", "rule_key"],
+      "blocker": "shape_gap",
+      "need": "**双根**：规则表（rules）与被检查的行（rows）同在一个载荷里；且规则表案例里没有源。",
+      "_why": "audit_foundation_rule_engine/runtime.py:53-54 同时读 payload['rules'] 与 payload['rows']；:65-68 读规则四字段。"
+    },
+    "scheme-request": {
+      "root_key": "areas",
+      "item_fields": ["scope_areas"],
+      "blocker": "source_gap",
+      "need": "审计方案的范围领域清单。案例不含审计方案文档。",
+      "_why": "audit_plan_program_template_match/runtime.py:42-44 读 body['areas']，回退读 body['scope_areas']。"
+    },
+    "search-query": {
+      "root_key": null,
+      "item_fields": ["query", "documents[].doc_id", "documents[].score"],
+      "blocker": "shape_gap",
+      "need": "标量根（检索词 query）+ 文档数组同处一根；且『检索什么词』是运营指令，不是资料。",
+      "_why": "audit_foundation_fulltext_search/runtime.py:32-33 读顶层 query 与 payload['documents']。"
+    },
+    "tag-query": {
+      "root_key": null,
+      "item_fields": ["object_type", "dimensions", "rows"],
+      "blocker": "shape_gap",
+      "need": "标量（object_type/dimensions）+ 数组（rows）混在一个对象里。",
+      "_why": "audit_foundation_tag_manage/runtime.py:63-67 读顶层 object_type/dimensions 与 rows。"
+    },
+    "viz-input": {
+      "root_key": "points",
+      "item_fields": ["series_id"],
+      "blocker": "shape_gap",
+      "need": "数组（points）+ 标量（series_id）同处一根。",
+      "_why": "audit_foundation_viz_analysis/runtime.py:32-35 读 series['points'] 与 series['series_id']。"
+    },
+    "workflow-request": {
+      "root_key": "nodes",
+      "item_fields": ["state"],
+      "blocker": "shape_gap",
+      "need": "工作流节点及其状态；案例没有流程实例数据，形状上也需要逐节点声明。",
+      "_why": "audit_foundation_workflow_engine/runtime.py:32-35 读 payload['nodes'] 并统计 n['state'] == 'approved'。"
+    },
+    "alert-event": {
+      "root_key": null,
+      "item_fields": ["event_id", "fingerprint", "occurred_at", "severity", "summary", "source", "grouping_keys", "labels"],
+      "blocker": "out_of_domain",
+      "need": "aiops 域：端口是**事件**形状（不是工件载荷），字段即事件流字段。案例数据集不含产线监控事件。",
+      "_why": "aiops_alert_triage/runtime.py:119-162 直接读事件字段，并校验 contract_id == 'alert-event'。"
+    },
+    "alert-event-set": {
+      "root_key": null,
+      "item_fields": [],
+      "blocker": "out_of_domain",
+      "need": "aiops 域：端口给工件引用 + window_minutes/max_candidates/grouping_keys 端口参数，运行时按事件集解析。案例不含监控事件集。",
+      "_why": "aiops_alert_correlation/runtime.py:98-101 取 alerts 端口的 artifact；:25-31 读端口参数。"
+    },
+    "artifact-ref": {
+      "root_key": null,
+      "item_fields": [],
+      "blocker": "not_a_payload",
+      "need": "knowledge 域：端口只取工件引用后直读原文件（文档正文）。案例资料里的 markdown 可以当这个源，但『形状』不在 JSON 载荷上 —— 它是 input-mapping 那类（文件→工件引用）。",
+      "_why": "knowledge_document_ingestion/runtime.py:60-80 取 envelope['artifact'] 后直读文本。"
+    },
+    "baseline-champion-report": {
+      "root_key": null,
+      "item_fields": [],
+      "blocker": "out_of_domain",
+      "need": "quant 域：envelope.experiment.baseline 给一个文件路径（可选基线报告），运行时直读。案例不含 quant 基线报告。",
+      "_why": "quant_experiment_evaluator/runtime.py:15-16 _read_verified(experiment_input.get('baseline'))。"
+    },
+    "baseline-metric-series": {
+      "root_key": ["metric", "points"],
+      "item_fields": [],
+      "blocker": "out_of_domain",
+      "need": "aiops 域：metric-series 工件（metric + points 时间序列）。案例不含监控指标序列。",
+      "_why": "aiops_recovery_verifier/runtime.py:101-119 校验 series['metric'] 与 series['points']。"
+    },
+    "graph-snapshot": {
+      "root_key": null,
+      "item_fields": [],
+      "blocker": "not_a_payload",
+      "need": "knowledge 域：端口是 graph_ref，端口只给工件引用；运行时读的是另一个候选集端口的 entity_candidates/relation_candidates。案例不含图谱快照。",
+      "_why": "knowledge_graph_proposal_builder/runtime.py:121 取 proposal 端口；:27-28 读候选集的 entity_candidates/relation_candidates。"
+    },
+    "market-snapshot-ref": {
+      "root_key": null,
+      "item_fields": [],
+      "blocker": "out_of_domain",
+      "need": "quant 域：端口给工件引用 + reference_time/max_freshness_hours/point_in_time 端口参数。案例不含行情快照。",
+      "_why": "quant_snapshot_guard/runtime.py:8-34 取 snapshot 端口并直读原文件。"
+    },
+    "observed-metric-series": {
+      "root_key": ["metric", "points"],
+      "item_fields": [],
+      "blocker": "out_of_domain",
+      "need": "aiops 域：metric-series 工件（metric + points）。案例不含监控指标序列。",
+      "_why": "aiops_recovery_verifier/runtime.py:142 起 _read_verified(recovery_input.get('baseline')/'observed')。"
+    },
+    "rca-input": {
+      "root_key": null,
+      "item_fields": [],
+      "blocker": "out_of_domain",
+      "need": "aiops 域：端口给工件引用 + max_candidates/max_hops 端口参数，运行时按根因候选集解析。案例不含故障与根因数据。",
+      "_why": "aiops_rca_ranker/runtime.py:164 取 rca 端口；:14-17 读端口参数。"
     }
   }
 }
