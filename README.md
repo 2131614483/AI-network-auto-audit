@@ -5,8 +5,7 @@
 > 把"AI 会胡说、会越权、结果不可信"三个致命问题，收敛成一条**可授权、可追溯、可复算、可回滚**的执行链路：AI 只负责"提出方案"，确定性编译器与策略网关负责"审核方案"，隔离沙箱负责"执行方案"，证据链负责"证明结果"。
 > 但是2026年9月24日的https://github.com/affaan-m/ECC
 > 项目是一个很好的方向：
-> <img width="2560" height="1268" alt="image" src="https://github.com/user-attachments/assets/ccc5f2d4-4cc3-4bac-abb8-c9fc9e8c0a6f" />
-
+> 
 
 ![Python 3.11+](https://img.shields.io/badge/Python-3.11%2B-3776AB?logo=python&logoColor=white)
 ![PostgreSQL 16](https://img.shields.io/badge/PostgreSQL-16-4169E1?logo=postgresql&logoColor=white)
@@ -179,12 +178,12 @@ flowchart LR
 | --- | ----------------------------------- | ---------------------------------------------------- |
 | 0   | 现场合成 9 行日记账 CSV，刻意植入 6 项质量瑕疵        | sha256 `1f8e4bfd…`，548 B                             |
 | 1   | 能力召回（DB 蓝图 ∩ 运行时已验证能力）              | 272 项噪声 → 业务域过滤后 **4 项**可见能力                         |
-| 2   | 云端 AI 组网（召回 → 出草稿 → 闸门 → 编译 → 失败回灌） | 经 3 轮修订后 `status=draft_ready`                 |
+| 2   | 云端 AI 组网（召回 → 出草稿 → 闸门 → 编译 → 失败回灌） | 经 3 轮修订后 `status=draft_ready`                        |
 | 3   | 策略裁决 + 落库（幂等键 / 短事务 / outbox）       | 产出 `run_id / trace_id / execution_hash`              |
 | 4   | 端口绑定子进程隔离执行                         | 每个 attempt 有 `input_bindings / output_refs` + sha256 |
 | 5–6 | 画布投影 + 证据包导出                        | `evidence/{run_id}.zip`，离线复验 `ok=True`               |
 | 7   | 同一 `trace_id` 三层下钻                  | 数据 / 日志 / 代码三层均可追溯                                   |
-| 8   | 业务结论                                | 9 行检出 6 项疑点；回测 `recommendation = hold`            |
+| 8   | 业务结论                                | 9 行检出 6 项疑点；回测 `recommendation = hold`               |
 
 > 最硬的一条证据：不依赖项目任何代码，独立实现 6 条质检规则重算，得到与插件产物**逐条一致**的 6 项候选。
 
@@ -306,13 +305,13 @@ flowchart LR
 
 ## 技术栈
 
-| 层次    | 选型                                                                             |
-| ----- | ------------------------------------------------------------------------------ |
-| 数据库   | PostgreSQL 16 + `pgcrypto / pg_trgm / ltree / vector`，行级安全多租户             |
-| 后端    | Python 3.11 + FastAPI + psycopg + Alembic（0068 个迁移版本）          |
+| 层次    | 选型                                                                   |
+| ----- | -------------------------------------------------------------------- |
+| 数据库   | PostgreSQL 16 + `pgcrypto / pg_trgm / ltree / vector`，行级安全多租户        |
+| 后端    | Python 3.11 + FastAPI + psycopg + Alembic（0068 个迁移版本）                |
 | 桌面端   | Electron 37 + React 19 + Ant Design 5 + Zustand + ECharts + Three.js |
-| AI 通道 | 统一网关（Ollama 本地 / OpenAI 兼容云端双协议）                                    |
-| 质量工具  | ruff + mypy strict + pytest（2230+ 用例）+ vitest + tsc strict                |
+| AI 通道 | 统一网关（Ollama 本地 / OpenAI 兼容云端双协议）                                     |
+| 质量工具  | ruff + mypy strict + pytest（2230+ 用例）+ vitest + tsc strict           |
 
 ## 快速开始
 
@@ -322,7 +321,7 @@ flowchart LR
 | ---------- | ------------------ |
 | Windows    | 10/11              |
 | Python     | **3.11+**（推荐 3.12） |
-| PostgreSQL | **16+**（实测 16.13） |
+| PostgreSQL | **16+**（实测 16.13）  |
 | pgvector   | 与 PG 版本匹配          |
 | Node.js    | 20+                |
 
