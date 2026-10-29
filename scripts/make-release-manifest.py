@@ -43,10 +43,11 @@ def sha256_of(path: Path) -> str:
 def git(*args: str) -> str:
     try:
         result = subprocess.run(
-            ["git", *args],
+            ["git", "-c", "i18n.logOutputEncoding=UTF-8", *args],
             cwd=PROJECT_ROOT,
             capture_output=True,
             text=True,
+            encoding="utf-8",
             check=True,
         )
         return result.stdout.strip()

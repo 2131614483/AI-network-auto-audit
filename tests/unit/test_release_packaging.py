@@ -53,3 +53,16 @@ def test_offline_guard_loads_from_a_windows_path_with_spaces(packaging, tmp_path
                            env={**os.environ, "NODE_OPTIONS": packaging.offline_node_options(guard)},
                            capture_output=True, text=True, timeout=15)
     assert probe.returncode == 0, probe.stderr
+
+
+def test_manifest_reads_a_real_chinese_git_subject_as_utf8(tmp_path, monkeypatch):
+    script = Path(__file__).resolve().parents[2] / "scripts/make-release-manifest.py"
+    spec = importlib.util.spec_from_file_location("release_manifest", script)
+    manifest = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(manifest)
+    subprocess.run(["git", "init", str(tmp_path)], check=True, capture_output=True)
+    subject = "测试发布：中文提交不依赖系统代码页"
+    subprocess.run(["git", "-c", "user.name=Synthetic", "-c", "user.email=synthetic@example.invalid",
+                    "commit", "--allow-empty", "-m", subject], cwd=tmp_path, check=True, capture_output=True)
+    monkeypatch.setattr(manifest, "PROJECT_ROOT", tmp_path)
+    assert manifest.git("log", "-1", "--pretty=%s") == subject

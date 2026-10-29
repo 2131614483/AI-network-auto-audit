@@ -14,6 +14,8 @@ Windows 安装器交互、异机安装、完整旧工作区权限与工件恢复
 
 实际构建进一步复现并修复 Windows `NODE_OPTIONS` 路径转义问题；新增真实 Node 子进程回归，打包测试 4 passed（全量回归之后新增）。
 
+发行清单的中文 Git 提交解码问题同样通过真实临时 Git 仓库复现后修复；分发工具测试增至 5 passed。
+
 ## 2026-10-29 · Gitee 调试交付与安装治理修复
 
 用户指定先在 Gitee 调试，GitHub 正式发行后置。产品、契约、测试和部署说明纳入独立 `codex/gitee-deployment-debug` 分支；保留 Gitee 已有 MIT LICENSE，README 和早期发布稿的许可/发行状态已校正。入口见 [Gitee 调试部署](gitee-debug-20261029.md)。
