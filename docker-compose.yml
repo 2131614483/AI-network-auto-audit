@@ -1,7 +1,13 @@
-# 一条命令起全栈（服务器部署 / 网页入口）：
+# 起全栈（服务器部署 / 网页入口）：
 #
-#     docker compose up -d
+#     docker compose up -d postgres                     # 1. 只起数据库
+#     docker compose --profile migrate run --rm migrate # 2. 显式迁移 + 初始数据
+#     docker compose up -d                              # 3. 校验版本后起 api + worker
 #     # 打开 http://127.0.0.1:8010/
+#
+# 第 2 步不能省，也不能塞进 `up`：项目约束要求数据库迁移必须显式执行，
+# 不允许应用启动时自动升级（见 AGENTS.md）。`init` 只做只读版本检查，
+# 结构落后时拒绝放行 api/worker，并把该跑的命令打印出来。
 #
 # 桌面安装版不需要本文件——它自带便携 Python 与 PostgreSQL，双击即用。
 # 本文件只是环境适配器，不得成为应用代码的依赖。
@@ -9,8 +15,9 @@
 # 服务分工：
 #   postgres  带 pgvector 的 PostgreSQL 16。扩展与角色由 init-docker-postgres.sql
 #             在首次建库时创建（迁移 0001 需要超级用户建 vector 扩展）。
-#   init      一次性任务：迁移 → 示例数据 → 插件注册 → 图谱索引，成功后退出。
+#   init      一次性任务：只读检查迁移版本，成功后退出，不做任何写操作。
 #             api / worker 用 `service_completed_successfully` 等它，避免抢跑。
+#   migrate   一次性任务，仅 migrate profile：迁移 → 示例数据 → 插件注册 → 图谱索引。
 #   api       控制平面 HTTP 服务，同时把 web/ 挂在 /（网页入口）。
 #   worker    后台执行器：心跳、组网触发、DAG 重试。
 
@@ -18,9 +25,8 @@ name: audit-network
 
 x-app: &app
   image: audit-network:local
-  build:
-    context: .
-    dockerfile: Dockerfile
+  # build 只写在 api 一个服务上。三个服务共用同一镜像标签时，若各自声明 build，
+  # BuildKit 会并行导出同一个标签并报 `image "audit-network:local": already exists`。
   environment: &app-env
     DATABASE_URL: postgresql://audit_app:admin@postgres:5432/audit_network
     AUDIT_NETWORK_DATA_DIR: /data
@@ -36,9 +42,9 @@ services:
       # 对外部署务必改掉，并同时改 api/worker 的 DATABASE_URL。
       POSTGRES_PASSWORD: admin
     ports:
-      # 映射到 54329 而不是 5432，避免与本机原生 PostgreSQL 抢端口。
-      # 走容器时宿主机连库要用 54329；容器之间走服务名 postgres:5432。
-      - "54329:5432"
+      # 只发布到回环地址：库口令是开发默认值，不能顺带暴露到局域网。
+      # 需要远程访问时请走带认证的反向代理，不要直接改回 0.0.0.0。
+      - "127.0.0.1:54329:5432"
     volumes:
       - audit_network_pgdata:/var/lib/postgresql/data
       # 让容器自己建好扩展、角色和测试库。缺了这一步，仅启动容器是**不能迁移**的：
@@ -66,28 +72,58 @@ services:
     command:
       - |
         set -eu
-        echo "[init] 1/4 数据库迁移"
+        echo "[init] 只读检查：数据库结构版本"
+        DATABASE_URL="$$MIGRATOR_URL" python scripts/check-db-revision.py
+    restart: "no"
+
+  migrate:
+    <<: *app
+    container_name: audit-network-migrate
+    # 不参与普通 `up`：迁移只能显式触发。
+    profiles: ["migrate"]
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      <<: *app-env
+      MIGRATOR_URL: postgresql://audit_migrator:admin@postgres:5432/audit_network
+    entrypoint: ["/bin/sh", "-c"]
+    command:
+      - |
+        set -eu
+        echo "[migrate] 1/4 数据库迁移"
         DATABASE_URL="$$MIGRATOR_URL" python -m alembic upgrade head
-        echo "[init] 2/4 示例数据"
+        echo "[migrate] 2/4 示例数据"
         python -c "import os; from packages.demo.seed import seed_local_demo; print(seed_local_demo(os.environ['DATABASE_URL']))"
-        echo "[init] 3/4 插件注册"
+        echo "[migrate] 3/4 插件注册"
         python -m packages.plugin_runtime.registration --database-url "$$DATABASE_URL" --tenant-slug local-dev
-        echo "[init] 4/4 能力图谱索引"
+        echo "[migrate] 4/4 能力图谱索引"
         python scripts/index-plugin-graph.py --database-url "$$DATABASE_URL" \
           --domain audit --domain aiops --domain quant --domain knowledge
-        echo "[init] 完成"
+        echo "[migrate] 完成"
     restart: "no"
 
   api:
     <<: *app
     container_name: audit-network-api
+    build:
+      context: .
+      dockerfile: Dockerfile
     depends_on:
       postgres:
         condition: service_healthy
       init:
         condition: service_completed_successfully
     ports:
-      - "8010:8010"
+      - "127.0.0.1:8010:8010"
+    # 探针只挂在 api 上。worker 用同一镜像但没有 HTTP 端点，继承镜像级探针
+    # 会让它永远 unhealthy。
+    healthcheck:
+      test: ["CMD", "python", "-c", "import sys, urllib.request; sys.exit(0 if urllib.request.urlopen('http://127.0.0.1:8010/health', timeout=4).status == 200 else 1)"]
+      interval: 15s
+      timeout: 5s
+      start_period: 60s
+      retries: 5
     volumes:
       - audit_network_data:/data
     restart: unless-stopped

@@ -15,12 +15,11 @@ ENV PYTHONDONTWRITEBYTECODE=1 \
 
 WORKDIR /app
 
-# 依赖清单只保留 pyproject.toml 这一份：在这里解析后安装，
-# 避免镜像里再写一份 requirements.txt 与主清单漂移。
-COPY pyproject.toml ./
-RUN python -c "import tomllib; deps = tomllib.load(open('pyproject.toml', 'rb'))['project']['dependencies']; open('/tmp/requirements.txt', 'w').write('\n'.join(deps))" \
-    && pip install --no-cache-dir -r /tmp/requirements.txt \
-    && rm -f /tmp/requirements.txt
+# 依赖只从 requirements.txt 安装。它是本仓库验证过的锁定组合（sqlalchemy==2.0.52 等）。
+# 从 pyproject.toml 的宽松范围现场解析会漂移：sqlalchemy 2.1 把 `postgresql://` 的默认
+# 驱动改成 psycopg3，而运行期只装 psycopg2，迁移会以 ModuleNotFoundError: psycopg 失败。
+COPY requirements.txt ./
+RUN pip install --no-cache-dir -r requirements.txt
 
 # 非 root 运行。插件子进程走 `sys.executable -I`，用的就是镜像里的解释器，
 # 因此不需要额外的运行时装在别处。
@@ -44,9 +43,8 @@ ENV AUDIT_NETWORK_DATA_DIR=/data
 
 EXPOSE 8010
 
-# 容器内探测用轻量端点：/api/v1/health/ready 会带数据库与 worker 检查，
-# 首次启动 worker 尚未注册心跳时会返回 degraded，用来判断"进程活着"不合适。
-HEALTHCHECK --interval=15s --timeout=5s --start-period=60s --retries=5 \
-    CMD python -c "import sys, urllib.request; sys.exit(0 if urllib.request.urlopen('http://127.0.0.1:8010/health', timeout=4).status == 200 else 1)"
+# 探针不写在镜像里：api 与 worker 共用本镜像，但只有 api 提供 HTTP 端点。
+# 镜像级 HEALTHCHECK 会被 worker 继承，让它永远 unhealthy。
+# api 的探针见 docker-compose.yml；worker 的存活由容器状态与心跳表反映。
 
 CMD ["python", "-m", "uvicorn", "apps.api.main:app", "--host", "0.0.0.0", "--port", "8010"]

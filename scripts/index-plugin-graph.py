@@ -27,6 +27,8 @@ import sys
 import time
 from pathlib import Path
 
+import psycopg2
+
 # 以 `python scripts/index-plugin-graph.py` 直接运行时，sys.path[0] 是 scripts/ 而不是
 # 仓库根，`packages` 就导入不到。开发机上之所以没暴露，是因为仓库里的 .venv 做过
 # editable 安装（根目录有 audit_network.egg-info）；按 requirements.txt 新装的干净环境
@@ -45,6 +47,37 @@ DEFAULT_DATABASE_URL = os.getenv(
     "DATABASE_URL", "postgresql://audit_app:admin@localhost:5432/audit_network"
 )
 DEFAULT_DOMAINS = ("audit",)
+
+_TOTALS_SQL = """
+SELECT
+  (SELECT count(*) FROM graph.nodes WHERE node_type = 'capability'),
+  (SELECT count(*) FROM graph.nodes),
+  (SELECT count(*) FROM topology.plugin_blueprints)
+"""
+
+
+def _print_totals(database_url: str, tenant_slug: str, failures: int) -> None:
+    """读回该租户库内的全量规模，供与部署文档的期望数字核对。
+
+    按域的行只说明这一遍写了什么；文档里的「插件 / 图谱节点 / 蓝图」是数据库
+    的状态，而且这几张表都是 RLS 强制隔离，必须设好 ``app.tenant_id`` 再数。
+    """
+    note = f"  （{failures} 个域失败，其余仍已写库）" if failures else ""
+    try:
+        with psycopg2.connect(database_url) as connection, connection.cursor() as cur:
+            cur.execute("SELECT id FROM iam.tenants WHERE slug=%s", (tenant_slug,))
+            row = cur.fetchone()
+            if row is None:
+                print(f"  库内合计     跳过：租户 {tenant_slug} 不存在", file=sys.stderr)
+                return
+            cur.execute("SELECT set_config('app.tenant_id', %s, false)", (str(row[0]),))
+            cur.fetchone()
+            cur.execute(_TOTALS_SQL)
+            plugins, nodes, blueprints = cur.fetchone()
+    except psycopg2.Error as exc:
+        print(f"  库内合计     跳过：{type(exc).__name__}: {exc}", file=sys.stderr)
+        return
+    print(f"  库内合计     插件 {plugins}  图谱节点 {nodes}  蓝图 {blueprints}{note}")
 
 
 def _print_result(graph: IndexResult, blueprints: BlueprintIndexResult, elapsed: float) -> None:
@@ -77,6 +110,7 @@ def main() -> int:
     print(f"目标库 {args.database_url}")
     print(f"域 {', '.join(domains)} / 租户 {args.tenant_slug}")
     failures = 0
+    succeeded = 0
     for domain in domains:
         started = time.monotonic()
         try:
@@ -88,11 +122,15 @@ def main() -> int:
                 args.database_url, domain,
                 tenant_slug=args.tenant_slug, batch_size=args.batch_size,
             )
-        except (ValueError, OSError) as exc:
+        except (ValueError, OSError, psycopg2.Error) as exc:
             print(f"  {domain:10s} 失败：{type(exc).__name__}: {exc}", file=sys.stderr)
             failures += 1
             continue
         _print_result(graph, blueprints, time.monotonic() - started)
+        succeeded += 1
+
+    if succeeded:
+        _print_totals(args.database_url, args.tenant_slug, failures)
     return 1 if failures else 0
 
 

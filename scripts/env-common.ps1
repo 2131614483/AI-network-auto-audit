@@ -179,8 +179,15 @@ function Invoke-NativeCommand {
   )
 
   $previous = $ErrorActionPreference
+  # Windows PostgreSQL builds localize messages with the server's lc_messages
+  # ("Chinese (Simplified)_China.936" on a zh-CN install) and emit them in that
+  # codepage, while a UTF-8 console decodes them as garbage -- the refused-
+  # connection reason became "��������". Probe output here is ASCII or those
+  # localized messages, so the system ANSI codepage decodes both correctly.
+  $previousEncoding = [Console]::OutputEncoding
   $ErrorActionPreference = "Continue"
   try {
+    [Console]::OutputEncoding = [System.Text.Encoding]::Default
     $output = & $File @Arguments 2>&1
     $exitCode = $LASTEXITCODE
     if ($null -eq $exitCode) { $exitCode = 0 }
@@ -191,6 +198,7 @@ function Invoke-NativeCommand {
   } catch {
     return @{ Output = @("$($_.Exception.Message)"); ExitCode = 1 }
   } finally {
+    [Console]::OutputEncoding = $previousEncoding
     $ErrorActionPreference = $previous
   }
 }

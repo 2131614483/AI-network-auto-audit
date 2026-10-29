@@ -31,7 +31,7 @@
 
 源码桌面使用 `npm ci --prefix desktop` 和 `npm --prefix desktop run dev`；仅浏览器简化入口可不装 Node。仓库根目录的 `.env`、`.data` 和任何真实业务资料不应重新上传 GitHub。
 
-Docker 文件属于可选环境适配器，尚未在本机验证；在线公网部署尚无完整登录到租户的可信映射。不要将当前 Docker/简化网页描述为与桌面等价的正式在线版。
+Docker 文件属于可选环境适配器：已在 Windows Docker Desktop 上跑通「构建 → `init` 只读版本门禁 → `--profile migrate` 显式迁移 → api/worker 健康检查 → 14 项冒烟全过」。Linux 服务器与桌面端尚未验收，是否作为正式入口由发布方确认。在线公网部署尚无完整登录到租户的可信映射；不要将当前 Docker/简化网页描述为与桌面等价的正式在线版。
 
 ## 发行验证范围
 

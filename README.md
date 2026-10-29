@@ -334,18 +334,20 @@ flowchart LR
 - 默认 Debug 用于当前 AI 会话参与的独立合成测试库；普通安装工作区使用自己配置的外接 API。两种模式均保留，不自动切换模型。
 - 当前多源协作规划仍在 Phase 10 验收过程中，实际云端模型和真实业务资料效果不在合成测试结论内。发行与验收范围见 [下载部署说明](docs/download-and-deploy.md)。
 
-### 方式二：Docker（待验收的可选适配器）
+### 方式二：Docker（已通过冒烟，Linux 与桌面端未覆盖）
 
-本轮 Gitee 调试使用原生 PostgreSQL。Docker 定义尚未完成独立验证，现有 init 依赖仍需改为显式维护流程，当前不作为正式部署入口。
+`init` 已改为只读版本门禁，迁移只能显式执行：`docker compose up -d postgres` → `docker compose --profile migrate run --rm migrate` → `docker compose up -d`。在本机 Windows Docker Desktop 上已实测整条链路：镜像构建、门禁放行（库落后时以 exit 1 拒绝并打印该跑的命令）、显式迁移与四域索引（库内合计 123 / 152 / 103）、api 与 worker 启动，`/health` 与 `/api/v1/health/ready` 均返回 200，14 项冒烟全部通过（含「未审批写入被拒绝并落审批记录」）。尚未在 Linux 服务器与桌面端验收，是否作为正式入口由发布方确认。
+其中的 `postgres` 服务可以单独用：它就是 PostgreSQL 16 + pgvector，适合本机装不上 pgvector 时给源码部署提供数据库——`docker compose up -d postgres`，连接端口 54329（见 `docker-compose.yml`）。
 浏览器仍提供简化工作台；完整组网画布与计划视图在桌面版，公网身份与租户映射另行建设。
 
 ### 方式三：从源码运行
 
 需要自备 Python 3.11+、PostgreSQL 16 + pgvector，桌面界面还需要 Node.js 20+。
+Windows 装了多个 Python 时用 `py -3.12 -m venv .venv` 显式指定，别让默认的 `python` 选错版本（`py -0p` 可列出已装版本）。
 完整步骤（含建库、迁移、初始数据、验证）见 **[从源码安装](docs/install-from-source.md)**，简述：
 
 ```bash
-python -m venv .venv
+py -3.12 -m venv .venv                                      # macOS/Linux: python3.12 -m venv .venv
 .venv\Scripts\python -m pip install -r requirements.txt      # macOS/Linux: .venv/bin/python
 # 建库 + 4 个扩展 → alembic upgrade head → 种子/插件注册/图谱索引
 .venv\Scripts\python -m uvicorn apps.api.main:app --host 127.0.0.1 --port 8010

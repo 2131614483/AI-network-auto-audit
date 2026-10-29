@@ -16,7 +16,9 @@ dependencies = [
   "pydantic>=2.8",
   "python-multipart>=0.0.9,<1",
   "uvicorn[standard]>=0.30,<1",
-  "sqlalchemy>=2.0",
+  # 上界不能放开：SQLAlchemy 2.1 起 `postgresql://` 默认解析到 psycopg3，
+  # 而本项目运行期只带 psycopg2，迁移与 API 会直接连不上库。
+  "sqlalchemy>=2.0,<2.1",
 ]
 
 [project.optional-dependencies]

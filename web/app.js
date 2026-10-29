@@ -7,12 +7,23 @@ function setNotice(message, error = false) {
 function setConnection(message, mode = "") {
   const node = $(".connection"); node.className = `connection ${mode}`; $("#connection-status").textContent = message;
 }
+function describeError(payload, status) {
+  const detail = payload?.detail;
+  if (typeof detail === "string") return detail;
+  if (Array.isArray(detail)) return detail.map((item) => item?.msg || JSON.stringify(item)).join("；");
+  if (detail && typeof detail === "object") return detail.message || JSON.stringify(detail);
+  return `请求失败 (${status})`;
+}
 async function request(path, options = {}) {
   const headers = new Headers(options.headers || {});
   if (state.tenantId) headers.set("X-Tenant-Id", state.tenantId);
   const response = await fetch(path, { ...options, headers });
   const payload = await response.json().catch(() => ({}));
-  if (!response.ok) throw new Error(payload.detail?.message || payload.detail || `请求失败 (${response.status})`);
+  if (!response.ok) {
+    const error = new Error(describeError(payload, response.status));
+    error.status = response.status; error.payload = payload;
+    throw error;
+  }
   return payload;
 }
 function renderOverview() {
@@ -66,10 +77,21 @@ $("#knowledge-upload").addEventListener("submit", async (event) => {
   files.forEach((file) => { body.append("files", file, file.name); body.append("relative_paths", file.webkitRelativePath || file.name); });
   output.textContent = `正在登记 ${files.length} 个文件…`;
   try {
-    const result = await request("/api/v1/knowledge/upload", { method: "POST", body });
+    const result = await request("/api/v1/knowledge/upload", {
+      method: "POST", body, headers: { "Idempotency-Key": crypto.randomUUID() },
+    });
     output.textContent = JSON.stringify(result, null, 2);
     setNotice(`知识任务已创建：${result.accepted} 个已解析，${result.deferred} 个等待本地提取器。`);
-  } catch (error) { output.textContent = `导入失败：${error instanceof Error ? error.message : "未知错误"}`; }
+  } catch (error) {
+    const decision = error?.payload?.detail?.decision;
+    if (decision?.decision === "REQUIRE_APPROVAL") {
+      output.textContent = `写入需要审批，已生成审批记录 ${decision.tool_call_id}；在审批中心批准后重新提交。`;
+      setNotice("该写入需要审批，审批记录已落库。");
+      loadApprovals().catch(() => {});
+    } else {
+      output.textContent = `导入失败：${error instanceof Error ? error.message : "未知错误"}`;
+    }
+  }
 });
 $("#policy-form").addEventListener("submit", async (event) => { event.preventDefault(); if (!state.tenantId) { setNotice("请先加载工作区。", true); return; } const form = new FormData(event.currentTarget); const output = $("#simulation-result"); try { const argumentsValue = JSON.parse(String(form.get("arguments"))); const result = await request("/api/v1/policy/simulate", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ capability: form.get("capability"), risk_class: form.get("risk_class"), side_effects: form.get("side_effects"), arguments: argumentsValue }) }); output.textContent = JSON.stringify(result, null, 2); } catch (error) { output.textContent = `模拟失败：${error instanceof Error ? error.message : "未知错误"}`; } });
 loadWorkspace();

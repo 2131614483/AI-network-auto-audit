@@ -20,12 +20,14 @@
 ## 2. 安装依赖
 
 ```bash
-python -m venv .venv
+# Windows 若装了多个 Python，先确认版本：py -0p；再用 py -3.12 显式创建，
+# 默认的 `python` 可能是 3.10 之类不满足要求的版本。
+py -3.12 -m venv .venv
 
 # Windows
 .venv\Scripts\python -m pip install -r requirements.txt
 # macOS / Linux
-.venv/bin/python -m pip install -r requirements.txt
+python3.12 -m venv .venv && .venv/bin/python -m pip install -r requirements.txt
 ```
 
 只有 9 个包，见 `requirements.txt`（由 `pyproject.toml` 派生，锁定到实测版本）。
@@ -95,7 +97,8 @@ $env:DATABASE_URL="postgresql://audit_app:YOUR_APP_PASSWORD@localhost:5432/audit
 **5.3 不能跳过**：只做迁移和种子，组网会"选不中插件"——图谱负责召回，蓝图负责规划，
 缺一半链路就是断的。
 
-期望规模：插件 123、图谱节点 152、蓝图 103。
+期望规模：插件 123、图谱节点 152、蓝图 103。脚本最后一行「库内合计」打印的就是这三个数
+（按租户读回库内全量，不是本次按域写入的累加）；对不上说明某一步没跑完，或跑到了别的库。
 
 ## 6. 启动
 

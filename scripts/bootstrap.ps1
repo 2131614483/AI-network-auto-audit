@@ -267,9 +267,13 @@ if ($psql) {
           Add-ManualFix @"
 'vector' (pgvector) is missing.  The official EDB Windows installer does NOT
            include it, which is the single most common blocker on a fresh machine.
-             * easiest: use the pgvector Docker image instead --
+             * easiest: start only the PostgreSQL 16 + pgvector container --
                  docker compose up -d postgres
                  then set DATABASE_URL to port 54329 (see docker-compose.yml);
+                 this uses the `postgres` service as your local database only --
+                 the full compose stack starts, passes health checks and the
+                 smoke suite, but Linux and the desktop console are not covered,
+                 so it is not yet declared the official entry (see README "方式二");
              * or add pgvector to your native install by copying
                vector.dll / vector.control / vector--*.sql into the
                PostgreSQL lib\ and share\extension\ directories.
