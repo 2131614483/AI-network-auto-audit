@@ -1,7 +1,7 @@
 {
   "name": "audit-network-desktop",
   "private": true,
-  "version": "0.1.0-debug.20261029.2",
+  "version": "0.1.0-debug.20261029.3",
   "description": "Audit Network 的本地桌面控制台",
   "main": "./out/main/index.js",
   "scripts": {

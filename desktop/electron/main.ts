@@ -1120,8 +1120,10 @@ app.whenReady().then(async () => {
   installMainConsoleCapture();
   installLogFileWatcher();
   emitLog("system", "info", "==== Audit Network 统一日志会话启动 ====");
+  let startupSplash: Splash | undefined;
   if (app.isPackaged) {
     const splash = createSplashWindow();
+    startupSplash = splash;
     try {
       const backend = await startPackagedBackend({
         resourcesPath: process.resourcesPath,
@@ -1161,9 +1163,11 @@ app.whenReady().then(async () => {
       app.quit();
       return;
     }
-    splash.close();
   }
   createWindow(await loadSavedZoom());
+  // Closing the last BrowserWindow triggers app.quit(). Keep the splash
+  // alive across the asynchronous profile read until the workspace exists.
+  startupSplash?.close();
   if (process.env.AUDIT_NETWORK_OPEN_BRAIN === "1") createAuditBrainWindow();
   if (process.env.AUDIT_NETWORK_OPEN_NEBULA === "1") createKnowledgeNebulaWindow();
   if (process.env.AUDIT_NETWORK_OPEN_FLOW === "1") createFlowCanvasWindow();
