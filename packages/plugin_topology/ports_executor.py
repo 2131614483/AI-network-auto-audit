@@ -555,8 +555,10 @@ class PortBoundExecutor:
                 capability=node.capability,
                 payload=payload,
             )
-            node_policy = PolicyEngine(allow=[node.capability])
-            result = self.runtime.invoke(invocation, node_policy)
+            # A compiled capability is not an authorization.  Preserve the
+            # caller's deny/freeze/approval rules and re-evaluate each invocation
+            # in the runtime, including repeated instances of the same plugin.
+            result = self.runtime.invoke(invocation, self.policy)
         except Exception as exc:  # fail-closed: a failed node produces no outputs
             return self._failed_entry(node, exc, bindings, started), {}
 

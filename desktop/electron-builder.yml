@@ -1,0 +1,41 @@
+appId: com.auditnetwork.desktop
+productName: AuditNetwork
+copyright: Copyright © 2026 Audit Network
+
+directories:
+  output: dist
+  buildResources: build
+
+files:
+  - out/**
+  - package.json
+
+# 便携运行时与业务代码由 scripts/package-windows.py 组装到 build/stage，
+# 这里只负责把它们放进 resources 目录，不打进 asar。
+extraResources:
+  - from: ../build/stage/runtime
+    to: runtime
+  - from: ../build/stage/app
+    to: app
+
+asar: true
+compression: maximum
+
+win:
+  target:
+    - target: nsis
+      arch:
+        - x64
+  artifactName: AuditNetwork-${version}-win-x64-Setup.exe
+
+nsis:
+  oneClick: false
+  perMachine: false
+  allowElevation: false
+  allowToChangeInstallationDirectory: true
+  createDesktopShortcut: true
+  createStartMenuShortcut: true
+  shortcutName: 审计智能中枢
+  uninstallDisplayName: 审计智能中枢
+  # 卸载不删用户工作区：审计资料默认保留。
+  deleteAppDataOnUninstall: false

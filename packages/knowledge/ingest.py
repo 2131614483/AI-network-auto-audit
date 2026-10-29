@@ -19,6 +19,7 @@ from packages.knowledge.local_extractors import (
     MINERU_SUFFIXES,
     deferred_extraction_for,
 )
+from packages.paths import data_root
 
 SUPPORTED_SUFFIXES = {".md", ".markdown", ".txt", ".csv", ".docx", ".xlsx"} | MINERU_SUFFIXES | MEDIA_SUFFIXES
 
@@ -380,4 +381,13 @@ def ingest_directory(
 
 
 def default_drop_root() -> Path:
-    return Path(os.getenv("KNOWLEDGE_DROP_ROOT", ".data/drop"))
+    """Where browser uploads are staged before ingestion.
+
+    Must be absolute: in a packaged install the process working directory is
+    the read-only resource folder, so a relative ``.data/drop`` resolved
+    against it is unwritable and knowledge ingestion fails.
+    """
+    override = os.getenv("KNOWLEDGE_DROP_ROOT", "").strip()
+    if override:
+        return Path(override)
+    return data_root() / "drop"

@@ -22,12 +22,13 @@ from pathlib import Path
 
 from packages.ops.alerts import AlertSink, LogSink, dispatch_findings
 from packages.ops.checks import Finding, collect_findings, worker_liveness
+from packages.paths import data_root
 
 logger = logging.getLogger("audit.ops.supervisor")
 
 DEFAULT_API_URL = "http://127.0.0.1:8010"
 DEFAULT_DATABASE_URL = "postgresql://audit_app:admin@localhost:5432/audit_network"
-EXPECTED_MIGRATION_HEAD = "0068_connectivity_read_policy"
+EXPECTED_MIGRATION_HEAD = "0069_collaborative_planning"
 
 
 def check_api(api_url: str, *, timeout: float = 3.0) -> tuple[bool, str]:
@@ -157,7 +158,7 @@ def _main(argv: Sequence[str] | None = None) -> int:
 
     logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(name)s: %(message)s")
     project_root = Path(__file__).resolve().parents[2]
-    data_dir = project_root / ".data"
+    data_dir = data_root()
 
     if args.loop:
         watchdog_loop(

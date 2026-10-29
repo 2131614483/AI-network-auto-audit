@@ -1,9 +1,9 @@
 # -*- coding: utf-8 -*-
 """Build the audit_network showcase video v3: real screenshots + Ken Burns + Chinese subtitles + TTS voiceover."""
+import json
 import os
 import subprocess
 import sys
-import json
 
 ROOT = r"D:\pythonpro\audit_network"
 SHOTS = os.path.join(ROOT, "docs", "screenshots")
@@ -111,7 +111,6 @@ def build_shot(img_rel, subtitle, voice_path, idx):
 
 def build_card(kind, main, voice_path, idx, main_size=64, sub_size=36):
     dur = probe_duration(voice_path) + TAIL_SILENCE
-    frames = int(dur * FPS)
     main_txt = write_textfile(f"card_main_{idx}.txt", main)
     sub_txt = write_textfile(f"card_sub_{idx}.txt", CARD_SUBTITLES[kind])
     out = os.path.join(SEG, f"seg_{idx:02d}.mp4")

@@ -90,6 +90,50 @@ def test_settings_read_requires_tenant_header(client: TestClient) -> None:
     assert client.get(SETTINGS).status_code == 422
 
 
+def test_installed_ai_settings_api_uses_user_data_not_resources(client, monkeypatch, tmp_path):
+    resources = tmp_path / "read-only-app"
+    resources.mkdir()
+    workspace = tmp_path / "user-data"
+    monkeypatch.setattr(ai_env_store, "project_root", lambda: resources)
+    monkeypatch.setenv("AUDIT_NETWORK_DATA_DIR", str(workspace))
+    monkeypatch.setenv("AI_PLANNING_MODE", "debug")
+    with psycopg2.connect(DB) as connection:
+        tenant_id = _tenant(connection)
+    headers = {"X-Tenant-Id": str(tenant_id), "Idempotency-Key": "installed-mode-settings"}
+    saved = client.put(SETTINGS, headers=headers, json={"planning_mode": "external"})
+    assert saved.status_code == 200, saved.text
+    assert saved.json()["env_file"] == str(workspace / ".env")
+    assert saved.json()["planning"]["mode"] == "external"
+    assert "AI_PLANNING_MODE=external" in (workspace / ".env").read_text(encoding="utf-8")
+    loaded = client.get(SETTINGS, headers={"X-Tenant-Id": str(tenant_id)})
+    assert loaded.json()["env_file"] == str(workspace / ".env")
+    assert loaded.json()["planning"]["mode"] == "external"
+    assert not (resources / ".env").exists()
+
+
+def test_planning_mode_is_saved_without_overwriting_api_configuration(client, isolated_env_file, monkeypatch):
+    monkeypatch.setenv("AI_PLANNING_MODE", "debug")
+    monkeypatch.setenv("AI_MODEL", "keep-configured-model")
+    with psycopg2.connect(DB) as connection:
+        tenant_id = _tenant(connection)
+    response = client.put(SETTINGS, headers={"X-Tenant-Id": str(tenant_id), "Idempotency-Key": "planning-mode-external"},
+                          json={"planning_mode": "external"})
+    assert response.status_code == 200
+    assert response.json()["planning"]["mode"] == "external"
+    assert response.json()["chat"]["model"] == "keep-configured-model"
+    assert "AI_PLANNING_MODE=external" in isolated_env_file.read_text(encoding="utf-8")
+    assert client.get(SETTINGS, headers={"X-Tenant-Id": str(tenant_id)}).json()["planning"]["mode"] == "external"
+
+
+def test_unknown_planning_mode_is_rejected_before_file_write(client, isolated_env_file):
+    with psycopg2.connect(DB) as connection:
+        tenant_id = _tenant(connection)
+    response = client.put(SETTINGS, headers={"X-Tenant-Id": str(tenant_id), "Idempotency-Key": "planning-mode-invalid"},
+                          json={"planning_mode": "auto"})
+    assert response.status_code == 422
+    assert not isolated_env_file.exists()
+
+
 def test_settings_read_is_fail_closed_without_the_capability(client: TestClient) -> None:
     """Deactivating the baseline set denies the read, then restores it."""
     with psycopg2.connect(DB) as connection:

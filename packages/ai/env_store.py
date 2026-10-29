@@ -25,6 +25,8 @@ import re
 import shutil
 from pathlib import Path
 
+from packages.paths import DATA_DIR_ENV, data_root
+
 _KEY_PATTERN = re.compile(r"^[A-Za-z_][A-Za-z0-9_]*$")
 _ASSIGNMENT = re.compile(r"^\s*(?:export\s+)?([A-Za-z_][A-Za-z0-9_]*)\s*=(.*)$")
 _UNSAFE_CHARS = re.compile(r"[\s#\"'$`\\]")
@@ -44,7 +46,9 @@ def project_root() -> Path:
 
 
 def env_file_path() -> Path:
-    """The project ``.env`` this module owns."""
+    """Use the writable workspace in installs, the project root in development."""
+    if os.getenv(DATA_DIR_ENV, "").strip():
+        return data_root() / ".env"
     return project_root() / ".env"
 
 

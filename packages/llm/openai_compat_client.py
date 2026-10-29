@@ -18,7 +18,7 @@ import json
 import os
 from typing import Any
 from urllib.error import HTTPError, URLError
-from urllib.request import ProxyHandler, Request, build_opener
+from urllib.request import HTTPRedirectHandler, ProxyHandler, Request, build_opener
 
 from packages.ai.errors import AIClientError
 
@@ -45,6 +45,11 @@ class OpenAICompatChatError(AIClientError):
     Derives from :class:`~packages.ai.errors.AIClientError` so callers can catch
     the unified type; the historical name stays valid for existing call sites.
     """
+
+
+class _NoRedirect(HTTPRedirectHandler):
+    def redirect_request(self, req: Any, fp: Any, code: int, msg: str, headers: Any, newurl: str) -> None:
+        return None  # A model endpoint cannot move credentials or evidence elsewhere.
 
 
 def _resolve_api_key(explicit: str | None) -> str:
@@ -78,6 +83,7 @@ class OpenAICompatChat:
         reasoning_effort: str | None = DEFAULT_REASONING_EFFORT,
         proxy: str | None = None,
         user_agent: str | None = None,
+        direct: bool = False,
     ) -> None:
         self.base_url = (base_url or DEFAULT_BASE_URL).rstrip("/")
         if self.base_url.endswith("/chat/completions"):
@@ -95,11 +101,12 @@ class OpenAICompatChat:
                 self.max_tokens = LONGCAT_FREE_MAX_TOKENS
         self.reasoning_effort = reasoning_effort
         self.user_agent = user_agent or DEFAULT_USER_AGENT
-        self.proxy = proxy or os.getenv("OPENAI_COMPAT_PROXY", "").strip() or None
+        self.proxy = None if direct else proxy or os.getenv("OPENAI_COMPAT_PROXY", "").strip() or None
         self._opener = (
-            build_opener(ProxyHandler({"http": self.proxy, "https": self.proxy}))
+            build_opener(ProxyHandler({}), _NoRedirect()) if direct else
+            build_opener(ProxyHandler({"http": self.proxy, "https": self.proxy}), _NoRedirect())
             if self.proxy
-            else build_opener()
+            else build_opener(_NoRedirect())
         )
 
     def _post(self, payload: dict[str, Any]) -> str:
@@ -116,11 +123,14 @@ class OpenAICompatChat:
         )
         try:
             with self._opener.open(request, timeout=self.timeout) as response:
-                body = json.loads(response.read().decode("utf-8"))
+                raw = response.read(1_048_577)
+                if len(raw) > 1_048_576:
+                    raise OpenAICompatChatError("model response exceeds byte budget")
+                body = json.loads(raw.decode("utf-8"))
         except HTTPError as exc:
             detail = ""
             try:
-                detail = exc.read().decode("utf-8", errors="replace")[:300]
+                detail = exc.read(1024).decode("utf-8", errors="replace")[:300]
             except OSError:
                 pass
             raise OpenAICompatChatError(

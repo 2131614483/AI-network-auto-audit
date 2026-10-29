@@ -12,9 +12,11 @@ from dataclasses import dataclass
 from typing import Any
 from uuid import UUID, uuid4
 
-from psycopg2.extras import Json
+from psycopg2.extras import Json, register_uuid
 
 from packages.policy.engine import PolicyResult
+
+register_uuid()  # type: ignore[no-untyped-call]  # CLI callers need the same adapter as the API.
 
 DECISION_NAMES = {
     "allow": "ALLOW",

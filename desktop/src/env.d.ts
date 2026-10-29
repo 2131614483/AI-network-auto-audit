@@ -1,5 +1,6 @@
 interface Window {
   auditControl: {
+    enableCollaborativePlanning(): Promise<{ enabled: boolean; detail: string }>;
     request(request: {
       path: string;
       method?: "GET" | "POST" | "PUT";

@@ -1,5 +1,7 @@
 # 审计 AIOps 智能中枢
 
+**当前先在 Gitee 调试部署，GitHub 正式发行后置。** 使用 `codex/gitee-deployment-debug` 分支，按 [Gitee 调试部署步骤](docs/gitee-debug-20261029.md) 下载源码、安装运行依赖并验证。调试分支不等于正式安装版已验收。
+
 > **一个可靠中枢 + 专业领域脑 + 一个确定性风控内核 + 一套可插拔的插件网络**
 >
 > 把"AI 会胡说、会越权、结果不可信"三个致命问题，收敛成一条**可授权、可追溯、可复算、可回滚**的执行链路：AI 只负责"提出方案"，确定性编译器与策略网关负责"审核方案"，隔离沙箱负责"执行方案"，证据链负责"证明结果"。
@@ -315,30 +317,74 @@ flowchart LR
 
 ## 快速开始
 
-### 前置要求
+### 方式一：Windows 安装包（后续发行目标）
 
-| 组件         | 版本                 |
-| ---------- | ------------------ |
-| Windows    | 10/11              |
-| Python     | **3.11+**（推荐 3.12） |
-| PostgreSQL | **16+**（实测 16.13）  |
-| pgvector   | 与 PG 版本匹配          |
-| Node.js    | 20+                |
+完成安装验收后，计划在 [Releases](https://github.com/2131614483/AI-network-auto-audit/releases) 提供
+`AuditNetwork-<版本>-win-x64-Setup.exe`。当前请先使用上方的 Gitee 调试源码入口；历史本地包不代表正式附件已发布。
 
-### 一键自举
+安装包自带 CPython 3.12、PostgreSQL 16.13 + pgvector 0.8.0 与全部业务代码，
+**不需要**另装 Python、Node.js、PostgreSQL 或 Docker。首次启动由用户明确选择“初始化工作区”，
+经维护策略裁决和审计后建库、迁移并写入合成示例。普通启动只检查版本；升级需要明确确认并先备份验证。
+
+- 数据落在 `%APPDATA%\audit-network-desktop\data`，**卸载不会删除**（审计资料不随卸载丢失）。
+- 默认端口（API 8010 / 数据库 54329）被占用时会自动改用下一个可用端口。
+- 未做代码签名，SmartScreen 可能提示"未知发布者"，选择"更多信息 → 仍要运行"。
+- 校验下载完整性：`certutil -hashfile <安装包> SHA256`，与 Release 页面的 `SHA256SUMS.txt` 比对。
+- 配置模型后，在“组网规划”选择“配置完成，启用本机规划”，核对模型和接口地址后确认。只授权当前配置用于静态规划与评估，不授权执行方案。
+- 默认 Debug 用于当前 AI 会话参与的独立合成测试库；普通安装工作区使用自己配置的外接 API。两种模式均保留，不自动切换模型。
+- 当前多源协作规划仍在 Phase 10 验收过程中，实际云端模型和真实业务资料效果不在合成测试结论内。发行与验收范围见 [下载部署说明](docs/download-and-deploy.md)。
+
+### 方式二：Docker（服务器 / 网页入口）
+
+```bash
+docker compose up -d          # 起 postgres + 迁移 + api + worker
+# 打开 http://127.0.0.1:8010/
+```
+
+一条命令完成：建带 pgvector 的库 → 跑迁移 → 写示例数据 → 注册插件 → 建图谱索引 → 起服务。
+网页入口提供运行总览、知识库导入、插件工作台、审批中心与策略模拟；
+完整的组网画布与计划视图在桌面版里。
+
+### 方式三：从源码运行
+
+需要自备 Python 3.11+、PostgreSQL 16 + pgvector，桌面界面还需要 Node.js 20+。
+完整步骤（含建库、迁移、初始数据、验证）见 **[从源码安装](docs/install-from-source.md)**，简述：
+
+```bash
+python -m venv .venv
+.venv\Scripts\python -m pip install -r requirements.txt      # macOS/Linux: .venv/bin/python
+# 建库 + 4 个扩展 → alembic upgrade head → 种子/插件注册/图谱索引
+.venv\Scripts\python -m uvicorn apps.api.main:app --host 127.0.0.1 --port 8010
+.venv\Scripts\python -m apps.worker.local                    # 另开终端
+```
+
+开发一键自举与桌面启动：
 
 ```powershell
 powershell -ExecutionPolicy Bypass -File scripts\bootstrap.ps1 -Check   # 只体检
 powershell -ExecutionPolicy Bypass -File scripts\bootstrap.ps1          # 完整自举
 ```
 
-### 启动桌面中枢
-
 ```bat
 启动审计智能中枢.bat
 ```
 
 API 文档：`http://127.0.0.1:8010/docs`。
+
+### 发布前冒烟
+
+改动过发行相关代码后，用打包产物跑一遍真实链路（不只是"能启动"）：
+
+```bash
+# 用安装包里的随包运行时验证：initdb → 扩展 → 迁移 → 种子 → API/worker → 冒烟
+bash build/verify-packaged.sh
+
+# 或用任意已启动的控制平面
+python scripts/smoke-api.py --base-url http://127.0.0.1:8010 --tenant-id <租户 UUID>
+```
+
+冒烟覆盖 14 项：健康检查、迁移版本、UI 契约、集群/蓝图/图谱读取、策略判定，
+以及"未审批写入必须被网关拒绝且审批记录落库"这条安全边界。
 
 ## 测试与质量门
 
@@ -368,7 +414,14 @@ npm run --prefix desktop typecheck
 
 ## 相关文档
 
+- [docs/install-from-source.md](docs/install-from-source.md)：从零安装（建库、迁移、初始数据、验证）
+- [docs/windows-package.md](docs/windows-package.md)：安装包构建与实测记录、本机环境坑
+- [docs/release-notes-v0.1.0.md](docs/release-notes-v0.1.0.md)：v0.1.0 发布说明与已知限制
 - [docs/status.md](docs/status.md)：当前阶段真实状态与已验证结论
 - [docs/showcase-video/storyboard-v2.md](docs/showcase-video/storyboard-v2.md)：展示视频分镜文案
 - [docs/进化闭环断点-根因与修复方案-20260923.md](docs/进化闭环断点-根因与修复方案-20260923.md)：七环全通的根因与修复
 - [docs/项目说明-审计智能中枢.md](docs/项目说明-审计智能中枢.md)：完整设计文档
+
+## 许可
+
+许可见 [LICENSE](LICENSE)，沿用 Gitee 已有的 MIT 文件。第三方运行时和依赖保留各自许可声明。

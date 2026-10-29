@@ -19,6 +19,11 @@ from packages.plugin_topology.ports_executor import register_adapter
 _ADAPTER_ID = "candidates-to-backtest"
 
 _CANDIDATES_CONTRACT = "audit-quality-candidates"
+_BACKTEST_CONTRACT = "backtest-report"
+
+# Reviewed conversion pairs used by the collaborative planner's static gate.
+# Runtime-only adapter registration does not imply arbitrary schema conversion.
+PORT_ADAPTER_CONTRACTS = {_ADAPTER_ID: (_CANDIDATES_CONTRACT, _BACKTEST_CONTRACT)}
 
 #: The adapter returns a simulated backtest (``simulated_only: True`` in the
 #: metrics), so there is no real strategy file or market snapshot to hash.
@@ -57,7 +62,7 @@ def _candidates_to_backtest(producer_path: Path, node_dir: Path, tenant_id: UUID
     if rule_pack_sha:
         source_ref = f"{source_ref}:rules:{rule_pack_sha[:16]}"
     report = {
-        "contract_id": "backtest-report",
+        "contract_id": _BACKTEST_CONTRACT,
         "contract_version": "1.0.0",
         "backtest_id": "bt-" + ledger_sha[:8],
         "strategy_key": "cw3-strategy",

@@ -25,9 +25,21 @@ import argparse
 import os
 import sys
 import time
+from pathlib import Path
 
-from packages.graph.plugin_indexer import IndexResult, index_domain
-from packages.plugin_topology.blueprint_indexer import BlueprintIndexResult, index_blueprints
+# 以 `python scripts/index-plugin-graph.py` 直接运行时，sys.path[0] 是 scripts/ 而不是
+# 仓库根，`packages` 就导入不到。开发机上之所以没暴露，是因为仓库里的 .venv 做过
+# editable 安装（根目录有 audit_network.egg-info）；按 requirements.txt 新装的干净环境
+# 没有这层，会直接 ModuleNotFoundError。这里显式补上仓库根，让脚本不依赖安装方式。
+_PROJECT_ROOT = Path(__file__).resolve().parents[1]
+if str(_PROJECT_ROOT) not in sys.path:
+    sys.path.insert(0, str(_PROJECT_ROOT))
+
+from packages.graph.plugin_indexer import IndexResult, index_domain  # noqa: E402
+from packages.plugin_topology.blueprint_indexer import (  # noqa: E402
+    BlueprintIndexResult,
+    index_blueprints,
+)
 
 DEFAULT_DATABASE_URL = os.getenv(
     "DATABASE_URL", "postgresql://audit_app:admin@localhost:5432/audit_network"

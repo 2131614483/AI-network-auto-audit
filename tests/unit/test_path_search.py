@@ -14,7 +14,10 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 
+import pytest
+
 from packages.ai_planner.path_search import build_dag, plan_from_dag, startable
+from packages.plugin_topology.compiler import CompileError
 
 SCHEMA = "artifact-ref.schema.json"
 
@@ -115,3 +118,59 @@ def test_multi_node_plan_must_have_edges() -> None:
     plan = plan_from_dag(_catalog(), build_dag(_catalog(), {"raw"}), {"raw"}, plan_key="t2")
     if len(plan.nodes) > 1:
         assert len(plan.edges) > 0
+
+
+@pytest.mark.parametrize("max_nodes", [1, 2, 4, 5])
+def test_dag_limits_nodes_within_one_expansion_pass(max_nodes: int) -> None:
+    specs = {
+        f"x.n{i}": _Spec(f"x.n{i}", f"n{i}.cap", (_in("raw"),), (_out(f"out-{i}"),))
+        for i in range(5)
+    }
+    dag = build_dag(specs, {"raw"}, max_nodes=max_nodes)
+
+    assert dag["plugins"] == [f"x.n{i}" for i in range(max_nodes)]
+    assert {edge["target"] for edge in dag["edges"]} == set(dag["plugins"])
+    assert set(dag["covered"]) == {"raw", *(f"out-{i}" for i in range(max_nodes))}
+
+
+def test_dag_limits_nodes_across_expansion_passes() -> None:
+    # The entry sorts last, so its dependants can only join on the second pass.
+    specs = {
+        "x.a": _Spec("x.a", "a.cap", (_in("mid"),), (_out("next"),)),
+        "x.b": _Spec("x.b", "b.cap", (_in("next"),), (_out("final"),)),
+        "x.z": _Spec("x.z", "z.cap", (_in("raw"),), (_out("mid"),)),
+    }
+    dag = build_dag(specs, {"raw"}, max_nodes=2)
+
+    assert dag["plugins"] == ["x.z", "x.a"]
+    assert "final" not in dag["covered"]
+    assert {edge["target"] for edge in dag["edges"]} == {"x.z", "x.a"}
+
+
+@pytest.mark.parametrize("max_nodes", [0, -1, True, False, 1.5, "2"])
+def test_dag_rejects_invalid_node_budgets(max_nodes: object) -> None:
+    with pytest.raises(ValueError, match="max_nodes.*positive integer"):
+        build_dag(_catalog(), {"raw"}, max_nodes=max_nodes)  # type: ignore[arg-type]
+
+
+def test_plan_from_dag_rejects_a_dag_larger_than_explicit_budget() -> None:
+    dag = build_dag(_catalog(), {"raw"})
+    with pytest.raises(CompileError, match="exceeding max_chain_length budget 2"):
+        plan_from_dag(_catalog(), dag, {"raw"}, plan_key="limited-plan", max_nodes=2)
+
+
+def test_plan_from_dag_preserves_an_explicit_budget_below_the_default() -> None:
+    dag = build_dag(_catalog(), {"raw"})
+    plan = plan_from_dag(_catalog(), dag, {"raw"}, plan_key="exact-budget", max_nodes=4)
+
+    assert len(plan.nodes) == 4
+    assert plan.budget["max_chain_length"] == 4
+
+
+@pytest.mark.parametrize("max_nodes", [0, -1, True, False, 1.5, "4"])
+def test_plan_from_dag_rejects_invalid_explicit_budgets(max_nodes: object) -> None:
+    with pytest.raises(ValueError, match="max_nodes.*positive integer"):
+        plan_from_dag(
+            _catalog(), build_dag(_catalog(), {"raw"}), {"raw"},
+            plan_key="invalid-budget", max_nodes=max_nodes,  # type: ignore[arg-type]
+        )

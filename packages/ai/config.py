@@ -30,6 +30,7 @@ PROVIDER_OPENAI_COMPAT = "openai_compat"
 PROVIDER_OLLAMA = "ollama"
 SUPPORTED_CHAT_PROVIDERS: tuple[str, ...] = (PROVIDER_OPENAI_COMPAT, PROVIDER_OLLAMA)
 SUPPORTED_EMBED_PROVIDERS: tuple[str, ...] = (PROVIDER_OPENAI_COMPAT, PROVIDER_OLLAMA)
+SUPPORTED_PLANNING_MODES: tuple[str, ...] = ("debug", "external")
 
 DEFAULT_CHAT_PROVIDER = PROVIDER_OPENAI_COMPAT
 DEFAULT_EMBED_PROVIDER = PROVIDER_OLLAMA
@@ -65,7 +66,7 @@ MANAGED_EMBED_ENV: tuple[str, ...] = (
     "AI_EMBED_TIMEOUT",
     "AI_EMBED_DIMENSIONS",
 )
-MANAGED_ENV: tuple[str, ...] = MANAGED_CHAT_ENV + MANAGED_EMBED_ENV
+MANAGED_ENV: tuple[str, ...] = MANAGED_CHAT_ENV + MANAGED_EMBED_ENV + ("AI_PLANNING_MODE",)
 
 #: Legacy variables still honoured as fallbacks.  Listed so the settings page
 #: can tell the operator *why* a field shows a value they never typed there.
@@ -178,6 +179,13 @@ def resolve_chat_provider() -> str:
     if raw is None:
         return DEFAULT_CHAT_PROVIDER
     return _normalise_provider(raw, env_name, SUPPORTED_CHAT_PROVIDERS)
+
+
+def resolve_planning_mode() -> str:
+    """An explicit route for collaborative planning; never infer from a key."""
+    load_env_file_once()
+    raw = os.getenv("AI_PLANNING_MODE", "debug").strip().lower() or "debug"
+    return _normalise_provider(raw, "AI_PLANNING_MODE", SUPPORTED_PLANNING_MODES)
 
 
 def resolve_chat_config() -> ChatProviderConfig:

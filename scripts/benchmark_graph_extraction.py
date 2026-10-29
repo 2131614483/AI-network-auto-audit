@@ -16,6 +16,8 @@ from __future__ import annotations
 import argparse
 import json
 import os
+import sys
+from pathlib import Path
 from time import perf_counter
 from typing import Any
 from urllib.parse import urlparse
@@ -23,8 +25,15 @@ from uuid import UUID, uuid4
 
 import psycopg2
 
-from packages.graph.service import GraphService
-from packages.knowledge.graph_extraction import GraphExtractionService, extract_text
+# 以 `python scripts/benchmark_graph_extraction.py` 直接运行时，sys.path[0] 是 scripts/ 而不是仓库根，
+# `packages` 导入不到。仓库里的 .venv 做过 editable 安装所以开发机上不暴露，
+# 按 requirements.txt 新装的干净环境会直接 ModuleNotFoundError。
+_PROJECT_ROOT = Path(__file__).resolve().parents[1]
+if str(_PROJECT_ROOT) not in sys.path:
+    sys.path.insert(0, str(_PROJECT_ROOT))
+
+from packages.graph.service import GraphService  # noqa: E402
+from packages.knowledge.graph_extraction import GraphExtractionService, extract_text  # noqa: E402
 
 
 def percentile_95(values: list[float]) -> float:

@@ -92,7 +92,7 @@ export default function AISettings({ tenantId, onNotice }: Props) {
         })) as AISettingsPayload;
         setPayload(data);
         setForm(formFromPayload(data));
-        onNotice?.(`AI 配置已保存并立即生效（写入 ${data.env_file}）。`);
+        onNotice?.(`AI 配置已保存，新规划会话将使用所选模式（写入 ${data.env_file}）。`);
       } catch (failure) {
         const message = failure instanceof Error ? failure.message : "保存 AI 配置失败。";
         setError(message);
@@ -180,12 +180,12 @@ export default function AISettings({ tenantId, onNotice }: Props) {
         <div>
           <Typography.Title level={4}>AI 设置</Typography.Title>
           <Typography.Text type="secondary">
-            全项目唯一的模型接入入口：画布 AI 助手、AI 组网规划、知识库向量化共用这一份配置。保存后立即生效，无需重启。
+            在本机设置组网调试模式或外接 AI API。组网模式在新会话中生效；画布助手和知识库向量化继续使用各自的模型通道。
           </Typography.Text>
         </div>
         <Space>
           <Button onClick={() => void load()} disabled={loading || saving}>重新读取</Button>
-          <Button onClick={() => void runProbe()} loading={testing}>测试连接</Button>
+          <Button onClick={() => void runProbe()} loading={testing}>测试已保存的 API 连接</Button>
           <Button type="primary" onClick={() => void save()} loading={saving}>保存并生效</Button>
         </Space>
       </section>
@@ -205,6 +205,7 @@ export default function AISettings({ tenantId, onNotice }: Props) {
       <Card className="chart-card" title="当前生效配置" style={{ marginBottom: 12 }}>
         {payload ? (
           <Descriptions className="file-summary" size="small" column={2} bordered items={[
+            { key: "planningMode", label: "组网模式", children: payload.planning?.mode === "external" ? "外接 AI API" : "Debug · 当前 AI 会话回填", span: 2 },
             { key: "provider", label: "通道", children: providerLabel(payload.chat.provider) },
             { key: "model", label: "对话模型", children: payload.chat.model },
             { key: "base", label: "地址", children: payload.chat.base_url, span: 2 },
@@ -234,7 +235,18 @@ export default function AISettings({ tenantId, onNotice }: Props) {
         ) : null}
       </Card>
 
-      <Card className="chart-card" title="对话 / 规划模型" style={{ marginBottom: 12 }}>
+      <Card className="chart-card" title="AI 组网接入模式" style={{ marginBottom: 12 }}>
+        <Space direction="vertical" style={{ width: "100%" }}>
+          <Select aria-label="AI 组网接入模式" value={form.planningMode} onChange={value => update("planningMode", value)} style={{ minWidth: 320 }}
+            options={[{ value: "debug", label: "Debug · 当前 AI 会话通过本机 API 回填" }, { value: "external", label: "外接 AI API · 使用下方模型配置" }]} />
+          <Alert type="info" showIcon message={form.planningMode === "debug"
+            ? "由当前 AI 会话逐次接收上下文、回填规划或评审；等待回复期间会话显示规划中。仅供独立本机测试库与合成资料联调。"
+            : "由保存的模型接口返回规划与评审。每次调用仍需通过策略检查，失败时不会自动切换模型。"}
+            description="保存模式只影响新建规划会话。两种模式均经过审计主脑、插件关系与历史检索和独立评估，只生成方案。" />
+        </Space>
+      </Card>
+
+      <Card className="chart-card" title="外接 API / 画布助手模型" style={{ marginBottom: 12 }}>
         <div className="ai-settings-grid">
           <div className="ai-field">
             <div className="ai-field-label">

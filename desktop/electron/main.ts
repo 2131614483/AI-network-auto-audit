@@ -1,5 +1,6 @@
 import { app, BrowserWindow, dialog, ipcMain, Menu, type IpcMainInvokeEvent } from "electron";
-import { appendFileSync, closeSync, existsSync, openSync, readFileSync, readdirSync, readSync, renameSync, statSync } from "node:fs";
+import { enablePackagedPlanning, startPackagedBackend, stopPackagedBackend } from "./backend";
+import { appendFileSync, closeSync, existsSync, mkdirSync, openSync, readFileSync, readdirSync, readSync, renameSync, statSync, writeFileSync } from "node:fs";
 import { readFile, readdir, stat, writeFile } from "node:fs/promises";
 import { basename, extname, join, relative, resolve, sep } from "node:path";
 
@@ -20,6 +21,12 @@ let unifiedLogDate = "";
 const logWindows = new Set<BrowserWindow>();
 
 function logDataDir(): string {
+  // 安装版把日志写进用户数据目录；应用资源目录是只读的。
+  if (app.isPackaged) {
+    const packagedDir = join(app.getPath("userData"), "data");
+    mkdirSync(packagedDir, { recursive: true });
+    return packagedDir;
+  }
   const candidates = [
     join(app.getAppPath(), "..", ".data"),
     join(app.getAppPath(), "..", "..", ".data"),
@@ -382,7 +389,8 @@ function installApplicationMenu(): void {
   ]));
 }
 
-const controlPlaneUrl = (process.env.AUDIT_NETWORK_API_URL ?? "http://127.0.0.1:8010").replace(/\/$/, "");
+// 安装版的 API 端口在运行时才确定（8010 可能已被占用），由 backend 启动结果回填。
+let controlPlaneUrl = (process.env.AUDIT_NETWORK_API_URL ?? "http://127.0.0.1:8010").replace(/\/$/, "");
 const allowedPaths = new Set([
   "/health",
   "/api/v1/health/ready",
@@ -453,6 +461,8 @@ const allowedPaths = new Set([
   "/api/v1/knowledge/rich-media/extract",
   "/api/v1/knowledge/rich-media/retry",
   "/api/v1/topology/planning/intents",
+  "/api/v1/topology/planning/sessions",
+  "/api/v1/topology/planning/catalog",
   "/api/v1/topology/canvas/chat",
   "/api/v1/topology/canvas/chat/stream",
   // Unified AI access: read/write the provider configuration + connectivity probe.
@@ -515,6 +525,7 @@ function isAllowedControlPlanePath(path: string): boolean {
     || /^\/api\/v1\/topology\/runs$/i.test(path)
     || /^\/api\/v1\/topology\/canvas\/[0-9a-f-]{36}$/i.test(path)
     || /^\/api\/v1\/topology\/planning\/intents\/[0-9a-f-]{36}$/i.test(path)
+    || /^\/api\/v1\/topology\/planning\/sessions\/[0-9a-f-]{36}(?:\/process)?$/i.test(path)
     || /^\/api\/v1\/topology\/nebula-experience\/suggestions\/[0-9a-f-]{36}\/decision$/i.test(path)
     // Experience + observability detail routes (per-run bundle verify / evidence
     // export / trace locate) — segment-shaped, so whitelist by prefix.
@@ -753,6 +764,85 @@ function assertTrustedSender(event: IpcMainInvokeEvent): void {
   }
 }
 
+// ===== 首次启动进度窗口 =====
+// 安装版首次启动要建库、跑迁移、灌种子数据，约需 30–60 秒。没有这个窗口，
+// 用户双击后看到的就是"没反应"，会重复双击或以为程序坏了。
+const SPLASH_HTML = `<!doctype html>
+<html lang="zh-CN"><head><meta charset="utf-8" />
+<title>审计智能中枢</title>
+<style>
+  :root { color-scheme: dark; }
+  html, body { height: 100%; margin: 0; }
+  body {
+    display: flex; flex-direction: column; justify-content: center; gap: 16px;
+    padding: 0 40px; background: #0d0e10; color: #e6e8eb;
+    font-family: "Microsoft YaHei UI", "Segoe UI", sans-serif;
+    -webkit-user-select: none; user-select: none; overflow: hidden;
+  }
+  h1 { margin: 0; font-size: 17px; font-weight: 600; letter-spacing: .02em; }
+  .hint { margin: 0; font-size: 12px; line-height: 1.7; color: #8b929c; }
+  #status { font-size: 13px; color: #c9ced6; min-height: 20px; }
+  .track { height: 3px; border-radius: 2px; background: #1e2127; overflow: hidden; }
+  .bar { height: 100%; width: 30%; border-radius: 2px;
+         background: linear-gradient(90deg, #2f6df6, #58a6ff);
+         animation: slide 1.5s ease-in-out infinite; }
+  @keyframes slide { 0% { margin-left: -30%; } 100% { margin-left: 100%; } }
+</style></head>
+<body>
+  <h1>审计智能中枢</h1>
+  <p class="hint">首次启动需要初始化本地数据库与示例数据，通常 30–60 秒，仅此一次。</p>
+  <div class="track"><div class="bar"></div></div>
+  <div id="status">正在准备运行时…</div>
+  <script>
+    window.__setStatus = (text) => {
+      const el = document.getElementById("status");
+      if (el) el.textContent = text;
+    };
+  </script>
+</body></html>`;
+
+type Splash = { update: (message: string) => void; close: () => void };
+
+function createSplashWindow(): Splash {
+  const dir = join(app.getPath("userData"), "data");
+  mkdirSync(dir, { recursive: true });
+  const file = join(dir, "splash.html");
+  writeFileSync(file, SPLASH_HTML, "utf8");
+  const panel = new BrowserWindow({
+    width: 460,
+    height: 240,
+    frame: false,
+    resizable: false,
+    maximizable: false,
+    backgroundColor: "#0d0e10",
+    show: true,
+    webPreferences: { contextIsolation: true, sandbox: true },
+  });
+  panel.setMenuBarVisibility(false);
+  void panel.loadFile(file);
+  // 页面还没加载完时 executeJavaScript 会 reject，先排队，加载完回放最后一条。
+  let ready = false;
+  let pending = "正在准备运行时…";
+  panel.webContents.once("did-finish-load", () => {
+    ready = true;
+    void panel.webContents
+      .executeJavaScript(`window.__setStatus(${JSON.stringify(pending)});`, true)
+      .catch(() => undefined);
+  });
+  return {
+    update(message: string) {
+      pending = message;
+      if (!ready || panel.isDestroyed()) return;
+      void panel.webContents
+        .executeJavaScript(`window.__setStatus(${JSON.stringify(message)});`, true)
+        .catch(() => undefined);
+    },
+    close() {
+      if (!panel.isDestroyed()) panel.close();
+    },
+  };
+}
+
 function createWindow(initialZoom: number | null): void {
   const window = new BrowserWindow({
     width: 1440,
@@ -842,9 +932,32 @@ function applyViewQuery(url: URL, captureView: string): void {
 }
 
 app.whenReady().then(async () => {
+  if (!app.requestSingleInstanceLock()) {
+    app.quit();
+    return;
+  }
+  app.on("second-instance", () => {
+    const existing = BrowserWindow.getAllWindows().find((window) => !window.isDestroyed());
+    if (!existing) return;
+    if (existing.isMinimized()) existing.restore();
+    existing.show();
+    existing.focus();
+  });
   ipcMain.handle("audit:request", (event, request: SafeRequest) => {
     assertTrustedSender(event);
     return controlPlaneRequest(request);
+  });
+  ipcMain.handle("audit:enablePlanning", async (event) => {
+    assertTrustedSender(event);
+    if (!app.isPackaged) throw new Error("源码工作区请使用独立测试库流程；此入口用于安装版。");
+    return enablePackagedPlanning(async (preview) => {
+      const decision = await dialog.showMessageBox({
+        type: "question", title: "启用本机协作规划", message: "允许当前模型读取本工作区相关资料并生成静态方案？",
+        detail: `模型：${preview.model}\n接口：${preview.endpoint}\n\n仅授权当前配置进行规划与评估，并启用本机规划后台。切换配置需要重新确认；实际执行方案仍需另行审批。`,
+        buttons: ["取消", "授权并启用规划"], defaultId: 0, cancelId: 0, noLink: true,
+      });
+      return decision.response === 1;
+    });
   });
   const activeStreams = new Map<string, AbortController>();
   ipcMain.on("audit:stream:start", (event, payload: { streamId: string; path: string; tenantId?: string; body?: Record<string, unknown> }) => {
@@ -988,11 +1101,68 @@ app.whenReady().then(async () => {
   installMainConsoleCapture();
   installLogFileWatcher();
   emitLog("system", "info", "==== Audit Network 统一日志会话启动 ====");
+  if (app.isPackaged) {
+    const splash = createSplashWindow();
+    try {
+      const backend = await startPackagedBackend({
+        resourcesPath: process.resourcesPath,
+        userDataPath: app.getPath("userData"),
+        requestMaintenance: async (action) => {
+          const initialization = action.kind === "initialize";
+          const result = await dialog.showMessageBox({
+            type: "question",
+            title: initialization ? "初始化工作区" : "升级工作区数据库",
+            message: initialization ? "首次使用需要初始化本地工作区。" : "工作区数据库需要升级。",
+            detail: initialization
+              ? `将在本机用户数据目录创建数据库并初始化到 ${action.target}。`
+              : `从 ${action.current} 升级到 ${action.target}；升级前将备份并验证数据库。备份位置：${join(app.getPath("userData"), "data", "backups")}`,
+            buttons: ["取消", initialization ? "初始化工作区" : "备份并升级"],
+            defaultId: 0,
+            cancelId: 0,
+            noLink: true,
+          });
+          return result.response === 1;
+        },
+        onLog: (message) => {
+          emitLog("system", "info", message);
+          splash.update(message);
+        },
+      });
+      // 端口可能不是默认的 8010（被占用时自动后移），必须回填给 IPC 转发层。
+      controlPlaneUrl = backend.apiBaseUrl;
+      emitLog("system", "info", `控制平面地址：${controlPlaneUrl}`);
+    } catch (error) {
+      const detail = error instanceof Error ? error.message : String(error);
+      emitLog("system", "error", `控制平面启动失败：${detail}`);
+      splash.close();
+      dialog.showErrorBox(
+        "审计智能中枢启动失败",
+        `${detail}\n\n日志目录：${app.getPath("userData")}\\data\\logs`,
+      );
+      app.quit();
+      return;
+    }
+    splash.close();
+  }
   createWindow(await loadSavedZoom());
   if (process.env.AUDIT_NETWORK_OPEN_BRAIN === "1") createAuditBrainWindow();
   if (process.env.AUDIT_NETWORK_OPEN_NEBULA === "1") createKnowledgeNebulaWindow();
   if (process.env.AUDIT_NETWORK_OPEN_FLOW === "1") createFlowCanvasWindow();
+}).catch((error: unknown) => {
+  // 启动期异常必须可见：否则进程活着、窗口不出现，用户只能看到"点了没反应"。
+  const detail = error instanceof Error ? (error.stack ?? error.message) : String(error);
+  try { emitLog("system", "error", `启动失败：${detail}`); } catch { /* 日志通道自身不可用 */ }
+  dialog.showErrorBox("审计智能中枢启动失败", detail);
+  app.quit();
 });
 
 app.on("window-all-closed", () => { if (process.platform !== "darwin") app.quit(); });
+
+let backendStopping = false;
+app.on("before-quit", (event) => {
+  if (!app.isPackaged || backendStopping) return;
+  backendStopping = true;
+  event.preventDefault();
+  void stopPackagedBackend().finally(() => app.quit());
+});
 app.on("activate", () => { if (BrowserWindow.getAllWindows().length === 0) void loadSavedZoom().then((zoom) => createWindow(zoom)); });

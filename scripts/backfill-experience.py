@@ -26,16 +26,24 @@ import argparse
 import os
 import sys
 import time
+from pathlib import Path
 from typing import Any
 from uuid import UUID
 
 import psycopg2
 from psycopg2.extras import register_uuid
 
-from packages.ai.env_store import load_env_file_once
-from packages.experience.handoff import extract_handovers, extract_node_uses
-from packages.experience.projector import ExperienceProjector
-from packages.plugin_topology.dag_persistence import AttemptStore
+# 以 `python scripts/backfill-experience.py` 直接运行时，sys.path[0] 是 scripts/ 而不是仓库根，
+# `packages` 导入不到。仓库里的 .venv 做过 editable 安装所以开发机上不暴露，
+# 按 requirements.txt 新装的干净环境会直接 ModuleNotFoundError。
+_PROJECT_ROOT = Path(__file__).resolve().parents[1]
+if str(_PROJECT_ROOT) not in sys.path:
+    sys.path.insert(0, str(_PROJECT_ROOT))
+
+from packages.ai.env_store import load_env_file_once  # noqa: E402
+from packages.experience.handoff import extract_handovers, extract_node_uses  # noqa: E402
+from packages.experience.projector import ExperienceProjector  # noqa: E402
+from packages.plugin_topology.dag_persistence import AttemptStore  # noqa: E402
 
 register_uuid()  # type: ignore[no-untyped-call]  # run_id / trace_id 以 UUID 类型往返
 

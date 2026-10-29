@@ -1,0 +1,22 @@
+# 运行期依赖（Python 3.11+，实测 3.12.12）
+#
+# 由 pyproject.toml 的 [project].dependencies 派生，锁定到本仓库验证过的版本组合。
+# 需要 PostgreSQL 16 + pgvector（vector 扩展），见 README「快速开始」。
+#
+# 安装：
+#     python -m venv .venv
+#     .venv\Scripts\python -m pip install -r requirements.txt      # Windows
+#     .venv/bin/python -m pip install -r requirements.txt          # macOS / Linux
+#
+# 只有这 9 个包是运行控制平面必需的；插件子进程用同一个解释器
+# （`python -I -c`），所以它们也必须在同一个环境里可见。
+
+alembic==1.19.2
+fastapi==0.141.1
+jsonschema==4.26.0
+openpyxl==3.1.5
+psycopg2-binary==2.9.12
+pydantic==2.13.5
+python-multipart==0.0.32
+sqlalchemy==2.0.52
+uvicorn[standard]==0.52.4

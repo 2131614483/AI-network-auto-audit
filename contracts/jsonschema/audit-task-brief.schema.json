@@ -1,0 +1,207 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$defs": {
+    "AuditProcedure": {
+      "additionalProperties": false,
+      "properties": {
+        "procedure_id": {
+          "pattern": "^[a-zA-Z0-9][a-zA-Z0-9_-]{0,63}$",
+          "title": "Procedure Id",
+          "type": "string"
+        },
+        "requirement_keys": {
+          "items": {
+            "type": "string"
+          },
+          "maxItems": 16,
+          "title": "Requirement Keys",
+          "type": "array"
+        },
+        "objective": {
+          "maxLength": 500,
+          "minLength": 1,
+          "title": "Objective",
+          "type": "string"
+        },
+        "method": {
+          "maxLength": 500,
+          "minLength": 1,
+          "title": "Method",
+          "type": "string"
+        },
+        "required_evidence": {
+          "items": {
+            "maxLength": 500,
+            "minLength": 1,
+            "type": "string"
+          },
+          "maxItems": 8,
+          "minItems": 1,
+          "title": "Required Evidence",
+          "type": "array"
+        },
+        "acceptance_criteria": {
+          "items": {
+            "maxLength": 500,
+            "minLength": 1,
+            "type": "string"
+          },
+          "maxItems": 8,
+          "minItems": 1,
+          "title": "Acceptance Criteria",
+          "type": "array"
+        },
+        "knowledge_evidence_ids": {
+          "items": {
+            "type": "string"
+          },
+          "maxItems": 16,
+          "minItems": 1,
+          "title": "Knowledge Evidence Ids",
+          "type": "array"
+        }
+      },
+      "required": [
+        "procedure_id",
+        "requirement_keys",
+        "objective",
+        "method",
+        "required_evidence",
+        "acceptance_criteria",
+        "knowledge_evidence_ids"
+      ],
+      "title": "AuditProcedure",
+      "type": "object"
+    },
+    "SourceQuery": {
+      "additionalProperties": false,
+      "properties": {
+        "source_kind": {
+          "enum": [
+            "graph",
+            "history",
+            "knowledge"
+          ],
+          "title": "Source Kind",
+          "type": "string"
+        },
+        "query": {
+          "maxLength": 500,
+          "minLength": 1,
+          "title": "Query",
+          "type": "string"
+        },
+        "purpose": {
+          "maxLength": 500,
+          "minLength": 1,
+          "title": "Purpose",
+          "type": "string"
+        },
+        "capabilities": {
+          "items": {
+            "type": "string"
+          },
+          "maxItems": 16,
+          "title": "Capabilities",
+          "type": "array"
+        },
+        "limit": {
+          "default": 6,
+          "maximum": 8,
+          "minimum": 1,
+          "title": "Limit",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "source_kind",
+        "query",
+        "purpose"
+      ],
+      "title": "SourceQuery",
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "goal_hash": {
+      "pattern": "^[a-f0-9]{64}$",
+      "title": "Goal Hash",
+      "type": "string"
+    },
+    "knowledge_hash": {
+      "pattern": "^[a-f0-9]{64}$",
+      "title": "Knowledge Hash",
+      "type": "string"
+    },
+    "objective": {
+      "maxLength": 1000,
+      "minLength": 1,
+      "title": "Objective",
+      "type": "string"
+    },
+    "scope": {
+      "maxLength": 1000,
+      "minLength": 1,
+      "title": "Scope",
+      "type": "string"
+    },
+    "risk_hypotheses": {
+      "items": {
+        "maxLength": 500,
+        "minLength": 1,
+        "type": "string"
+      },
+      "maxItems": 16,
+      "minItems": 1,
+      "title": "Risk Hypotheses",
+      "type": "array"
+    },
+    "procedures": {
+      "items": {
+        "$ref": "#/$defs/AuditProcedure"
+      },
+      "maxItems": 16,
+      "title": "Procedures",
+      "type": "array"
+    },
+    "assumptions": {
+      "items": {
+        "maxLength": 500,
+        "minLength": 1,
+        "type": "string"
+      },
+      "maxItems": 16,
+      "title": "Assumptions",
+      "type": "array"
+    },
+    "blockers": {
+      "items": {
+        "maxLength": 500,
+        "minLength": 1,
+        "type": "string"
+      },
+      "maxItems": 16,
+      "title": "Blockers",
+      "type": "array"
+    },
+    "followup_queries": {
+      "items": {
+        "$ref": "#/$defs/SourceQuery"
+      },
+      "maxItems": 6,
+      "title": "Followup Queries",
+      "type": "array"
+    }
+  },
+  "required": [
+    "goal_hash",
+    "knowledge_hash",
+    "objective",
+    "scope",
+    "risk_hypotheses",
+    "procedures"
+  ],
+  "title": "AuditTaskBrief",
+  "type": "object"
+}

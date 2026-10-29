@@ -1,0 +1,19 @@
+# 构建上下文裁剪。镜像只 COPY 运行期目录，但上下文仍会被整体发送给 daemon，
+# 不排除的话一次构建要传几百 MB（.venv / node_modules / dist / 案例资产）。
+.git
+.venv
+.data
+.workbuddy
+build
+desktop
+tests
+docs
+prototypes
+AIchatroom
+审计项目案例报告效果展示
+**/__pycache__
+**/*.pyc
+**/node_modules
+**/.pytest_cache
+**/.mypy_cache
+**/*.tsbuildinfo

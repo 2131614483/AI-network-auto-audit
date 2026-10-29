@@ -17,6 +17,7 @@ from __future__ import annotations
 
 import hashlib
 from pathlib import Path
+from unittest.mock import Mock
 from urllib.request import url2pathname
 from uuid import UUID, uuid4
 
@@ -24,6 +25,7 @@ import psycopg2
 import pytest
 
 from packages.experience import ExperienceProjector
+from packages.plugin_runtime import runner
 from packages.plugin_runtime.layout import runtime_dir
 from packages.plugin_runtime.runner import ArtifactInput, load_verified_binding
 from packages.plugin_topology import port_adapters  # noqa: F401  (registers the real port adapter)
@@ -197,6 +199,41 @@ def test_first_ledger_chain_real_multi_input_persisted(tmp_path: Path, tenant_id
     assert ("seed", "ledger", "ledger-b", "ledger") in keys
     assert all(e["source_instance"] == "ledger-a" for e in edges
                if e["target_instance"].startswith("consumer"))
+
+
+def test_denied_node_is_persisted_without_starting_any_child(
+    tmp_path: Path, tenant_id: UUID, monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    child = Mock(side_effect=AssertionError("denied nodes must not start a child"))
+    monkeypatch.setattr(runner, "run", child)
+    staging = tmp_path / "staging"
+    seed_a = _write_seed(staging, "ledger-a.csv", _ledger_csv("A"))
+    seed_b = _write_seed(staging, "ledger-b.csv", _ledger_csv("B"))
+    trace_id = uuid4()
+    service = TopologyService(
+        TEST_DB, policy=PolicyEngine(allow=_ALLOW, deny=["audit.ledger.validate"]),
+    )
+
+    result = service.start_plan_run(
+        _build_plan(), trace_id=trace_id,
+        seed_inputs={("ledger-a", "ledger"): seed_a, ("ledger-b", "ledger"): seed_b},
+        worker_id="cw3-denied-policy-worker", staging_root=staging,
+    )
+
+    child.assert_not_called()
+    assert result["status"] == "failed"
+    assert result["tenant_id"] == str(tenant_id)
+    assert result["trace_id"] == str(trace_id)
+    attempts = result["attempts"]
+    assert len(attempts) == 4
+    assert all(attempt["status"] == "failed" and attempt["finished_at"] for attempt in attempts)
+    assert all(attempt["trace_id"] == str(trace_id) for attempt in attempts)
+    assert all(attempt["output_refs"] == {} for attempt in attempts)
+    for attempt in attempts:
+        if attempt["capability"] == "audit.ledger.validate":
+            assert "PluginPolicyDenied" in attempt["error_message"]
+            assert attempt["plugin_version"] == ""
+            assert attempt["runtime_code_sha256"] == ""
 
 
 # -- 1b. a node that never reached the runtime records no implementation --------

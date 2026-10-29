@@ -18,6 +18,7 @@ from uuid import UUID, uuid4
 import psycopg2
 from psycopg2.extras import Json, register_uuid
 
+from packages.paths import data_root
 from packages.plugin_runtime.runner import IsolatedPluginRuntime
 from packages.policy.engine import PolicyEngine
 
@@ -1216,7 +1217,7 @@ class TopologyService:
                 port_bindings = [
                     dict(binding) for binding in (payload.get("port_bindings") or []) if isinstance(binding, dict)
                 ]
-                staging_root = Path(__file__).resolve().parents[2] / ".data" / "isolated"
+                staging_root = data_root() / "isolated"
                 executor = IsolatedChainExecutor(
                     chain_key=request.chain_key,
                     chain_id=UUID(str(chain_id)),
@@ -1351,7 +1352,7 @@ class TopologyService:
                 # before any child starts, so a crash mid-chain never loses the
                 # run itself (begin_run also holds the same-chain concurrency lock).
                 connection.commit()
-                staging_root = Path(__file__).resolve().parents[2] / ".data" / "isolated"
+                staging_root = data_root() / "isolated"
                 executor = IsolatedChainExecutor(
                     chain_key=context.chain_key,
                     chain_id=context.chain_id,

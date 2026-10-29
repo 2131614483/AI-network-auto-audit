@@ -32,6 +32,7 @@ from typing import Any, Iterable, Mapping
 
 import psycopg2
 
+from packages.paths import data_root
 from packages.plugin_topology.compiler import CompileError
 from packages.plugin_topology.ports import PortContractError
 
@@ -51,7 +52,7 @@ from .roles import ROLE_ADAPTER, ROLE_SERVICE, ROLE_VALIDATOR, resolve_all
 from .semantics import SemanticCatalog, load_semantics
 
 PROJECT_ROOT = Path(__file__).resolve().parents[2]
-DEFAULT_DRAFTS_ROOT = PROJECT_ROOT / ".data" / "drafts"
+DEFAULT_DRAFTS_ROOT = data_root() / "drafts"
 
 DRAFT_SCHEMA_VERSION = "1.0.0"
 

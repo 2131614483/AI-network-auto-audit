@@ -27,6 +27,7 @@ from typing import Any
 from uuid import uuid4
 
 from packages.ai_planner.composer import schema_sha256
+from packages.paths import data_root
 from packages.plugin_runtime.runner import ArtifactInput
 from packages.plugin_topology import port_adapters  # noqa: F401  注册真实适配器
 from packages.plugin_topology.compiler import compile_plan
@@ -36,7 +37,7 @@ from packages.policy.engine import PolicyEngine
 logger = logging.getLogger(__name__)
 
 TRIGGERS_PATH = Path(__file__).resolve().parents[2] / "contracts" / "networking-triggers.json"
-STATE_PATH = Path(__file__).resolve().parents[2] / ".data" / "networking-triggers-state.json"
+STATE_PATH = data_root() / "networking-triggers-state.json"
 DEFAULT_DATABASE_URL = "postgresql://audit_app:admin@localhost:5432/audit_network"
 
 _ALLOW = [
@@ -167,7 +168,7 @@ def run_trigger_once(trigger: dict[str, Any], *, database_url: str, project_root
     dataset_root = project_root / str(trigger["dataset"])
     if not dataset_root.is_dir():
         raise TriggerError(f"数据集目录不存在：{dataset_root}")
-    staging = project_root / ".data" / "case-network" / f"trigger-{trigger['name']}" / "staging"
+    staging = data_root() / "case-network" / f"trigger-{trigger['name']}" / "staging"
     adapted = apply_mapping(mapping(str(trigger["mapping"])), dataset_root, staging / "inputs")
     # 租户由 start_plan_run 自己解析，这里不重复取。
     service = TopologyService(database_url, policy=PolicyEngine(allow=_ALLOW))
