@@ -2,6 +2,16 @@
 
 更新时间：2026-10-29
 
+## 2026-10-29 · 分发全流程复测与上传审批闭环
+
+已合并用户更新包，补齐上传审批消费：同租户、原调用、原文件指纹和幂等键绑定；实时 deny/freeze 优先；拒绝过期或失效审核人；原 REQUIRE_APPROVAL 与后续 ALLOW 均保留。安装初始化登记本机审核人，桌面主进程仅对本租户待审批知识上传提供默认取消的原生确认，不能借此批准其他插件。浏览器和桌面重试保留上传键，换选择或租户才换键。
+
+修复新电脑 Docker 文档缺少构建步骤、uv.lock 未同步、中文 PowerShell 缺 BOM，以及桌面测试误用根配置导致漏扫。桌面版本暂定 `0.1.0-debug.20261029.2`，保持 Gitee 调试交付。更新 Electron/ECharts/Vite/Vitest 并同步锁，源码桌面需要 Node 22.12+（建议 24）；根与桌面 npm 审计均为 0 个已知漏洞。
+
+本轮修复后完整 Python **2586 passed / 13 skipped / 3 warnings**，670.89 秒；桌面 **121 passed**、Web **4 passed**，新增实际浏览器脚本交互模拟 **3 passed**。TypeScript、Ruff、149 文件 Mypy、依赖锁检查通过。真实随包 Python/PostgreSQL/API/Worker 在独立合成工作区完成初始化、受限审核人确认、上传被拒/取消/获批/导入/同批次重试、有限规划设置、普通重启不迁移；自己的数据库正常停止。结果见 [本轮分发验收](release-validation-20261029.md)。
+
+Windows 安装器交互、异机安装、完整旧工作区权限与工件恢复、公网身份体系仍未验收；本机 Docker 引擎未运行。Phase 10 未标记完成，未将调试包标成正式稳定版，未调用真实外部模型或生产设施。
+
 ## 2026-10-29 · Gitee 调试交付与安装治理修复
 
 用户指定先在 Gitee 调试，GitHub 正式发行后置。产品、契约、测试和部署说明纳入独立 `codex/gitee-deployment-debug` 分支；保留 Gitee 已有 MIT LICENSE，README 和早期发布稿的许可/发行状态已校正。入口见 [Gitee 调试部署](gitee-debug-20261029.md)。

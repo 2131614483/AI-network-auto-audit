@@ -3655,6 +3655,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
         *,
         persist: bool,
         idempotency_key: str | None = None,
+        approved_upload_retry: bool = False,
     ) -> PolicyDecisionResponse:
         """Evaluate through the DB-backed policy snapshot.
 
@@ -3668,7 +3669,12 @@ def create_app(settings: Settings | None = None) -> FastAPI:
         try:
             with psycopg2.connect(config.database_url) as connection:
                 _, cur = _tenant_context(connection, tenant_id)
+                cached: PolicyDecisionResponse | None = None
                 if persist and idempotency_key is not None:
+                    # Serialize first inserts as well as existing records. Row
+                    # locks alone cannot protect two requests for an absent key.
+                    cur.execute("SELECT pg_advisory_xact_lock(hashtextextended(%s,0))",
+                                (f"policy:{tenant_id}:{idempotency_key}",))
                     cur.execute(
                         "SELECT request_hash,response_status,response_json FROM control.idempotency_records "
                         "WHERE tenant_id=%s AND idempotency_key=%s FOR UPDATE",
@@ -3691,7 +3697,9 @@ def create_app(settings: Settings | None = None) -> FastAPI:
                         # new tool call and leave the shared record untouched so
                         # business-layer replay keeps returning the same batch.
                         if previous[1] == 200 and previous[2] is not None:
-                            return PolicyDecisionResponse.model_validate(previous[2])
+                            cached = PolicyDecisionResponse.model_validate(previous[2])
+                            if not approved_upload_retry:
+                                return cached
                         if previous[1] == 201:
                             persist = False
                     else:
@@ -3708,26 +3716,59 @@ def create_app(settings: Settings | None = None) -> FastAPI:
                     side_effects=payload.side_effects,
                 )
                 now = datetime.now(timezone.utc)
-                tool_call_id = uuid4()
+                tool_call_id = cached.tool_call_id if cached else uuid4()
                 decision_id = uuid4()
                 matched_ids = _matched_rule_uuid(result)
                 decision_name = _decision_name(result.decision)
-                if persist:
+                lease_id: UUID | None = None
+                if (approved_upload_retry and payload.capability == "knowledge.upload"
+                        and cached is not None and decision_name == "REQUIRE_APPROVAL"):
+                    # Approval is bound to this original tool call and key. A
+                    # current deny/freeze has already won before this branch.
                     cur.execute(
                         """
-                        INSERT INTO policy.tool_calls
-                          (id,tenant_id,capability,arguments,argument_hash,trace_id)
-                        VALUES(%s,%s,%s,%s,%s,%s)
+                        SELECT lease.id,lease.consumed_at
+                        FROM control.authorization_leases lease
+                        JOIN control.approvals approval ON approval.id=lease.approval_id
+                          AND approval.tenant_id=lease.tenant_id
+                        JOIN iam.principals actor ON actor.id=approval.decided_by
+                          AND actor.tenant_id=lease.tenant_id
+                        WHERE lease.tenant_id=%s AND lease.tool_call_id=%s
+                          AND lease.capability=%s AND lease.argument_hash=%s
+                          AND lease.expires_at>now() AND approval.status='approved'
+                          AND actor.status='active'
+                        FOR UPDATE OF lease
                         """,
-                        (tool_call_id, tenant_id, payload.capability, Json(payload.arguments), argument_hash, str(trace_id)),
+                        (tenant_id, tool_call_id, payload.capability, argument_hash),
                     )
+                    lease = cur.fetchone()
+                    if lease is not None and (lease[1] is None or cached.authorization_lease_id == lease[0]):
+                        lease_id = lease[0]
+                        cur.execute("UPDATE control.authorization_leases SET consumed_at=COALESCE(consumed_at,now()) "
+                                    "WHERE tenant_id=%s AND id=%s", (tenant_id, lease_id))
+                        decision_name = "ALLOW"
+                if (cached is not None and cached.decision == decision_name
+                        and cached.authorization_lease_id == lease_id
+                        and cached.policy_version == policy_version):
+                    return cached
+                if persist:
+                    if cached is None:
+                        cur.execute(
+                            """
+                            INSERT INTO policy.tool_calls
+                              (id,tenant_id,capability,arguments,argument_hash,trace_id)
+                            VALUES(%s,%s,%s,%s,%s,%s)
+                            """,
+                            (tool_call_id, tenant_id, payload.capability, Json(payload.arguments), argument_hash, str(trace_id)),
+                        )
                     cur.execute(
                         """
                         INSERT INTO policy.decisions
                           (id,tenant_id,tool_call_id,decision,risk_score,reason,matched_rule_ids)
                         VALUES(%s,%s,%s,%s,%s,%s,%s)
                         """,
-                        (decision_id, tenant_id, tool_call_id, decision_name, result.risk_score, result.reason, matched_ids),
+                        (decision_id, tenant_id, tool_call_id, decision_name, result.risk_score,
+                         "approved upload lease for original idempotent request" if lease_id else result.reason, matched_ids),
                     )
                     if decision_name == "REQUIRE_APPROVAL":
                         cur.execute(
@@ -3746,8 +3787,9 @@ def create_app(settings: Settings | None = None) -> FastAPI:
                     policy_version=policy_version,
                     decision=decision_name,
                     risk_score=result.risk_score,
-                    reason=result.reason,
+                    reason="approved upload lease for original idempotent request" if lease_id else result.reason,
                     matched_rule_ids=matched_ids,
+                    authorization_lease_id=lease_id,
                     simulation=not persist,
                     decided_at=now,
                     trace_id=trace_id,
@@ -3773,6 +3815,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
         side_effects: str = "write_data",
         arguments: dict[str, Any] | None = None,
         idempotency_key: str | None = None,
+        approved_upload_retry: bool = False,
     ) -> PolicyDecisionResponse:
         """Fail closed for mutating routes that are not policy-approved.
 
@@ -3795,6 +3838,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
             # approval request; only /policy/simulate remains non-durable.
             persist=True,
             idempotency_key=idempotency_key,
+            approved_upload_retry=approved_upload_retry,
         )
         if decision.decision != "ALLOW":
             status = 409 if decision.decision == "REQUIRE_APPROVAL" else 403
@@ -4871,6 +4915,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
                 side_effects="write_data",
                 arguments={"upload_fingerprint": request_hash},
                 idempotency_key=idempotency_key,
+                approved_upload_retry=True,
             )
             store = knowledge_upload_idempotency(tenant_id)
             try:

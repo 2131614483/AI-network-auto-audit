@@ -24,6 +24,10 @@ function normaliseIpcError(error: unknown): Error {
 }
 
 contextBridge.exposeInMainWorld("auditControl", {
+  approveKnowledgeUpload: async (tenantId: string, approvalId: string): Promise<{ approved: boolean }> => {
+    try { return await ipcRenderer.invoke("audit:approveKnowledgeUpload", tenantId, approvalId); }
+    catch (error) { throw normaliseIpcError(error); }
+  },
   enableCollaborativePlanning: async (): Promise<{ enabled: boolean; detail: string }> => {
     try { return await ipcRenderer.invoke("audit:enablePlanning"); }
     catch (error) { throw normaliseIpcError(error); }

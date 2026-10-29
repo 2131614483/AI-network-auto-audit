@@ -56,6 +56,7 @@ async function loadWorkspace() {
   $("#connect-tenant").disabled = true; setNotice("正在加载租户上下文与 GUI 契约…");
   try {
     const tenant = await request("/api/v1/ui/tenant-context", { headers: { "X-Tenant-Slug": slug } });
+    if (state.tenantId !== tenant.tenant_id) pendingUpload = undefined;
     state.tenantId = tenant.tenant_id;
     $("#tenant-context").textContent = `${tenant.tenant_slug} · ${tenant.tenant_id}`;
     const [bootstrap, contributions] = await Promise.all([request("/api/v1/ui/bootstrap"), request("/api/v1/ui/contributions")]);
@@ -67,31 +68,37 @@ async function loadWorkspace() {
 document.querySelectorAll(".tab").forEach((tab) => tab.addEventListener("click", () => { document.querySelectorAll(".tab,.view").forEach((node) => node.classList.remove("active")); tab.classList.add("active"); $(`#${tab.dataset.view}`).classList.add("active"); }));
 $("#connect-tenant").addEventListener("click", loadWorkspace);
 $("#refresh-approvals").addEventListener("click", () => loadApprovals().catch((error) => setNotice(error.message, true)));
+let pendingUpload;
+let uploading = false;
+$("#knowledge-files").addEventListener("change", () => { pendingUpload = undefined; });
 $("#knowledge-upload").addEventListener("submit", async (event) => {
   event.preventDefault();
+  if (uploading) return;
   if (!state.tenantId) { setNotice("请先加载工作区。", true); return; }
   const files = Array.from($("#knowledge-files").files || []);
   const output = $("#knowledge-result");
   if (!files.length) { output.textContent = "请选择至少一个文件。"; return; }
+  pendingUpload ||= crypto.randomUUID();
+  uploading = true;
   const body = new FormData();
   files.forEach((file) => { body.append("files", file, file.name); body.append("relative_paths", file.webkitRelativePath || file.name); });
   output.textContent = `正在登记 ${files.length} 个文件…`;
   try {
     const result = await request("/api/v1/knowledge/upload", {
-      method: "POST", body, headers: { "Idempotency-Key": crypto.randomUUID() },
+      method: "POST", body, headers: { "Idempotency-Key": pendingUpload },
     });
     output.textContent = JSON.stringify(result, null, 2);
     setNotice(`知识任务已创建：${result.accepted} 个已解析，${result.deferred} 个等待本地提取器。`);
   } catch (error) {
     const decision = error?.payload?.detail?.decision;
     if (decision?.decision === "REQUIRE_APPROVAL") {
-      output.textContent = `写入需要审批，已生成审批记录 ${decision.tool_call_id}；在审批中心批准后重新提交。`;
+      output.textContent = `写入需要审批，调用编号 ${decision.tool_call_id}；批准后保留所选文件，再次提交即可继续。`;
       setNotice("该写入需要审批，审批记录已落库。");
       loadApprovals().catch(() => {});
     } else {
       output.textContent = `导入失败：${error instanceof Error ? error.message : "未知错误"}`;
     }
-  }
+  } finally { uploading = false; }
 });
 $("#policy-form").addEventListener("submit", async (event) => { event.preventDefault(); if (!state.tenantId) { setNotice("请先加载工作区。", true); return; } const form = new FormData(event.currentTarget); const output = $("#simulation-result"); try { const argumentsValue = JSON.parse(String(form.get("arguments"))); const result = await request("/api/v1/policy/simulate", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ capability: form.get("capability"), risk_class: form.get("risk_class"), side_effects: form.get("side_effects"), arguments: argumentsValue }) }); output.textContent = JSON.stringify(result, null, 2); } catch (error) { output.textContent = `模拟失败：${error instanceof Error ? error.message : "未知错误"}`; } });
 loadWorkspace();

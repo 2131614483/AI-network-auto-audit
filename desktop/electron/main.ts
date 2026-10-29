@@ -1,5 +1,5 @@
 import { app, BrowserWindow, dialog, ipcMain, Menu, type IpcMainInvokeEvent } from "electron";
-import { enablePackagedPlanning, startPackagedBackend, stopPackagedBackend } from "./backend";
+import { approvePackagedUpload, enablePackagedPlanning, startPackagedBackend, stopPackagedBackend } from "./backend";
 import { appendFileSync, closeSync, existsSync, mkdirSync, openSync, readFileSync, readdirSync, readSync, renameSync, statSync, writeFileSync } from "node:fs";
 import { readFile, readdir, stat, writeFile } from "node:fs/promises";
 import { basename, extname, join, relative, resolve, sep } from "node:path";
@@ -550,7 +550,7 @@ function readableControlPlaneError(payload: unknown): string {
   if (typeof detail === "object" && detail !== null && "message" in detail) {
     const message = detail.message;
     if (message === "policy gateway blocked capability") {
-      return "策略网关尚未允许此操作；请在审批中心按最小权限发布对应规则。";
+      return "策略网关尚未允许此操作；请检查审批记录和对应权限。";
     }
     if (typeof message === "string") return message;
   }
@@ -727,9 +727,10 @@ async function collectFolderKnowledgeFiles(root: string): Promise<string[]> {
   return files.sort((left, right) => left.localeCompare(right));
 }
 
-async function uploadKnowledgeBatch(tenantId: string, files: KnowledgeSelectionFile[]): Promise<unknown> {
+async function uploadKnowledgeBatch(tenantId: string, files: KnowledgeSelectionFile[], key: string): Promise<unknown> {
   if (!allowedPaths.has("/api/v1/knowledge/upload")) throw new Error("知识导入接口未获授权。");
   const headers = headersFor({ path: "/api/v1/knowledge/upload", method: "POST", tenantId });
+  headers.set("Idempotency-Key", key);
   const form = new FormData();
   for (const file of files) {
     const content = await readFile(file.path);
@@ -740,10 +741,18 @@ async function uploadKnowledgeBatch(tenantId: string, files: KnowledgeSelectionF
   try {
     response = await fetch(`${controlPlaneUrl}/api/v1/knowledge/upload`, { method: "POST", headers, body: form });
   } catch {
-    throw new Error("无法连接本机控制平面。知识文件未被上传或处理。");
+    throw new Error("连接中断，上传结果尚未确认。请保留所选文件重试，将复用原请求。");
   }
   const payload: unknown = await response.json().catch(() => ({}));
-  if (!response.ok) throw new Error(typeof payload === "object" && payload !== null && "detail" in payload ? String(payload.detail) : "知识导入失败");
+  if (!response.ok) {
+    if (response.status === 409 && typeof payload === "object" && payload !== null && "detail" in payload) {
+      const detail = payload.detail as { decision?: { decision?: string } } | undefined;
+      if (detail?.decision?.decision === "REQUIRE_APPROVAL") {
+        throw new Error("本次知识上传需要审批。请到审批中心选择“审核上传”，批准后保留原文件再次提交。");
+      }
+    }
+    throw new Error(readableControlPlaneError(payload));
+  }
   return payload;
 }
 
@@ -752,7 +761,8 @@ async function uploadKnowledge(tenantId: string, selectionId: string): Promise<u
   if (!selected?.length) throw new Error("知识文件选择已失效，请重新选择文件或文件夹。");
   const batches: unknown[] = [];
   for (let start = 0; start < selected.length; start += MAX_KNOWLEDGE_UPLOAD_BATCH_FILES) {
-    batches.push(await uploadKnowledgeBatch(tenantId, selected.slice(start, start + MAX_KNOWLEDGE_UPLOAD_BATCH_FILES)));
+    batches.push(await uploadKnowledgeBatch(tenantId, selected.slice(start, start + MAX_KNOWLEDGE_UPLOAD_BATCH_FILES),
+      `upload:${tenantId}:${selectionId}:${start}`));
   }
   return batches.length === 1 ? batches[0] : { selection_id: selectionId, batch_count: batches.length, batches };
 }
@@ -1047,6 +1057,15 @@ app.whenReady().then(async () => {
   ipcMain.handle("audit:uploadKnowledge", (event, tenantId: string, selectionId: string) => {
     assertTrustedSender(event);
     return uploadKnowledge(tenantId, selectionId);
+  });
+  ipcMain.handle("audit:approveKnowledgeUpload", async (event, tenantId: string, approvalId: string) => {
+    assertTrustedSender(event);
+    if (!app.isPackaged) throw new Error("源码工作区请由已登记的审核人通过审批 API 确认；本入口用于安装版。");
+    return approvePackagedUpload(tenantId, approvalId, async detail => {
+      const result = await dialog.showMessageBox({ type: "question", title: "确认知识文件上传",
+        message: "允许这一次知识上传？", detail, buttons: ["取消", "批准此次上传"], defaultId: 0, cancelId: 0 });
+      return result.response === 1;
+    });
   });
   ipcMain.handle("audit:windowControl", (event, action: WindowControlAction) => {
     assertTrustedSender(event);

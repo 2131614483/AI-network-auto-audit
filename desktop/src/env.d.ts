@@ -1,5 +1,6 @@
 interface Window {
   auditControl: {
+    approveKnowledgeUpload(tenantId: string, approvalId: string): Promise<{ approved: boolean }>;
     enableCollaborativePlanning(): Promise<{ enabled: boolean; detail: string }>;
     request(request: {
       path: string;

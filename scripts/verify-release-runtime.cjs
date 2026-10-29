@@ -17,7 +17,7 @@ async function main() {
   const bundle = path.join(root, 'backend.cjs');
   esbuild.buildSync({ entryPoints: [path.join(__dirname, '../desktop/electron/backend.ts')], bundle: true,
     platform: 'node', format: 'cjs', outfile: bundle });
-  const { enablePackagedPlanning, startPackagedBackend, stopPackagedBackend } = require(bundle);
+  const { approvePackagedUpload, enablePackagedPlanning, startPackagedBackend, stopPackagedBackend } = require(bundle);
   const userDataPath = path.join(root, 'synthetic-user');
   const result = { test_only: true, native_gui_tested: false, root, checks: [], ok: false };
   const options = { resourcesPath: resources, userDataPath,
@@ -53,6 +53,8 @@ async function main() {
       'count=q.fetchone()[0]',
       'q.execute("SELECT count(*) FROM policy.policy_sets WHERE name LIKE \'managed-maintenance-%\' AND status=\'active\'")',
       'grants=q.fetchone()[0]',
+      'q.execute("INSERT INTO policy.policy_sets(tenant_id,name,version,status,rules) VALUES(%s,\'synthetic-release-upload\',1,\'active\',%s)", (tenant, json.dumps([{"effect":"require_approval","match":{"capabilities":["knowledge.upload"]}}])))',
+      'c.commit()',
       'print(json.dumps({"bypassrls":role[0],"superuser":role[1],"maintenance_events":count,"maintenance_grants":grants}))',
       'c.close()',
     ].join('\n');
@@ -65,6 +67,30 @@ async function main() {
     assert.equal(facts.maintenance_events, 2); assert.equal(facts.maintenance_grants, 1);
     result.database_facts = facts;
     result.checks.push('bootstrap journal imported and app role has no BYPASSRLS/superuser');
+    const owner = JSON.parse(fs.readFileSync(path.join(dataDir, 'workspace-owner.json'), 'utf8'));
+    assert.equal(owner.tenant_id, tenant.tenant_id);
+    const uploadKey = require('node:crypto').randomUUID();
+    const upload = async () => {
+      const body = new FormData();
+      body.append('files', new Blob(['# Synthetic release audit evidence\n']), 'synthetic.md');
+      return fetch(handle.apiBaseUrl + '/api/v1/knowledge/upload', { method: 'POST', body,
+        headers: { 'X-Tenant-Id': tenant.tenant_id, 'X-Trace-Id': require('node:crypto').randomUUID(), 'Idempotency-Key': uploadKey } });
+    };
+    const blocked = await upload(); assert.equal(blocked.status, 409);
+    const tool = (await blocked.json()).detail.decision.tool_call_id;
+    const approvals = await fetch(handle.apiBaseUrl + '/api/v1/approvals?status=pending', {
+      headers: { 'X-Tenant-Id': tenant.tenant_id, 'X-Trace-Id': require('node:crypto').randomUUID() } });
+    const approval = (await approvals.json()).items.find(item => item.tool_call_id === tool);
+    assert.ok(approval);
+    assert.deepEqual(await approvePackagedUpload(tenant.tenant_id, approval.id, async () => false), { approved: false });
+    assert.equal((await upload()).status, 409);
+    assert.deepEqual(await approvePackagedUpload(tenant.tenant_id, approval.id, async () => true), { approved: true });
+    const accepted = await upload(); assert.equal(accepted.status, 200);
+    const original = await accepted.json();
+    const replay = await upload(); assert.equal(replay.status, 200);
+    assert.equal((await replay.json()).batch_id, original.batch_id);
+    assert.equal(original.accepted, 1);
+    result.checks.push('real upload denied, approval cancelled then confirmed, ingestion and same-batch replay');
     const settings = await fetch(handle.apiBaseUrl + '/api/v1/ai/settings', {
       method: 'PUT', headers: { 'Content-Type': 'application/json', 'X-Tenant-Id': tenant.tenant_id,
         'X-Trace-Id': require('node:crypto').randomUUID(), 'Idempotency-Key': require('node:crypto').randomUUID() },

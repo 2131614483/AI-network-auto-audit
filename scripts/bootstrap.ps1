@@ -170,7 +170,7 @@ if ($SkipNpmInstall) {
   if (-not $npmCommand) { $npmCommand = Get-Command npm -ErrorAction SilentlyContinue | Select-Object -First 1 }
   if (-not $npmCommand) {
     Write-Need "desktop dependencies are missing and npm was not found"
-    Add-ManualFix "Install Node.js 20+ from https://nodejs.org/ then run: npm install --prefix desktop"
+    Add-ManualFix "Install Node.js 22.12+ (recommended: 24) from https://nodejs.org/ then run: npm install --prefix desktop"
   } else {
     Write-Need "desktop\node_modules is missing (the desktop console cannot start without it)"
     Add-AutoFix "npm install --prefix desktop"

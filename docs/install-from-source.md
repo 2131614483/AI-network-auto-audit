@@ -13,7 +13,7 @@
 | Python | 3.11+（实测 3.12.12） | 必须能 `python -m venv` |
 | PostgreSQL | 16+（实测 16.13） | 需要超级用户建扩展 |
 | pgvector | 0.8（实测） | 迁移 `0001` 要 `CREATE EXTENSION vector` |
-| Node.js | 20+ | **仅桌面界面需要**；只跑 API 可以不装 |
+| Node.js | 22.12+，建议 24 | **仅桌面界面需要**；只跑 API 可以不装 |
 
 > `vector` 不是 trusted 扩展，所以建扩展必须用超级用户。应用账号故意没有这个权限。
 

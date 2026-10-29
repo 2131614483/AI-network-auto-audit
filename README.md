@@ -336,13 +336,13 @@ flowchart LR
 
 ### 方式二：Docker（已通过冒烟，Linux 与桌面端未覆盖）
 
-`init` 已改为只读版本门禁，迁移只能显式执行：`docker compose up -d postgres` → `docker compose --profile migrate run --rm migrate` → `docker compose up -d`。在本机 Windows Docker Desktop 上已实测整条链路：镜像构建、门禁放行（库落后时以 exit 1 拒绝并打印该跑的命令）、显式迁移与四域索引（库内合计 123 / 152 / 103）、api 与 worker 启动，`/health` 与 `/api/v1/health/ready` 均返回 200，14 项冒烟全部通过（含「未审批写入被拒绝并落审批记录」）。尚未在 Linux 服务器与桌面端验收，是否作为正式入口由发布方确认。
+`init` 已改为只读版本门禁。首次部署或更新源码后，必须先执行 `docker compose build api` 构建本地镜像，再显式迁移：`docker compose up -d postgres` → `docker compose --profile migrate run --rm migrate` → `docker compose up -d`。在本机 Windows Docker Desktop 上已实测整条链路：镜像构建、门禁放行（库落后时以 exit 1 拒绝并打印该跑的命令）、显式迁移与四域索引（库内合计 123 / 152 / 103）、api 与 worker 启动，`/health` 与 `/api/v1/health/ready` 均返回 200，14 项冒烟全部通过（含「未审批写入被拒绝并落审批记录」）。尚未在 Linux 服务器与桌面端验收，是否作为正式入口由发布方确认。
 其中的 `postgres` 服务可以单独用：它就是 PostgreSQL 16 + pgvector，适合本机装不上 pgvector 时给源码部署提供数据库——`docker compose up -d postgres`，连接端口 54329（见 `docker-compose.yml`）。
 浏览器仍提供简化工作台；完整组网画布与计划视图在桌面版，公网身份与租户映射另行建设。
 
 ### 方式三：从源码运行
 
-需要自备 Python 3.11+、PostgreSQL 16 + pgvector，桌面界面还需要 Node.js 20+。
+需要自备 Python 3.11+、PostgreSQL 16 + pgvector，桌面界面还需要 Node.js 22.12+（建议 24）。
 Windows 装了多个 Python 时用 `py -3.12 -m venv .venv` 显式指定，别让默认的 `python` 选错版本（`py -0p` 可列出已装版本）。
 完整步骤（含建库、迁移、初始数据、验证）见 **[从源码安装](docs/install-from-source.md)**，简述：
 

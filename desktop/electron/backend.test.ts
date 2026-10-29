@@ -38,7 +38,7 @@ vi.mock("node:child_process", async () => {
   };
 });
 
-import { enablePackagedPlanning, startPackagedBackend, stopPackagedBackend } from "./backend";
+import { approvePackagedUpload, enablePackagedPlanning, startPackagedBackend, stopPackagedBackend } from "./backend";
 
 function setup(existing: boolean) {
   const root = mkdtempSync(join(tmpdir(), "audit-network-maintenance-test-"));
@@ -63,6 +63,26 @@ beforeEach(() => { fake.calls = []; fake.children = []; fake.revision = "0069"; 
 afterEach(async () => { await stopPackagedBackend(); vi.unstubAllGlobals(); });
 
 describe("packaged startup maintenance boundary", () => {
+  it("confirms only this workspace's pending knowledge upload and keeps actor in main", async () => {
+    const options = setup(true);
+    await startPackagedBackend(options);
+    const tenant = "11111111-1111-4111-8111-111111111111";
+    const approval = "22222222-2222-4222-8222-222222222222";
+    const actor = "33333333-3333-4333-8333-333333333333";
+    writeFileSync(join(options.userDataPath, "data", "workspace-owner.json"), JSON.stringify({ tenant_id: tenant, actor_id: actor }));
+    const fetcher = vi.fn().mockResolvedValue({ ok: true, json: async () => ({ items: [
+      { id: approval, capability: "knowledge.upload", argument_hash: "synthetic-fingerprint" },
+    ] }) });
+    vi.stubGlobal("fetch", fetcher);
+    expect(await approvePackagedUpload(tenant, approval, async () => false)).toEqual({ approved: false });
+    expect(fetcher).toHaveBeenCalledTimes(1);
+    await expect(approvePackagedUpload("wrong-tenant", approval, async () => true)).rejects.toThrow("租户");
+    await approvePackagedUpload(tenant, approval, async () => true);
+    expect(fetcher).toHaveBeenCalledTimes(3);
+    expect(fetcher.mock.calls[2][1].headers["X-Actor-Id"]).toBe(actor);
+    fetcher.mockResolvedValue({ ok: true, json: async () => ({ items: [{ id: approval, capability: "plugin.execute" }] }) });
+    await expect(approvePackagedUpload(tenant, approval, async () => true)).rejects.toThrow("知识上传");
+  });
   it("does not migrate an existing current workspace", async () => {
     const options = setup(true);
     await startPackagedBackend(options);

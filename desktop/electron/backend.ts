@@ -593,6 +593,29 @@ function stopChild(child: ChildProcess | null): void {
 
 type PlanningPreview = { model: string; endpoint: string; config_hash: string };
 
+export async function approvePackagedUpload(tenantId: string, approvalId: string,
+  confirm: (detail: string) => Promise<boolean>): Promise<{ approved: boolean }> {
+  const paths = runtimePaths;
+  if (!paths || !/^[0-9a-f-]{36}$/i.test(approvalId)) throw new Error("本入口只用于安装版管理的本机上传审批。");
+  const owner = JSON.parse(readFileSync(join(paths.dataDir, "workspace-owner.json"), "utf8")) as { tenant_id: string; actor_id: string };
+  if (owner.tenant_id !== tenantId || !/^[0-9a-f-]{36}$/i.test(owner.actor_id)) throw new Error("审批租户与本机工作区不一致。");
+  const base = `http://127.0.0.1:${paths.apiPort}`;
+  const headers = { "X-Tenant-Id": tenantId, "X-Trace-Id": randomUUID() };
+  const listing = await fetch(`${base}/api/v1/approvals?status=pending`, { headers });
+  if (!listing.ok) throw new Error("无法读取本机待审批记录。");
+  const pending = (await listing.json() as { items: Array<{ id: string; capability: string; argument_hash: string }> }).items
+    .find(item => item.id === approvalId && item.capability === "knowledge.upload");
+  if (!pending) throw new Error("只允许确认本租户待审批的知识上传。");
+  if (!await confirm(`知识文件上传\n租户：${tenantId}\n审批：${approvalId}\n文件指纹：${pending.argument_hash}\n确认后请回到知识库，保留所选文件再次提交。`)) return { approved: false };
+  const response = await fetch(`${base}/api/v1/approvals/${approvalId}/decide`, {
+    method: "POST", headers: { ...headers, "Content-Type": "application/json", "X-Actor-Id": owner.actor_id,
+      "Idempotency-Key": `approve-upload:${approvalId}` },
+    body: JSON.stringify({ decision: "approved", reason: "Local workspace owner confirmed knowledge upload" }),
+  });
+  if (!response.ok) throw new Error(`本机上传审批未通过 (${response.status})，请刷新记录后检查权限与有效期。`);
+  return { approved: true };
+}
+
 export async function enablePackagedPlanning(confirm: (preview: PlanningPreview) => Promise<boolean>): Promise<{ enabled: boolean; detail: string }> {
   const paths = runtimePaths;
   const options = runtimeOptions;

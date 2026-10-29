@@ -1,4 +1,4 @@
-<#
+﻿<#
   Shared environment discovery for the Audit Network scripts.
 
   Dot-source it and call the resolvers instead of naming an interpreter or a

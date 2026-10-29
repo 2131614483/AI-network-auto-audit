@@ -278,6 +278,21 @@ class MaintenanceGateway:
             cur.execute("""INSERT INTO policy.policy_sets(tenant_id,name,version,status,rules)
                 VALUES(%s,%s,1,'active',%s) ON CONFLICT(tenant_id,name,version) DO NOTHING""",
                 (tenant, f"managed-maintenance-{self.workspace_id}", Json(rules)))
+            subject = f"managed-workspace-owner:{self.workspace_id}"
+            cur.execute("""INSERT INTO iam.principals(tenant_id,kind,subject,display_name)
+                VALUES(%s,'human',%s,'Local workspace owner')
+                ON CONFLICT(tenant_id,subject) DO NOTHING""", (tenant, subject))
+            cur.execute("SELECT id FROM iam.principals WHERE tenant_id=%s AND subject=%s", (tenant, subject))
+            owner = cur.fetchone()
+            assert owner is not None
+        metadata = {"workspace_id": self.workspace_id, "tenant_id": tenant, "actor_id": str(owner[0])}
+        owner_path = self.workspace / "workspace-owner.json"
+        try:
+            with owner_path.open("x", encoding="utf-8") as stream:
+                json.dump(metadata, stream)
+        except FileExistsError:
+            if json.loads(owner_path.read_text(encoding="utf-8")) != metadata:
+                raise ValueError("workspace owner metadata conflicts; preserve and inspect the workspace")
 
 
 def main() -> int:
