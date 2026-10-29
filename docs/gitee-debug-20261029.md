@@ -7,11 +7,13 @@
 在 [Gitee 仓库](https://gitee.com/hx2131614483/audit_network) 切换到上述分支，选择下载 ZIP；或运行：
 
 ```text
-git clone --branch codex/gitee-deployment-debug https://gitee.com/hx2131614483/audit_network.git
+git clone --config core.longpaths=true --branch codex/gitee-deployment-debug https://gitee.com/hx2131614483/audit_network.git
 cd audit_network
 ```
 
 这条分支保留 Gitee 原有的 MIT LICENSE。真实数据库、API Key、作者的 .venv、node_modules 和安装包不通过 Git 提交；其他电脑需要按下列步骤准备源码运行环境。带全部运行时的 Windows 安装包作为后续单独交付。
+
+Windows 建议检出到较短目录，例如 `C:\audit_network`。仓库保留了长路径的历史归档，上述 `core.longpaths=true` 只写入本次克隆的仓库配置；不修改系统或全局 Git 设置。下载 ZIP 时也应解压到短目录，避免在多层“下载/项目名/分支名”目录中展开归档。
 
 ## 准备环境
 
@@ -31,7 +33,13 @@ uv sync --python 3.12 --frozen --no-dev
 
 按源码安装文档先创建角色、设置各自密码、创建空数据库与四个扩展，再由迁移账号显式运行 Alembic。已有业务数据库须先备份，不要删除、重建或覆盖。初始化后使用应用账号运行示例种子、插件注册和能力图谱索引。
 
-设置当前终端的 `DATABASE_URL` 为应用账号连接串后，分别启动：
+两个终端都将 `DATABASE_URL` 设置为同一个应用账号连接串，再分别启动。Windows PowerShell 设置示例（替换密码）：
+
+```powershell
+$env:DATABASE_URL="postgresql://audit_app:YOUR_APP_PASSWORD@localhost:5432/audit_network"
+```
+
+然后在第一个终端启动 API，在第二个终端启动 Worker：
 
 ```text
 .venv\Scripts\python -m uvicorn apps.api.main:app --host 127.0.0.1 --port 8010

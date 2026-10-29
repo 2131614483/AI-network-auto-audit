@@ -310,7 +310,7 @@ flowchart LR
 | 层次    | 选型                                                                   |
 | ----- | -------------------------------------------------------------------- |
 | 数据库   | PostgreSQL 16 + `pgcrypto / pg_trgm / ltree / vector`，行级安全多租户        |
-| 后端    | Python 3.11 + FastAPI + psycopg + Alembic（0068 个迁移版本）                |
+| 后端    | Python 3.12 验证基线 + FastAPI + psycopg2 + Alembic（当前 schema 0069） |
 | 桌面端   | Electron 37 + React 19 + Ant Design 5 + Zustand + ECharts + Three.js |
 | AI 通道 | 统一网关（Ollama 本地 / OpenAI 兼容云端双协议）                                     |
 | 质量工具  | ruff + mypy strict + pytest（2230+ 用例）+ vitest + tsc strict           |
@@ -334,16 +334,10 @@ flowchart LR
 - 默认 Debug 用于当前 AI 会话参与的独立合成测试库；普通安装工作区使用自己配置的外接 API。两种模式均保留，不自动切换模型。
 - 当前多源协作规划仍在 Phase 10 验收过程中，实际云端模型和真实业务资料效果不在合成测试结论内。发行与验收范围见 [下载部署说明](docs/download-and-deploy.md)。
 
-### 方式二：Docker（服务器 / 网页入口）
+### 方式二：Docker（待验收的可选适配器）
 
-```bash
-docker compose up -d          # 起 postgres + 迁移 + api + worker
-# 打开 http://127.0.0.1:8010/
-```
-
-一条命令完成：建带 pgvector 的库 → 跑迁移 → 写示例数据 → 注册插件 → 建图谱索引 → 起服务。
-网页入口提供运行总览、知识库导入、插件工作台、审批中心与策略模拟；
-完整的组网画布与计划视图在桌面版里。
+本轮 Gitee 调试使用原生 PostgreSQL。Docker 定义尚未完成独立验证，现有 init 依赖仍需改为显式维护流程，当前不作为正式部署入口。
+浏览器仍提供简化工作台；完整组网画布与计划视图在桌面版，公网身份与租户映射另行建设。
 
 ### 方式三：从源码运行
 

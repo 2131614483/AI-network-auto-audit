@@ -64,13 +64,13 @@ psql -h 127.0.0.1 -U postgres -d audit_network -c "GRANT USAGE ON SCHEMA public 
 迁移必须用 `audit_migrator`（非超级用户），这一步同时验证了权限边界：
 
 ```bash
-# Windows
-set DATABASE_URL=postgresql://audit_migrator:YOUR_MIGRATION_PASSWORD@localhost:5432/audit_network
-.venv\Scripts\python -m alembic upgrade head
+# Windows PowerShell
+$env:DATABASE_URL="postgresql://audit_migrator:YOUR_MIGRATION_PASSWORD@localhost:5432/audit_network"
+.venv\Scripts\python -m alembic upgrade 0069_collaborative_planning
 
 # macOS / Linux
 export DATABASE_URL=postgresql://audit_migrator:YOUR_MIGRATION_PASSWORD@localhost:5432/audit_network
-.venv/bin/python -m alembic upgrade head
+.venv/bin/python -m alembic upgrade 0069_collaborative_planning
 ```
 
 期望输出结尾：`Running upgrade 0068_connectivity_read_policy -> 0069_collaborative_planning`。
@@ -79,18 +79,17 @@ export DATABASE_URL=postgresql://audit_migrator:YOUR_MIGRATION_PASSWORD@localhos
 
 下面三步都用应用账号 `audit_app`，只执行一次：
 
-```bash
-set DATABASE_URL=postgresql://audit_app:YOUR_APP_PASSWORD@localhost:5432/audit_network
+```powershell
+$env:DATABASE_URL="postgresql://audit_app:YOUR_APP_PASSWORD@localhost:5432/audit_network"
 
 # 5.1 示例数据（5 个集群、示例任务与事件）
 .venv\Scripts\python -c "import os; from packages.demo.seed import seed_local_demo; print(seed_local_demo(os.environ['DATABASE_URL']))"
 
 # 5.2 插件目录注册（把插件写进 catalog）
-.venv\Scripts\python -m packages.plugin_runtime.registration --database-url "%DATABASE_URL%" --tenant-slug local-dev
+.venv\Scripts\python -m packages.plugin_runtime.registration --database-url $env:DATABASE_URL --tenant-slug local-dev
 
 # 5.3 能力图谱 + 组网蓝图索引
-.venv\Scripts\python scripts\index-plugin-graph.py --database-url "%DATABASE_URL%" ^
-  --domain audit --domain aiops --domain quant --domain knowledge
+.venv\Scripts\python scripts\index-plugin-graph.py --database-url $env:DATABASE_URL --domain audit --domain aiops --domain quant --domain knowledge
 ```
 
 **5.3 不能跳过**：只做迁移和种子，组网会"选不中插件"——图谱负责召回，蓝图负责规划，
@@ -104,7 +103,7 @@ set DATABASE_URL=postgresql://audit_app:YOUR_APP_PASSWORD@localhost:5432/audit_n
 # 控制平面
 .venv\Scripts\python -m uvicorn apps.api.main:app --host 127.0.0.1 --port 8010
 
-# 另开一个终端：后台执行器（心跳、组网触发、DAG 重试）
+# 另开一个终端，先设置同样的应用账号 DATABASE_URL，再启动后台执行器
 .venv\Scripts\python -m apps.worker.local
 ```
 
@@ -154,7 +153,9 @@ SELECT id FROM iam.tenants WHERE slug = 'local-dev';
 
 ### 这一步抓到的两个真实缺陷（已修）
 
-1. **`packages/ai_planner/` 下 11 个模块尚待纳入发布提交**（`evidence.py`、`model_access.py`、
+2026-10-29：下述必要模块已纳入 Gitee 调试分支；以下保留早期发现记录。
+
+1. **`packages/ai_planner/` 下 11 个模块当时未纳入提交**（`evidence.py`、`model_access.py`、
    `source_adapters.py`、`planning_service.py` 等），而 `apps/api/main.py` 直接 import 它们。
    开发机上能跑是因为文件就在工作区；**别人 clone 下来会 `ModuleNotFoundError`**。
    打包版能跑是因为打包脚本从工作区复制。→ 发布提交必须包含这些文件。

@@ -1,12 +1,13 @@
 /* Exercise the real packaged backend in a new, retained synthetic workspace.
  * No Electron window, cloud provider, production database or user workspace.
+ * Maintainer prerequisite: npm ci at the repository root (for its build tools).
  * Usage: node scripts/verify-release-runtime.cjs <resources-directory> <report-parent>
  */
 const assert = require('node:assert/strict');
 const fs = require('node:fs');
 const path = require('node:path');
 const { spawnSync } = require('node:child_process');
-const esbuild = require('../desktop/node_modules/esbuild');
+const esbuild = require('esbuild');
 
 async function main() {
   const resources = path.resolve(process.argv[2]);
