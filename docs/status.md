@@ -1,6 +1,133 @@
 # 开发状态
 
-更新时间：2026-09-23
+更新时间：2026-10-29
+
+## 2026-10-29 · AIchatroom 疏漏复核与继续实施计划
+
+按用户要求对照 AG-08 至 AG-12 与当前代码，形成 [疏漏复核和实施顺序](phase10-gap-review-20261029.md)，异步交接为 `AIchatroom/AG-13_复核_疏漏与继续实施顺序.md`。当前未见 AG-12 后的新回复。
+
+确认需补齐：维护策略/审计、Compose 随启动迁移、安装版普通库与默认 Debug 测试库限制的首次使用引导、后台启动错误/运行配置/关窗行为、未知租户错误分类、保留权限与工件的完整恢复、用户输入绑定和中文检索质量基准；在线身份隔离与可复现发行仍未就绪。具体证据和“已确认/待测”边界见报告，建议先修可定位缺陷，再打通合成工作区规划和后台，随后完成维护恢复与阶段验收。
+
+本轮定向 Python **94 passed**、桌面 **114 passed**，全仓 Ruff 仍有历史 I001/F841 两项失败；合成 DSN 验证普通安装库的 Debug 前置拒绝，未实际连接数据库。未重跑全部集成、恢复或原生安装。业务逻辑、策略、用户配置和数据库未改变，没有外网调用或发布；**Phase 10 保持进行中**。
+
+## 2026-10-29 · Phase 10 与预览包测试
+
+按用户要求完成本机测试：全部 Python 单元 **1197 passed / 4 skipped**（E 盘资料未挂载）；全部契约和指定相关集成 **906 passed**；桌面 **114 passed**；根/桌面 TypeScript、业务 Ruff、148 文件 Mypy 通过。全仓 Ruff 仍有历史展示视频脚本 I001/F841 两项未通过。预览包大小和 SHA256 与 manifest 一致；随包后端模拟取消初始化时未创建数据库。
+
+本轮使用随包 PostgreSQL 工具对独立测试库生成完整备份，读取成功、截断备份被拒绝；恢复至新建的隔离实例成功，规划会话 **257/257**、知识文档 **489/489**、vector 扩展存在。恢复使用 `--no-owner --no-acl`，原始所有权/ACL 和跨租户隔离没有验证；独立实例已停止、测试证据保留。详见 [本轮测试](phase10-preview-test-20261029.md)，已写入 `AIchatroom/AG-12_测试_Phase10与备份恢复.md`。
+
+本轮未测试完整原生安装及真实模型；GUI 初始化/升级仍待接入策略裁决和审计。没有对外联网、升级开发库、执行新方案或发布 GitHub。**Phase 10 仍在进行中**。
+
+## 2026-10-29 · 显式数据库维护与 Windows 预览包
+
+按用户要求接续 AG-09 打包进度：先更新维护契约和测试，将普通启动中无条件执行的迁移改为明确初始化或升级操作；升级前先备份并读取验证。取消、备份失败、未知版本或不完整工作区时停止；已有数据库归属按数据目录检查，桌面增加单实例锁。
+
+本地生成未签名预览 `build/preview-1d9d1fb3ca88/dist-local/AuditNetwork-0.1.0-preview.1-win-x64-Setup.exe`，189.74 MiB，SHA256 `cf4bb34f6269fc105b94d1eef1681dd369c6c6c6240694a2e02d6d3152924167`。旧包未覆盖；新包带上模型设置路径修复。ASAR、版本与业务资源核对通过；随包 Python 的取消初始化实测未建库。桌面 **114 passed**、两套 TypeScript 通过，规划相关契约及集成 **20 passed**，业务 Ruff 与 148 文件 Mypy 通过。
+
+第一次打包工具意外联网下载 Electron，发现后停止；后续使用本机工具并禁止 Node HTTP/fetch、限制代理。未做网络抓包。真实备份/升级/恢复、完整安装与原生窗口尚未验收；GUI 初始化/升级尚需接入策略网关引导、租户/Trace/幂等及裁决审计，不能对外宣称正式发行或 Phase 10 完成。详见 [本轮记录](release-progress-20261029-maintenance.md)，AI 交接见 `AIchatroom/AG-11_接续_显式维护与预览包.md`。
+
+## 2026-10-29 · 发布进度复核与安装版模型设置修复
+
+工作区新增 Windows 打包、随包运行时与本地验证记录。本轮独立确认 `desktop/dist/AuditNetwork-0.1.0-win-x64-Setup.exe` 为 **189.7 MiB**，SHA256 与清单一致；比较随包应用 971 个资源文件，无缺失。本轮修复后，`env_store.py` 和契约 README 已领先旧包，尚未重打。安装器完整安装和原生窗口验收继续待完成，不把已有 API 冒烟记录等同于正式发行通过。
+
+发现安装环境 AI 设置仍写向程序资源目录；先补契约/测试，再改为有 `AUDIT_NETWORK_DATA_DIR` 时统一读写用户目录 `.env` / `.env.bak`，未配置时保留开发环境路径。全部单测 **1197 passed / 4 skipped**；设置 API / 协作服务 / 相关契约 **39 passed**；桌面 **100 passed**、TypeScript、改动 Ruff、148 文件 Mypy 通过。没有修改用户实际 `.env`、迁移开发库、调用外部模型或重建安装包。
+
+发布仍有阻断：现有安装版启动自动迁移违反显式迁移约束，源码未形成完整发行提交，完整浏览器工作台和在线部署未验收。Phase 10 保持进行中。详见 [本次发布进度](release-progress-20261029.md)。
+
+用户授权通过 `AIchatroom` 与其他 AI 交流；已读取 AG-08/AG-09 并新增 AG-10 核对留言，尚未收到新回复。
+
+## 2026-10-28 · GitHub / Windows 安装版 / 网页版发布规划
+
+按用户“先规划”的要求核对现有构建、启动器、浏览器壳、数据库、插件子进程和 CI，形成 [发布与分发规划](release-distribution-plan-20261028.md)。建议同一核心先交付 Windows x64 安装版和本地浏览器版，再交付带身份认证与租户隔离的在线版。安装包需包含私有 Python 与 PostgreSQL/pgvector，保护现有 `sys.executable -I -c` 插件语义；初始化/升级迁移仍显式执行。
+
+本次只新增规划文档，没有打包、上传 GitHub、部署服务器、切换开发阶段或改变 Phase 10 的 plan_only 边界。
+
+## 2026-10-28 · 保留 Debug 当前会话 API 与外接 AI API 两种模式
+
+桌面“AI 设置”增加 `debug/external` 选择（默认 Debug）。Debug 建立绑定租户、Trace、会话的本机 API，当前 Codex 会话逐次回填，限显式声明的合成资料和独立本机测试库；外接模式使用统一 AI 配置，并接受逐次出站策略裁决。两种模式共用知识主脑、三源检索、编排和独立评审，失败不会自动换模。新会话持久化不含密钥的接入快照；恢复发现配置变化则停止，终态可直接回读。独立后台 Worker 修改设置后需重启加载相同配置。
+
+正式 Debug 模式实测完成 `audit_brain → audit_brain → planner → reviewer`，2 轮、4 次调用、7 次来源查询计数和 24 条事件，最终 accepted；请求、回填响应与四条 ALLOW 裁决的摘要一致，终态回读不依赖模型。外接模式经本机可控 HTTP 提供方完成两轮六次调用，出站策略拒绝测试确保网络调用前阻断。详见 [两种模式实现与验收](phase10-model-modes-20261028.md)。
+
+验证：全部 Python 单测 **1190 passed / 4 skipped**（四项因 E 盘业务资料未挂载跳过）；全部契约和相关 PG/API 集成 **905 passed**；桌面 **100 passed**；桌面构建、根/桌面 TypeScript、业务代码 Ruff、147 文件 Mypy 通过。全仓 Ruff 仍只有已有展示视频脚本 I001/F841 两项。实际 Electron 启动被自动审批以“策略阻止”拒绝，本轮未完成原生窗口人工验收。
+
+没有新增迁移、没有修改用户实际 `.env` 或 Key，没有向互联网发送组网上下文、没有执行插件；线上配置此前余额不足，不能描述为真实云端模型已通过。开发库策略保持未启用，真实业务与长期后台运行继续待验收，**Phase 10 仍在进行中**。
+
+## 2026-10-28 · 补齐审计主脑 → 审计任务说明 → 插件编排
+
+按用户明确要求，审计域已改为知识优先：先由 `AuditBrainAgent` 形成目标、范围、风险假设、审计程序、所需证据和验收标准；主脑依据不足时只补查知识，不先编排插件。通过交接检查后，才结合插件关系、真实目录和历史组网经验形成候选。候选须映射所有程序，Reviewer 绑定说明摘要并逐程序评估，业务缺口可退回主脑；知识变化重建说明，编译摘要包含说明摘要。非审计域保持原流程。
+
+新增闭合 `AuditTaskBrief` 及 Schema；页面显示任务说明、程序/证据/标准、实现节点和逐项评审。旧版无任务说明的历史审计方案保留并提示重新提交复验。恢复时缺少说明、说明被改写或旧评审不匹配均不能沿用通过资格。
+
+当前会话实际 API 中继重跑成功，调用顺序 `audit_brain → audit_brain → planner → reviewer`，共 2 轮 / 4 次调用 / 7 次来源查询计数，2 项程序映射 2 节点及 1 条连线，24 条事件。已核对知识补查和任务说明放行先于插件来源查询，策略消息/响应摘要一致，终态回读无需模型。页面组件显示两项程序均通过。详见 `docs/phase10-audit-brain-acceptance-20261028.md`。
+
+首次实际测试发现新说明加上重复证据事实使评审上下文超过 64000 字符，系统正确阻止；已去除模型上下文中的重复事实表示，完整证据仍留在状态/历史/最终核验中。原失败记录保留，修复后重跑通过，没有扩大预算。
+
+验证：全部 Python 单测 **1177 passed / 4 skipped**（20.78 秒）；全部契约及相关 PG 集成 **889 passed**（827 + 62）；桌面 **98 passed**，构建与根/桌面 TypeScript 检查通过；业务代码 Ruff、146 文件 Mypy 通过。全仓 Ruff 仍有历史展示视频脚本 I001/F841 两项。未增加迁移、未更改开发库策略、未执行新方案；真实业务资料、替换模型与长期后台运行仍待验收，**Phase 10 继续进行中**。
+
+## 2026-10-28 · Phase 10 多源协作规划：核心实现与当前会话接入验收
+
+用户已明确要求开始实施。已更新 `AGENTS.md` 当前范围：本机三源证据、协作规划、独立评估、补检索与持久会话；只产出 plan_only，不自动执行方案。完整使用说明见 `docs/phase10-collaborative-planning.md`。
+
+### 已接线
+
+- 新闭合契约与 Schema：可检查的目标条目、Artifact ID 输入、严格预算、三源查询/证据、候选与独立评审。
+- `source_adapters.py`：图谱当前内部关系、M6/CW3 历史（含失败）、知识正文；只读 SQL + RLS + 5 秒 statement timeout。输入检查允许根、SHA256、大小与本地引用；最终重读证据版本。同源运行血缘规范为 `db://runs/{uuid}`，共享来源分组。
+- `collaborative.py` + `assessment.py`：三源检索—规划—硬检查—独立评估—定向补检索循环，证据能够切换候选插件。拒绝未知能力、无依据节点、参数类型漂移、错用已登记适配器、失效评审与预算扩大；有界停止。
+- `collaborative_agents.py`：Planner/Reviewer 独立调用；仅本机 Ollama 适配，禁代理、重定向、云端回退。三类 Scout/Coordinator 为受控代码角色，不冒充六个独立模型。
+- `planning_service.py`、`session_store.py` 与 0069：实时 Policy Gateway 决策、追加历史、幂等、租约/fencing、checkpoint 恢复；通过后崩溃会重新核验来源与输入；旧资格不能用于变化后的输入。
+- API 会话提交/列表/详情/显式规划/目录；独立后台消费者；桌面“组网规划”新增表单、结果、来源与轮次查看，Electron 精确路径白名单同步。
+- 按用户要求新增 `session_bridge.py`：本机 OpenAI 兼容接口接收真实模型请求，当前 Codex 会话逐次回填 Planner/Reviewer 响应，保留请求/响应摘要与身份绑定；没有预置成功或云端回退。真实两节点案例完成 2 轮、4 次调用、7 次来源查询计数，最终 accepted，23 条事件和策略摘要核对一致。详见 `docs/phase10-session-relay-acceptance-20261028.md`。
+
+### 验证
+
+| 检查 | 结果 |
+|---|---|
+| 全部 `tests/unit`（显式 `AUDIT_NETWORK_SKIP_DOTENV=1`，不加载根测试库清理 fixture） | **1138 passed / 4 skipped**（18.25 秒）；4 项为 E 盘资料未挂载 |
+| Phase 10 三源、Store、Service/API + 既有 CW1/CW3/attempt 集成 | **62 passed**，真实 PostgreSQL 16 测试库 |
+| 全部契约 | **821 passed**，含新请求契约 9 项；与上述集成共 **883 passed**（56.51 秒） |
+| 当前会话中继 HTTP/鉴权/身份漂移/超时 | **14 passed**，已包含在全部单测 |
+| `npm --prefix desktop test` | **98 passed** |
+| `npm run typecheck` / `npm --prefix desktop run typecheck` / 桌面构建 | **通过** |
+| `python -m ruff check apps packages tests` | **通过** |
+| `python -m mypy packages` | **通过，145 文件** |
+| `python -m ruff check .` | **未通过：展示视频脚本原有 I001/F841 两项**，与前轮基线一致 |
+
+### 当前部署与验收状态
+
+仅将 `audit_network_test` **显式**升级到 0069，未升级开发库、未启用新策略或后台开关。默认 `local-collaborative-planning` 为 inactive；没有新执行授权。
+
+当前 Codex 会话实际接收项目内容、回填 4 次模型响应的联调已通过；仍需当前会话参与，不是无人值守模型服务。浏览器中已走查桌面组件提交/两轮评审/补查/刷新回读，尚未完成完整 Electron 人工验收。
+
+本机 Ollama 已实际运行：27B 超时、7B/9B 的不合格输出被正确拒绝。统一在线配置现为 `deepseek/deepseek-v4.1-flash`，用户要求的 Key 最小探测返回“余额不足”，未修改 Key/配置。用户已明确先用当前会话联调再换其他模型，本轮未切换在线模型。真实资料、替换模型效果与长期后台运行仍待验收，故 **Phase 10 仍在进行中，不标记整个阶段完成**。
+
+## 2026-10-27 · 组网缺陷修复：保留节点策略、严格执行节点预算
+
+本轮仅修复现有功能，不切换 Phase，不新增后台自主组网或自动执行权限。先在 `contracts/jsonschema/README.md` 明确执行行为约束，再补回归测试；修改实现前已验证 **23 failed / 8 passed**，失败覆盖策略丢失、节点数越界、显式预算被扩大及非法预算未拒绝。
+
+| 缺陷 | 修复 |
+|---|---|
+| `PortBoundExecutor` 按每个节点临时创建 `PolicyEngine(allow=[node.capability])`，覆盖调用方的拒绝/冻结/审批规则 | 直接将调用方策略传给隔离运行时，逐节点重新裁决。新增测试覆盖 deny 优先、freeze、require_approval、只有链路授权、允许规则带参数约束，以及两节点之间撤销授权；被阻止节点不启动子进程、不发布输出 |
+| `build_dag(max_nodes=2)` 在一次扩展中可加入 5 个节点；`plan_from_dag` 又按实际节点数/默认下限扩大显式预算 | 每次内层扩展前检查上限；搜索和计划转换均拒绝非正整数/布尔预算；显式预算原样交编译器，超限 DAG 拒绝编译；未传预算时保留原默认行为 |
+
+新增/扩展 `test_path_search.py` 与 `test_port_bound_executor_policy.py`，共增加 **25 项单测**；另在 `test_cw3_dag_execution_loop.py` 增加 **1 项数据库回归**，验证链路获准但节点被拒时：没有插件子进程、4 个 attempt 均结束、输出为空、租户与 Trace 一致，未执行节点不伪造实现版本或代码摘要。
+
+### 本轮验证
+
+使用项目 `.venv`；测试仅使用临时合成资料和独立数据库 `audit_network_test`（PostgreSQL **16.13**），未运行迁移或修改开发库策略。`--confcutdir` 分别指定 `tests/unit`、`tests/integration`，避免根 `conftest.py` 的共享库策略重置和经验记录清理。
+
+| 检查 | 结果 |
+|---|---|
+| 9 个相关单测文件：path_search、port_bound_executor_policy、networking_trigger、networking_quality、isolated_plugin_runtime、plan_identifier_safety、composer_wiring、composer_instances、composition_agents | **142 passed**（4.93 秒） |
+| `test_cw1_port_contract_ir.py`，真实本地隔离插件与端口绑定 | **15 passed**（0.89 秒） |
+| `test_cw3_dag_execution_loop.py` + `test_plan_attempt_finalization.py`，节点持久化、策略拒绝、fencing、恢复及终结 | **12 passed**（9.57 秒） |
+| 针对性测试合计 | **169 passed**；不是全量 pytest |
+| `python -m ruff check apps packages tests` | **通过** |
+| `python -m mypy packages` | **通过，137 文件** |
+| `npm run typecheck` | **通过** |
+| `python -m ruff check .` | **未通过：2 条既有错误**，均在 `docs/showcase-video/build_showcase_v3.py`（I001 导入顺序、F841 未使用的 `frames`）。已对 `git show HEAD:...` 的原始内容运行相同检查，确认原提交即有这两项；该展示脚本未改动 |
+| `git diff --check` | **通过** |
+
+本轮未运行全量 pytest、云端模型或长时间后台验收。任务级幂等、持久化 Policy 决策引用、按目标后台规划与整张 DAG 的恢复仍属于前一份评估列出的后续工作，不能将本次局部修复表述为自主组网已完成。
 
 ## 本轮交付：连通性只读端点 · 进化闭环七环打通 · 三处缺陷修复（2026-09-23）
 

@@ -1,0 +1,83 @@
+审计 AIOps 智能中枢 · 源码可见非商业许可 v1.0
+Audit AIOps Control Plane · Source-Available Non-Commercial License v1.0
+
+版权所有 (c) 2026 本项目作者（见仓库提交历史）
+Copyright (c) 2026 The authors of this project (see repository history)
+
+本许可不是开源许可（not an OSI-approved open source license）。它允许查看、学习与
+非商业使用，但**不授权商业用途**。
+
+
+一、授权（Grant）
+
+在遵守本许可全部条款的前提下，任何人可以免费：
+
+1. 查看、下载、复制本软件的源代码；
+2. 为学习、研究、评估或个人非商业项目而修改源代码；
+3. 以非商业目的分发本软件原始或修改后的源代码，前提是完整保留本许可文件、
+   版权声明与作者署名。
+
+Subject to this license, you may view, copy, modify for study/research/evaluation/
+personal non-commercial projects, and redistribute the source code for
+non-commercial purposes, provided this license and all copyright notices are kept.
+
+
+二、限制（Restrictions）
+
+未经版权持有人事先书面许可，不得：
+
+1. **商业使用**：将本软件或其修改版用于任何商业目的，包括但不限于对外销售、
+   收费部署、以本软件为核心或主要价值来源的 SaaS 服务、付费咨询与外包交付、
+   以及纳入商业产品分发；
+2. **移除声明**：删除或修改本许可、版权声明、作者署名；
+3. **暗示背书**：以暗示官方认可或合作的方式使用本项目名称、作者名义或标识；
+4. **规避限制**：通过拆分、改名、二次封装等方式规避上述限制。
+
+Without prior written permission, you may not use this software or derivatives for
+any commercial purpose, remove this license or copyright notices, imply official
+endorsement, or circumvent these restrictions through repackaging.
+
+
+三、商业授权（Commercial Licensing）
+
+商业用途需另行取得书面授权。请通过仓库 Issue 或作者公开联系方式洽谈。
+
+Commercial use requires a separate written license. Contact the authors via the
+repository issue tracker.
+
+
+四、无担保（No Warranty）
+
+本软件按"现状"提供，不附带任何明示或默示担保，包括但不限于适销性、特定用途
+适用性与不侵权担保。使用者自行承担使用本软件的全部风险。
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED,
+INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A
+PARTICULAR PURPOSE AND NONINFRINGEMENT.
+
+
+五、责任限制（Limitation of Liability）
+
+在任何情况下，作者或版权持有人均不对因本软件或本软件的使用而产生的任何索赔、
+损害或其他责任负责，无论该责任源于合同、侵权或其他。
+
+IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES
+OR OTHER LIABILITY ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE.
+
+
+六、终止（Termination）
+
+违反本许可任一条款，授权即自动终止。终止后须停止使用并删除全部副本。
+授权终止不影响版权持有人就既往违约追究责任。
+
+Violation of any term terminates this license automatically. Upon termination you
+must stop using the software and delete all copies.
+
+
+七、其他（Miscellaneous）
+
+本许可不授予商标权。本许可的简体中文版本与英文本同等有效；如有歧义，以简体
+中文版本为准。
+
+This license grants no trademark rights. The Chinese and English texts are equally
+authoritative; in case of ambiguity, the Chinese text prevails.

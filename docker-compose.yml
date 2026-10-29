@@ -1,5 +1,29 @@
-# 可选的环境适配器：开发与测试的默认路径是本机原生 PostgreSQL 16，见 README
-# 《首次安装》。本文件不得成为应用代码的依赖。
+# 一条命令起全栈（服务器部署 / 网页入口）：
+#
+#     docker compose up -d
+#     # 打开 http://127.0.0.1:8010/
+#
+# 桌面安装版不需要本文件——它自带便携 Python 与 PostgreSQL，双击即用。
+# 本文件只是环境适配器，不得成为应用代码的依赖。
+#
+# 服务分工：
+#   postgres  带 pgvector 的 PostgreSQL 16。扩展与角色由 init-docker-postgres.sql
+#             在首次建库时创建（迁移 0001 需要超级用户建 vector 扩展）。
+#   init      一次性任务：迁移 → 示例数据 → 插件注册 → 图谱索引，成功后退出。
+#             api / worker 用 `service_completed_successfully` 等它，避免抢跑。
+#   api       控制平面 HTTP 服务，同时把 web/ 挂在 /（网页入口）。
+#   worker    后台执行器：心跳、组网触发、DAG 重试。
+
+name: audit-network
+
+x-app: &app
+  image: audit-network:local
+  build:
+    context: .
+    dockerfile: Dockerfile
+  environment: &app-env
+    DATABASE_URL: postgresql://audit_app:admin@postgres:5432/audit_network
+    AUDIT_NETWORK_DATA_DIR: /data
 
 services:
   postgres:
@@ -9,11 +33,11 @@ services:
       POSTGRES_DB: audit_network
       POSTGRES_USER: audit_migrator
       # 仅本机开发用；与 .env.example、scripts/ 默认值、CI 保持一致。
+      # 对外部署务必改掉，并同时改 api/worker 的 DATABASE_URL。
       POSTGRES_PASSWORD: admin
     ports:
       # 映射到 54329 而不是 5432，避免与本机原生 PostgreSQL 抢端口。
-      # 走容器时 DATABASE_URL 要用 54329：
-      #   postgresql://audit_app:admin@localhost:54329/audit_network
+      # 走容器时宿主机连库要用 54329；容器之间走服务名 postgres:5432。
       - "54329:5432"
     volumes:
       - audit_network_pgdata:/var/lib/postgresql/data
@@ -28,5 +52,62 @@ services:
       timeout: 3s
       retries: 20
 
+  init:
+    <<: *app
+    container_name: audit-network-init
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      <<: *app-env
+      # 迁移用 migrator 账号；其余步骤用应用账号，验证真实权限边界。
+      MIGRATOR_URL: postgresql://audit_migrator:admin@postgres:5432/audit_network
+    entrypoint: ["/bin/sh", "-c"]
+    command:
+      - |
+        set -eu
+        echo "[init] 1/4 数据库迁移"
+        DATABASE_URL="$$MIGRATOR_URL" python -m alembic upgrade head
+        echo "[init] 2/4 示例数据"
+        python -c "import os; from packages.demo.seed import seed_local_demo; print(seed_local_demo(os.environ['DATABASE_URL']))"
+        echo "[init] 3/4 插件注册"
+        python -m packages.plugin_runtime.registration --database-url "$$DATABASE_URL" --tenant-slug local-dev
+        echo "[init] 4/4 能力图谱索引"
+        python scripts/index-plugin-graph.py --database-url "$$DATABASE_URL" \
+          --domain audit --domain aiops --domain quant --domain knowledge
+        echo "[init] 完成"
+    restart: "no"
+
+  api:
+    <<: *app
+    container_name: audit-network-api
+    depends_on:
+      postgres:
+        condition: service_healthy
+      init:
+        condition: service_completed_successfully
+    ports:
+      - "8010:8010"
+    volumes:
+      - audit_network_data:/data
+    restart: unless-stopped
+
+  worker:
+    <<: *app
+    container_name: audit-network-worker
+    command: ["python", "-m", "apps.worker.local"]
+    depends_on:
+      postgres:
+        condition: service_healthy
+      init:
+        condition: service_completed_successfully
+      api:
+        condition: service_healthy
+    volumes:
+      - audit_network_data:/data
+    restart: unless-stopped
+
 volumes:
   audit_network_pgdata:
+  # 工件、草稿与日志。api 与 worker 共用，必须留在卷里而不是容器内。
+  audit_network_data:

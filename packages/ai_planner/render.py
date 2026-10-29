@@ -21,6 +21,8 @@ import html
 from pathlib import Path
 from typing import Any, Mapping
 
+from packages.paths import data_root
+
 from .connectivity import classify_islands, flow_edges_by_plugin, island_summary
 from .domain_pack import DomainPack, load_pack
 from .roles import ROLE_NAMES_ZH, resolve_all
@@ -240,4 +242,4 @@ def table_rows(view: Mapping[str, Any]) -> list[dict[str, str]]:
 
 
 def drafts_root() -> Path:
-    return Path(__file__).resolve().parents[2] / ".data" / "drafts"
+    return data_root() / "drafts"

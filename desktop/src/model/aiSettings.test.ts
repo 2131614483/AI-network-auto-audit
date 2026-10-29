@@ -42,6 +42,16 @@ const PAYLOAD: AISettingsPayload = {
 };
 
 describe("formFromPayload", () => {
+  it("defaults older settings to debug and saves an explicit external mode", () => {
+    const form = formFromPayload(PAYLOAD);
+    expect(form.planningMode).toBe("debug");
+    form.planningMode = "external";
+    expect(buildUpdateBody(form).planning_mode).toBe("external");
+  });
+
+  it("restores the saved planning mode", () => {
+    expect(formFromPayload({ ...PAYLOAD, planning: { mode: "external" } }).planningMode).toBe("external");
+  });
   it("prefills every effective value", () => {
     const form = formFromPayload(PAYLOAD);
     expect(form.provider).toBe("openai_compat");

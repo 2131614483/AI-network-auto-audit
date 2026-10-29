@@ -31,6 +31,7 @@ export type EmbeddingSettings = {
 
 export type AISettingsPayload = {
   chat: ChatSettings;
+  planning?: { mode: "debug" | "external" };
   embedding: EmbeddingSettings;
   sources: Record<string, string>;
   env_file: string;
@@ -58,6 +59,7 @@ export type AIProbeResult = {
  * distinguishable from "unchanged" and from a valid number.
  */
 export type AISettingsForm = {
+  planningMode: string;
   provider: string;
   baseUrl: string;
   model: string;
@@ -76,6 +78,7 @@ export type AISettingsForm = {
 };
 
 export const EMPTY_AI_SETTINGS_FORM: AISettingsForm = {
+  planningMode: "debug",
   provider: "openai_compat",
   baseUrl: "",
   model: "",
@@ -100,6 +103,7 @@ function text(value: string | number | null): string {
 export function formFromPayload(payload: AISettingsPayload): AISettingsForm {
   const { chat, embedding } = payload;
   return {
+    planningMode: payload.planning?.mode ?? "debug",
     provider: chat.provider,
     baseUrl: chat.base_url,
     model: chat.model,
@@ -146,6 +150,7 @@ export function buildUpdateBody(
   options: { clearApiKey?: boolean } = {},
 ): Record<string, unknown> {
   const body: Record<string, unknown> = {
+    planning_mode: form.planningMode,
     provider: trimmed(form.provider),
     base_url: trimmed(form.baseUrl),
     model: trimmed(form.model),

@@ -4,8 +4,8 @@ from __future__ import annotations
 
 import logging
 import os
+import threading
 import time
-from pathlib import Path
 from uuid import UUID
 
 import psycopg2
@@ -19,6 +19,7 @@ from packages.knowledge.rich_media import MineruAdapter
 from packages.knowledge.rich_media_service import RichMediaJobClaim, process_next_rich_media_job
 from packages.observability import attach_spool_logging, configure_rotating_file_logging
 from packages.ops.networking_trigger import run_due_networking_once
+from packages.paths import data_root
 from packages.plugin_topology.dag_persistence import recover_and_retry_once
 
 
@@ -147,7 +148,7 @@ def run_local_forever(database_url: str, poll_seconds: float = 1.0) -> None:
 
     if poll_seconds <= 0:
         raise ValueError("poll_seconds must be positive")
-    data_dir = Path(__file__).resolve().parents[2] / ".data"
+    data_dir = data_root()
     data_dir.mkdir(exist_ok=True)
     configure_rotating_file_logging(data_dir / "worker.log")
     # CW2 wiring: worker log records also persist into the spool so the
@@ -169,6 +170,16 @@ def run_local_forever(database_url: str, poll_seconds: float = 1.0) -> None:
     networking_every = int(os.getenv("AUDIT_NETWORK_AUTO_NETWORKING_EVERY", "300"))
     if auto_networking:
         logger.info("自动组网已启用（每 %d 轮检查一次到期）", networking_every)
+    if os.getenv("AUDIT_NETWORK_COLLABORATIVE_PLANNING", "0") == "1":
+        from apps.worker.collaborative import run_collaborative_forever
+
+        # Separate work queue: model latency must not stall outbox or heartbeats.
+        # Sessions/checkpoints live in PostgreSQL; the thread owns no truth.
+        threading.Thread(
+            target=run_collaborative_forever, args=(database_url, tenant_slug),
+            name="collaborative-planning", daemon=True,
+        ).start()
+        logger.info("local collaborative plan-only worker enabled")
     loop_count = 0
     totals = {"published": 0, "rich": 0, "tasks": 0, "generated": 0}
     while True:

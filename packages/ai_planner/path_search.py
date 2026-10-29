@@ -82,6 +82,12 @@ def _port_payload(port: Any) -> dict[str, Any]:
 # 都只有 2 节点（只有"单输入"的能力能串成线）。组网的结构是 DAG。
 
 
+def _node_budget(max_nodes: int) -> int:
+    if isinstance(max_nodes, bool) or not isinstance(max_nodes, int) or max_nodes < 1:
+        raise ValueError("max_nodes must be a positive integer")
+    return max_nodes
+
+
 def build_dag(
     specs: Mapping[str, Any],
     seed_ports: set[str],
@@ -99,6 +105,7 @@ def build_dag(
     # **按 port_id 连线**，与项目权威口径一致（`build_contract_index` 就是按 port_id 建索引的）。
     # 我前两版在这里用了 schema_ref，于是"六个风险输入各由不同插件产出"被抹平成同一个来源 ——
     # 那是我的 bug，不是目录的缺陷。
+    max_nodes = _node_budget(max_nodes)
     covered: set[str] = set(seed_ports)
     producers: dict[str, list[tuple[str, str]]] = defaultdict(list)
     for plugin_id, spec in specs.items():
@@ -111,6 +118,8 @@ def build_dag(
     while len(chosen) < max_nodes:
         progressed = False
         for plugin_id in sorted(specs):
+            if len(chosen) >= max_nodes:
+                break
             if plugin_id in chosen_set:
                 continue
             required = {p.port_id for p in specs[plugin_id].inputs if getattr(p, "required", True)}
@@ -163,6 +172,7 @@ def plan_from_dag(
     from packages.plugin_topology.compiler import compile_plan
 
     plugins: list[str] = list(dag["plugins"])
+    node_budget = _node_budget(max_nodes) if max_nodes is not None else max(16, len(plugins))
     node_id_of = {pid: f"{pid.split('.')[-1]}-{i:03d}" for i, pid in enumerate(plugins)}
     nodes = [
         {
@@ -188,14 +198,13 @@ def plan_from_dag(
             "target_instance": node_id_of[edge["target"]],
             "target_port": edge["target_port"],
         })
-    # 预算按**节点数**给，不按链长：`max_chain_length` 是为线性链设计的，DAG 一上来就
-    # 超它（实测 20 节点触发 "exceeding max_chain_length budget 16"）。链长仍给一个宽松
-    # 上界（DAG 里最长路径不会超过节点数），节点/边预算按实际规模给。
-    effective_nodes = max(max_nodes or len(nodes), len(nodes))
+    # The compiler's legacy max_chain_length limits node count.  An explicit
+    # caller budget is a hard ceiling; only an omitted budget uses the historic
+    # size-derived default.  The compiler rejects an oversized DAG unchanged.
     return compile_plan(
         nodes=nodes, edges=edges, plan_key=plan_key, seed_inputs=seeds,
         budget={
-            "max_chain_length": max(16, effective_nodes),
+            "max_chain_length": node_budget,
             "max_candidates": max(8, len(edges)),
             "max_latency_ms": 5000,
         },

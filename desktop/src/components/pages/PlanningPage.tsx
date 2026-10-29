@@ -1,6 +1,7 @@
 import { Alert, Button, Card, Col, Row, Space, Table, Tabs, Tag, Typography } from "antd";
 import { useCallback, useEffect, useState } from "react";
 import { apiRequest, asRecord, fmtInt, fmtTime, type PageProps } from "./common";
+import CollaborativePlanningPanel from "./CollaborativePlanningPanel";
 
 type PlanningIntentRow = {
   intent_id: string;
@@ -50,6 +51,7 @@ export default function PlanningPage({ tenantId }: PageProps) {
 
   return (
     <Space direction="vertical" style={{ width: "100%" }} size={12}>
+      <CollaborativePlanningPanel tenantId={tenantId} />
       <Row gutter={[8, 8]}>
         <Col xs={12} sm={8}><Card className="metric-card" size="small"><span>规划意图</span><strong>{fmtInt(intents.length)}</strong><small>planning_intents 记录数</small></Card></Col>
         <Col xs={12} sm={8}><Card className="metric-card" size="small"><span>规划蓝图</span><strong>{fmtInt(blueprints.length)}</strong><small>blueprints 目录</small></Card></Col>

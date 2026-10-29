@@ -21,14 +21,25 @@ from uuid import UUID, uuid4
 
 import psycopg2
 
-from packages.plugin_runtime.db_artifacts import (
+# 以 `python scripts/materialize_db_plugins.py` 直接运行时，sys.path[0] 是 scripts/ 而不是仓库根，
+# `packages` 导入不到。仓库里的 .venv 做过 editable 安装所以开发机上不暴露，
+# 按 requirements.txt 新装的干净环境会直接 ModuleNotFoundError。
+_PROJECT_ROOT = Path(__file__).resolve().parents[1]
+if str(_PROJECT_ROOT) not in sys.path:
+    sys.path.insert(0, str(_PROJECT_ROOT))
+
+from packages.plugin_runtime.db_artifacts import (  # noqa: E402
     materialize_alerts,
     materialize_incidents,
     materialize_semantic_document,
     materialize_topology,
 )
-from packages.plugin_runtime.runner import ArtifactInput, IsolatedPluginRuntime, PluginInvocation
-from packages.policy.engine import PolicyEngine
+from packages.plugin_runtime.runner import (  # noqa: E402
+    ArtifactInput,
+    IsolatedPluginRuntime,
+    PluginInvocation,
+)
+from packages.policy.engine import PolicyEngine  # noqa: E402
 
 DEFAULT_URL = os.getenv("AUDIT_NETWORK_DATABASE_URL", "postgresql://audit_app:admin@localhost:5432/audit_network")
 

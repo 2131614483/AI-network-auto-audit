@@ -10,6 +10,8 @@ from __future__ import annotations
 import argparse
 import json
 import os
+import sys
+from pathlib import Path
 from statistics import median
 from time import perf_counter
 from typing import Any
@@ -19,7 +21,14 @@ from uuid import UUID, uuid4
 import psycopg2
 from psycopg2.extras import execute_values
 
-from packages.graph.service import GraphBudget, GraphService
+# 以 `python scripts/benchmark_graph_routing.py` 直接运行时，sys.path[0] 是 scripts/ 而不是仓库根，
+# `packages` 导入不到。仓库里的 .venv 做过 editable 安装所以开发机上不暴露，
+# 按 requirements.txt 新装的干净环境会直接 ModuleNotFoundError。
+_PROJECT_ROOT = Path(__file__).resolve().parents[1]
+if str(_PROJECT_ROOT) not in sys.path:
+    sys.path.insert(0, str(_PROJECT_ROOT))
+
+from packages.graph.service import GraphBudget, GraphService  # noqa: E402
 
 
 def percentile_95(values: list[float]) -> float:

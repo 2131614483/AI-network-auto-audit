@@ -38,7 +38,14 @@ from packages.ai_planner import experience_prior as ai_experience_prior_module
 from packages.ai_planner import planner as ai_planner_module
 from packages.ai_planner import workbench as ai_workbench_module
 from packages.ai_planner.catalog import PORT_CONTRACTS
+from packages.ai_planner.evidence import PlanningContext, PlanningRequest
 from packages.ai_planner.nebula_graph import build_nebula_graph
+from packages.ai_planner.planning_service import (
+    CollaborativePlanningService,
+    PlanningAccessDenied,
+    PlanningTenantNotFound,
+)
+from packages.ai_planner.session_store import PlanningSessionNotFound
 from packages.aiops.service import AIOpsGovernanceService
 from packages.audit.pipeline import AuditPipeline
 from packages.cases.matrix import case_matrix
@@ -78,6 +85,7 @@ from packages.observability.diagnostics import failure_diagnostics
 from packages.observability.log_spool import SegmentedSpool
 from packages.observability.run_index import run_index as build_run_index
 from packages.observability.run_index import verify_bundle
+from packages.paths import data_root
 from packages.plugin_runtime.runner import (
     ArtifactInput,
     IsolatedPluginRuntime,
@@ -97,7 +105,11 @@ from packages.quant.service import QuantService
 from packages.search.fusion import search_all
 
 logger = logging.getLogger("audit.api")
-EXPECTED_MIGRATION_HEAD = "0068_connectivity_read_policy"
+EXPECTED_MIGRATION_HEAD = "0069_collaborative_planning"
+
+
+def _collaborative_service(database_url: str) -> CollaborativePlanningService:
+    return CollaborativePlanningService(database_url)
 
 # The project ``.env`` is the durable home of the AI settings the desktop
 # settings page writes.  Load it as *defaults* before any Settings is built.
@@ -2643,7 +2655,7 @@ def _spool_root(data_dir: Path | None = None) -> Path:
     override = os.getenv("AUDIT_NETWORK_SPOOL_ROOT", "").strip()
     if override:
         return Path(override)
-    base = data_dir or (Path(__file__).resolve().parents[2] / ".data")
+    base = data_dir or data_root()
     return base / "isolated" / "logs"
 
 
@@ -3003,7 +3015,7 @@ def _configure_file_logging() -> None:
     from starting, nor make ``apps.api.main`` unimportable.  Failures degrade to
     stderr with a warning, the same stance the experience projector takes.
     """
-    data_dir = Path(__file__).resolve().parents[2] / ".data"
+    data_dir = data_root()
     try:
         data_dir.mkdir(exist_ok=True)
         handler = configure_rotating_file_logging(data_dir / "api.log")
@@ -3052,12 +3064,19 @@ class AIEmbeddingSettingsView(BaseModel):
     dimensions: int
 
 
+class AIPlanningSettingsView(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    mode: Literal["debug", "external"]
+
+
 class AISettingsResponse(BaseModel):
     """Settings page payload — masked secrets only, never a plaintext key."""
 
     model_config = ConfigDict(extra="forbid")
 
     chat: AIChatSettingsView
+    planning: AIPlanningSettingsView
     embedding: AIEmbeddingSettingsView
     sources: dict[str, str]
     env_file: str
@@ -3079,6 +3098,7 @@ class AISettingsUpdateRequest(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
     provider: str | None = None
+    planning_mode: Literal["debug", "external"] | None = None
     base_url: str | None = None
     model: str | None = None
     api_key: str | None = None
@@ -3128,6 +3148,7 @@ def _ai_settings_updates(payload: AISettingsUpdateRequest) -> dict[str, str | No
     readable (``AI_TIMEOUT=600``, not ``600.0``).
     """
     mapping: list[tuple[str, object]] = [
+        ("AI_PLANNING_MODE", payload.planning_mode),
         ("AI_PROVIDER", payload.provider),
         ("AI_BASE_URL", payload.base_url),
         ("AI_MODEL", payload.model),
@@ -3163,6 +3184,7 @@ def _ai_settings_response() -> AISettingsResponse:
     path = ai_env_store.env_file_path()
     return AISettingsResponse(
         chat=AIChatSettingsView(**chat_view),
+        planning=AIPlanningSettingsView(mode=cast(Literal["debug", "external"], ai_config.resolve_planning_mode())),
         embedding=AIEmbeddingSettingsView(**embedding_view),
         sources={
             **chat.sources,
@@ -3530,7 +3552,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
                     "trace_id": trace_id,
                 },
             ) from exc
-        data_dir = Path(__file__).resolve().parents[2] / ".data"
+        data_dir = data_root()
         log_locations = [
             LogLocation(file=str(data_dir / "api.log"), query=f"trace_id={trace_id}"),
             LogLocation(file=str(data_dir / "worker.log"), query=f"trace_id={trace_id}"),
@@ -6781,6 +6803,79 @@ def create_app(settings: Settings | None = None) -> FastAPI:
             trace_id=trace_id,
         )
 
+    def collaborative_error(exc: Exception) -> HTTPException:
+        if isinstance(exc, PlanningTenantNotFound):
+            return HTTPException(status_code=404, detail="planning tenant not found")
+        if isinstance(exc, PlanningAccessDenied):
+            return HTTPException(status_code=409 if exc.decision == "REQUIRE_APPROVAL" else 403,
+                                 detail={"message": str(exc), "decision_id": exc.decision_id})
+        if isinstance(exc, PermissionError):
+            return HTTPException(status_code=403, detail=str(exc))
+        if isinstance(exc, PlanningSessionNotFound):
+            return HTTPException(status_code=404, detail="planning session not found")
+        if isinstance(exc, psycopg2.Error):
+            return HTTPException(status_code=503, detail="collaborative planning store unavailable; run explicit migrations")
+        return HTTPException(status_code=409, detail=str(exc))
+
+    @app.post("/api/v1/topology/planning/sessions", tags=["topology"])
+    async def collaborative_create(
+        payload: PlanningRequest, request: Request,
+        tenant_id: Annotated[UUID, Header(alias="X-Tenant-Id")],
+    ) -> JSONResponse:
+        context = PlanningContext(tenant_id=tenant_id, trace_id=_trace_id(request), session_id=uuid4())
+        try:
+            row = _collaborative_service(config.database_url).create(context, payload)
+        except (PermissionError, ValueError, psycopg2.Error) as exc:
+            raise collaborative_error(exc) from exc
+        return JSONResponse(status_code=200 if row["idempotent"] else 201, content=row)
+
+    @app.get("/api/v1/topology/planning/sessions", tags=["topology"])
+    async def collaborative_list(
+        request: Request, tenant_id: Annotated[UUID, Header(alias="X-Tenant-Id")],
+        limit: Annotated[int, Query(ge=1, le=50)] = 30,
+    ) -> dict[str, Any]:
+        context = PlanningContext(tenant_id=tenant_id, trace_id=_trace_id(request), session_id=uuid4())
+        try:
+            items = _collaborative_service(config.database_url).list(context, limit)
+            return {"items": items, "trace_id": str(context.trace_id)}
+        except (PermissionError, ValueError, psycopg2.Error) as exc:
+            raise collaborative_error(exc) from exc
+
+    @app.get("/api/v1/topology/planning/catalog", tags=["topology"])
+    async def collaborative_catalog(
+        request: Request, tenant_id: Annotated[UUID, Header(alias="X-Tenant-Id")],
+        domain: Literal["audit", "aiops", "knowledge", "quant"] = "audit",
+    ) -> dict[str, Any]:
+        context = PlanningContext(tenant_id=tenant_id, trace_id=_trace_id(request), session_id=uuid4())
+        try:
+            return {"items": _collaborative_service(config.database_url).catalog(context, domain),
+                    "trace_id": str(context.trace_id)}
+        except (PermissionError, ValueError, psycopg2.Error) as exc:
+            raise collaborative_error(exc) from exc
+
+    @app.get("/api/v1/topology/planning/sessions/{session_id}", tags=["topology"])
+    async def collaborative_get(
+        session_id: UUID, request: Request,
+        tenant_id: Annotated[UUID, Header(alias="X-Tenant-Id")],
+    ) -> dict[str, Any]:
+        context = PlanningContext(tenant_id=tenant_id, trace_id=_trace_id(request), session_id=session_id)
+        try:
+            return _collaborative_service(config.database_url).get(context)
+        except (PermissionError, ValueError, LookupError, psycopg2.Error) as exc:
+            raise collaborative_error(exc) from exc
+
+    @app.post("/api/v1/topology/planning/sessions/{session_id}/process", tags=["topology"])
+    async def collaborative_process(
+        session_id: UUID, request: Request,
+        tenant_id: Annotated[UUID, Header(alias="X-Tenant-Id")],
+    ) -> dict[str, Any]:
+        context = PlanningContext(tenant_id=tenant_id, trace_id=_trace_id(request), session_id=session_id)
+        try:
+            service = _collaborative_service(config.database_url)
+            return await asyncio.to_thread(service.process, context, worker_id="api-planning-worker")
+        except (PermissionError, ValueError, RuntimeError, LookupError, psycopg2.Error) as exc:
+            raise collaborative_error(exc) from exc
+
     @app.post("/api/v1/topology/planning/ai", response_model=AiPlanningResponse, tags=["topology"])
     async def topology_ai_planning(
         payload: AiPlanningRequest,
@@ -7069,7 +7164,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
             except ValueError:
                 return None
 
-        data_dir = Path(__file__).resolve().parents[2] / ".data"
+        data_dir = data_root()
         health = spool_health(_spool_root(data_dir))
         alerts = watermark_alerts(
             health,
@@ -7103,7 +7198,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
         )
         from packages.observability.evidence import export_evidence_bundle
 
-        data_dir = Path(__file__).resolve().parents[2] / ".data"
+        data_dir = data_root()
         try:
             projection = TopologyService(config.database_url).canvas_projection(tenant_id, str(run_id))
         except ValueError as exc:

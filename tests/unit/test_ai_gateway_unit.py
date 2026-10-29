@@ -305,6 +305,47 @@ def test_probe_reports_success_with_latency(clean_ai_env: pytest.MonkeyPatch) ->
 # --- embedding ---------------------------------------------------------------
 
 
+def test_settings_path_preserves_development_layout(monkeypatch, tmp_path) -> None:
+    from packages.ai import env_store
+
+    monkeypatch.delenv("AUDIT_NETWORK_DATA_DIR", raising=False)
+    monkeypatch.setattr(env_store, "project_root", lambda: tmp_path)
+    assert env_store.env_file_path() == tmp_path / ".env"
+
+
+def test_installed_settings_save_and_backup_use_writable_data_root(monkeypatch, tmp_path) -> None:
+    from packages.ai import env_store
+
+    resources = tmp_path / "resources" / "app"
+    resources.mkdir(parents=True)
+    workspace = tmp_path / "user data" / "audit"
+    monkeypatch.setattr(env_store, "project_root", lambda: resources)
+    monkeypatch.setenv("AUDIT_NETWORK_DATA_DIR", str(workspace))
+    target = workspace / ".env"
+    assert env_store.env_file_path() == target
+    env_store.update_env_file({"AI_PLANNING_MODE": "external"}, allowed_keys=MANAGED_ENV)
+    original = target.read_bytes()
+    env_store.update_env_file({"AI_MODEL": "fixture-model"}, allowed_keys=MANAGED_ENV)
+    assert env_store.backup_file_path() == workspace / ".env.bak"
+    assert env_store.backup_file_path().read_bytes() == original
+    assert env_store.read_env_file()["AI_MODEL"] == "fixture-model"
+    assert not (resources / ".env").exists()
+
+
+def test_installed_settings_load_from_same_location(monkeypatch, tmp_path) -> None:
+    from packages.ai import env_store
+
+    workspace = tmp_path / "user-data"
+    workspace.mkdir()
+    (workspace / ".env").write_text("AI_MODEL=workspace-model\n", encoding="utf-8")
+    monkeypatch.setattr(env_store, "project_root", lambda: tmp_path / "resources")
+    monkeypatch.setenv("AUDIT_NETWORK_DATA_DIR", str(workspace))
+    monkeypatch.delenv("AUDIT_NETWORK_SKIP_DOTENV", raising=False)
+    monkeypatch.delenv("AI_MODEL", raising=False)
+    assert env_store.load_env_file() == ["AI_MODEL"]
+    assert os.environ["AI_MODEL"] == "workspace-model"
+
+
 def test_ollama_embedder_validates_dimension(clean_ai_env: pytest.MonkeyPatch) -> None:
     embedder = UnifiedEmbedder(opener=lambda *_a, **_k: _Response({"embeddings": [[0.5] * 1024]}))
     assert len(embedder.embed(["审计证据"])[0]) == 1024
