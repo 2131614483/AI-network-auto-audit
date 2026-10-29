@@ -2,6 +2,9 @@
 from __future__ import annotations
 
 import importlib.util
+import os
+import shutil
+import subprocess
 from pathlib import Path
 
 import pytest
@@ -36,3 +39,17 @@ def test_existing_stage_is_preserved(packaging, tmp_path):
     with pytest.raises((FileExistsError, SystemExit)):
         packaging.stage_app(tmp_path)
     assert marker.read_text() == "retained"
+
+
+def test_offline_guard_loads_from_a_windows_path_with_spaces(packaging, tmp_path):
+    node = shutil.which("node")
+    if node is None:
+        pytest.skip("Node.js unavailable for real release guard probe")
+    guard = tmp_path / "release tools" / "offline-guard.cjs"
+    guard.parent.mkdir()
+    shutil.copy2(Path(packaging.__file__).with_name("offline-build-guard.cjs"), guard)
+    probe = subprocess.run([node, "-e", "try { require('node:http').get('http://127.0.0.1:9'); "
+                            "process.exit(2); } catch(e) { if(!e.message.includes('Network access disabled')) throw e; }"],
+                           env={**os.environ, "NODE_OPTIONS": packaging.offline_node_options(guard)},
+                           capture_output=True, text=True, timeout=15)
+    assert probe.returncode == 0, probe.stderr

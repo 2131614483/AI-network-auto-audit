@@ -163,6 +163,11 @@ def report(stage: Path) -> None:
     print(f"  {'合计':14s} {files:6d} 文件  {total / 1024 / 1024:7.1f} MB")
 
 
+def offline_node_options(guard: Path) -> str:
+    """NODE_OPTIONS parses backslashes as escapes, including quoted Windows paths."""
+    return f'--require="{guard.resolve().as_posix()}"'
+
+
 def build_installer(stage: Path) -> int:
     """Use an explicit local toolchain; never let the builder fetch a runtime."""
     desktop = PROJECT_ROOT / "desktop"
@@ -184,7 +189,7 @@ def build_installer(stage: Path) -> int:
            "ELECTRON_BUILDER_OFFLINE": "true", "CSC_IDENTITY_AUTO_DISCOVERY": "false",
            "HTTP_PROXY": "http://127.0.0.1:9", "HTTPS_PROXY": "http://127.0.0.1:9",
            "ALL_PROXY": "http://127.0.0.1:9", "NO_PROXY": "",
-           "NODE_OPTIONS": f'--require="{PROJECT_ROOT / "scripts" / "offline-build-guard.cjs"}"'}
+           "NODE_OPTIONS": offline_node_options(PROJECT_ROOT / "scripts" / "offline-build-guard.cjs")}
     output = stage.parent / "out"
     vite = desktop / "node_modules" / "electron-vite" / "bin" / "electron-vite.js"
     subprocess.run([node, str(vite), "build", "--outDir", str(output)], cwd=desktop, env=env, check=True)

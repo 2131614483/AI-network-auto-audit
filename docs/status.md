@@ -12,6 +12,8 @@
 
 Windows 安装器交互、异机安装、完整旧工作区权限与工件恢复、公网身份体系仍未验收；本机 Docker 引擎未运行。Phase 10 未标记完成，未将调试包标成正式稳定版，未调用真实外部模型或生产设施。
 
+实际构建进一步复现并修复 Windows `NODE_OPTIONS` 路径转义问题；新增真实 Node 子进程回归，打包测试 4 passed（全量回归之后新增）。
+
 ## 2026-10-29 · Gitee 调试交付与安装治理修复
 
 用户指定先在 Gitee 调试，GitHub 正式发行后置。产品、契约、测试和部署说明纳入独立 `codex/gitee-deployment-debug` 分支；保留 Gitee 已有 MIT LICENSE，README 和早期发布稿的许可/发行状态已校正。入口见 [Gitee 调试部署](gitee-debug-20261029.md)。
