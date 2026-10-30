@@ -16,3 +16,7 @@ The graph extraction page must distinguish a pending read, a failed or denied
 read, and a successful empty result. A failed refresh must not continue to
 present old proposals as current. Changing tenant must not show another
 tenant's data or allow a late response from the previous tenant to replace it.
+
+Maintenance journal locking must exclude a second process on Windows and on
+POSIX and release the lock on exit. Static type checks must pass for both
+platforms without dropping the lock or weakening the maintenance gateway.

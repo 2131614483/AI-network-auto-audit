@@ -2,6 +2,8 @@
 from __future__ import annotations
 
 import json
+import subprocess
+import sys
 from uuid import uuid4
 
 import pytest
@@ -10,6 +12,27 @@ import pytest
 def request(**changes):
     return {"action": "initialize", "target": "0069_collaborative_planning",
             "confirmed": True, "idempotency_key": str(uuid4()), **changes}
+
+
+def test_maintenance_lock_excludes_other_processes_and_releases(tmp_path):
+    from packages.policy.maintenance import MaintenanceGateway
+
+    script = """from pathlib import Path
+import sys
+from packages.policy.maintenance import MaintenanceGateway
+try:
+    with MaintenanceGateway(Path(sys.argv[1]))._locked():
+        pass
+except (OSError, BlockingIOError):
+    sys.exit(17)
+"""
+    def probe():
+        return subprocess.run([sys.executable, "-c", script, str(tmp_path)], check=False, capture_output=True).returncode
+
+    gateway = MaintenanceGateway(tmp_path)
+    with gateway._locked():
+        assert probe() == 17
+    assert probe() == 0
 
 
 def test_confirmation_is_required_and_denial_is_recorded(tmp_path):

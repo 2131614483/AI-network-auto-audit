@@ -76,7 +76,7 @@ class MaintenanceGateway:
             if os.name == "nt":
                 import msvcrt
 
-                msvcrt.locking(lock.fileno(), msvcrt.LK_NBLCK, 1)
+                getattr(msvcrt, "locking")(lock.fileno(), getattr(msvcrt, "LK_NBLCK"), 1)
             else:
                 import fcntl
 
@@ -86,7 +86,7 @@ class MaintenanceGateway:
             finally:
                 lock.seek(0)
                 if os.name == "nt":
-                    msvcrt.locking(lock.fileno(), msvcrt.LK_UNLCK, 1)
+                    getattr(msvcrt, "locking")(lock.fileno(), getattr(msvcrt, "LK_UNLCK"), 1)
                 else:
                     getattr(fcntl, "flock")(lock.fileno(), getattr(fcntl, "LOCK_UN"))
 
