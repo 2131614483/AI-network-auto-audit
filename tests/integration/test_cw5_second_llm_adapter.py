@@ -101,6 +101,10 @@ def _ok_handler(recorder: _Recorder, payload: dict[str, Any], *, delay: float = 
 def _error_handler(status: int, message: str):
     class Handler(BaseHTTPRequestHandler):
         def do_POST(self) -> None:  # noqa: N802
+            # Read the request before returning the controlled HTTP response.
+            # Closing with unread bytes can reset the socket on Windows and
+            # replace the intended 401 with a transport error.
+            self.rfile.read(int(self.headers.get("Content-Length", "0")))
             raw = json.dumps({"error": {"message": message}}, ensure_ascii=False).encode("utf-8")
             self.send_response(status)
             self.send_header("Content-Type", "application/json")
@@ -155,6 +159,24 @@ def test_openai_compat_http_error_maps_to_chat_error() -> None:
         with pytest.raises(OpenAICompatChatError) as exc:
             _chat(base).complete_json([{"role": "user", "content": "hi"}])
         assert "invalid api key" in str(exc.value) or "401" in str(exc.value)
+    finally:
+        server.shutdown()
+        thread.join(timeout=5)
+
+
+def test_openai_compat_disconnect_fails_closed() -> None:
+    class DisconnectHandler(BaseHTTPRequestHandler):
+        def do_POST(self) -> None:  # noqa: N802
+            self.rfile.read(int(self.headers.get("Content-Length", "0")))
+            self.close_connection = True
+
+        def log_message(self, *args: Any) -> None:
+            return
+
+    server, thread, base = _make_server(DisconnectHandler)
+    try:
+        with pytest.raises(OpenAICompatChatError):
+            _chat(base).complete_json([{"role": "user", "content": "synthetic test"}])
     finally:
         server.shutdown()
         thread.join(timeout=5)
