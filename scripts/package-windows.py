@@ -219,7 +219,7 @@ def build_installer(stage: Path) -> int:
     config.update({
         "extends": None,
         "directories": {"app": str(app_directory), "output": str(stage.parent / "dist"), "buildResources": str(desktop / "build")},
-        "files": ["out/**/*", "package.json"],
+        "files": ["out/**/*", "package.json", "!**/node_modules/**/*"],
         "extraResources": [{"from": str(stage / "runtime"), "to": "runtime"}, {"from": str(stage / "app"), "to": "app"}],
         "electronDist": str(electron), "npmRebuild": False,
         "electronVersion": json.loads((desktop / "node_modules/electron/package.json").read_text(encoding="utf-8"))["version"],
@@ -228,7 +228,7 @@ def build_installer(stage: Path) -> int:
     configuration = stage.parent / "electron-builder.release.json"
     configuration.write_text(json.dumps(config, ensure_ascii=False, indent=2), encoding="utf-8")
     builder = desktop / "node_modules" / "electron-builder" / "out" / "cli" / "cli.js"
-    command = [node, str(builder), "--config", str(configuration), "--win", "--x64"]
+    command = [node, str(builder), "--projectDir", str(app_directory), "--config", str(configuration), "--win", "--x64"]
     subprocess.run([*command, "--dir"], cwd=desktop, env=env, check=True)
     unpacked = stage.parent / "dist" / "win-unpacked"
     subprocess.run([node, str(PROJECT_ROOT / "scripts/verify-packaged-desktop.cjs"), str(output),

@@ -40,3 +40,11 @@ test('the standalone runtime rejects an unbundled main dependency', async () => 
   const archive = path.join(f.root, 'external.asar'); await asar.createPackage(f.app, archive);
   assert.throws(() => verifyDesktop(f.output, archive, '0.1.0-test'), /unbundled/);
 });
+
+test('developer node_modules cannot be copied into the standalone archive', async () => {
+  const f = await fixture();
+  const dependency = path.join(f.app, 'node_modules/stale/index.js');
+  fs.mkdirSync(path.dirname(dependency), { recursive: true }); fs.writeFileSync(dependency, 'stale');
+  const archive = path.join(f.root, 'developer.asar'); await asar.createPackage(f.app, archive);
+  assert.throws(() => verifyDesktop(f.output, archive, '0.1.0-test'), /node_modules/);
+});

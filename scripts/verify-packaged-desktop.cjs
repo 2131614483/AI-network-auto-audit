@@ -6,6 +6,9 @@ const { isBuiltin } = require('node:module');
 const asar = require('../desktop/node_modules/@electron/asar');
 
 function verifyDesktop(output, archive, version) {
+  if (asar.listPackage(archive).some(name => /[\\/]node_modules[\\/]/.test(name))) {
+    throw new Error('standalone archive contains developer node_modules');
+  }
   const metadata = JSON.parse(asar.extractFile(archive, 'package.json'));
   if (metadata.version !== version) throw new Error('packaged version mismatch');
   if (path.normalize(metadata.main) !== path.join('out', 'main', 'index.js')) throw new Error('invalid packaged main entry');
