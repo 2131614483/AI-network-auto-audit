@@ -11,3 +11,8 @@ enable the bounded plan-only catalog; a reachable catalog does not mean a real
 model call or planning session passed. Any blocked required initial view makes
 the overall read-path acceptance fail. Never broaden permissions just to make
 this test green.
+
+The graph extraction page must distinguish a pending read, a failed or denied
+read, and a successful empty result. A failed refresh must not continue to
+present old proposals as current. Changing tenant must not show another
+tenant's data or allow a late response from the previous tenant to replace it.

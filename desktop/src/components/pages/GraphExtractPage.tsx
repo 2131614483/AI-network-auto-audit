@@ -1,6 +1,7 @@
 import { Button, Card, Space, Table, Tag, Typography } from "antd";
-import { useCallback, useEffect, useState } from "react";
-import { apiRequest, asRecord, type PageProps } from "./common";
+import { useCallback, useEffect, useReducer, useRef, useState } from "react";
+import { apiRequest, type PageProps } from "./common";
+import { graphProposalsFromResponse, graphReadTransition, initialGraphReadState } from "../../model/graphReadState";
 
 type GraphProposalNode = { node_key: string; node_type: string; label: string; space_key: string; operation: string };
 type GraphProposal = { id: string; title: string; status: string; risk_class: string; graph_space_key: string | null; candidate_count: number; nodes: GraphProposalNode[]; submitted_at: string | null; approved_at: string | null; applied_at: string | null };
@@ -10,16 +11,28 @@ type GraphProposal = { id: string; title: string; status: string; risk_class: st
  * 端点 /graph/extractions/proposals · propose · {id}/{approve|reject} 保持原样。
  */
 export default function GraphExtractPage({ tenantId, onNotice }: PageProps) {
-  const [proposals, setProposals] = useState<GraphProposal[]>([]);
+  const [read, dispatch] = useReducer(graphReadTransition<GraphProposal>, initialGraphReadState);
+  const requestSequence = useRef(0);
   const [busy, setBusy] = useState(false);
   const [spaceKey, setSpaceKey] = useState<string>();
 
   const load = useCallback(async (id: string) => {
-    const payload = asRecord(await apiRequest({ path: "/api/v1/graph/extractions/proposals", tenantId: id, query: { limit: 50 } }));
-    setProposals((payload.proposals as GraphProposal[]) ?? []);
+    const request = ++requestSequence.current;
+    dispatch({ type: "start", request, tenant: id });
+    try {
+      const payload = await apiRequest({ path: "/api/v1/graph/extractions/proposals", tenantId: id, query: { limit: 50 } });
+      dispatch({ type: "success", request, proposals: graphProposalsFromResponse<GraphProposal>(payload) });
+    } catch (error) {
+      dispatch({ type: "failure", request, message: error instanceof Error ? error.message : "读取失败" });
+      throw error;
+    }
   }, []);
 
-  useEffect(() => { if (tenantId) void load(tenantId); }, [tenantId, load]);
+  useEffect(() => {
+    if (tenantId) void load(tenantId).catch(() => {});
+    else dispatch({ type: "reset", request: ++requestSequence.current });
+    return () => { dispatch({ type: "reset", request: ++requestSequence.current }); };
+  }, [tenantId, load]);
 
   const generate = async (): Promise<void> => {
     if (!tenantId) return;
@@ -46,8 +59,8 @@ export default function GraphExtractPage({ tenantId, onNotice }: PageProps) {
 
   return (
     <section className="graph-proposal-section">
-      <Card className="chart-card" title="抽取提案" extra={<Space><Tag className="gateway-tag">ChangeSet 治理</Tag><Button size="small" loading={busy} disabled={!tenantId} onClick={() => void generate()}>从最近文档生成提案</Button></Space>}>
-        <Table className="stock-table" size="small" rowKey="id" dataSource={proposals} pagination={{ pageSize: 5 }} columns={[{ title: "状态", dataIndex: "status", key: "status", width: 120, render: (value: string) => <Tag className={value === "applied" ? "ready-tag" : value === "rejected" ? "risk-high" : value === "draft" ? "pending-tag" : "gateway-tag"}>{value === "draft" ? "草稿(不含活图)" : value === "pending_review" ? "待审核" : value === "applied" ? "已放行" : value === "rejected" ? "已驳回" : value}</Tag> }, { title: "提案标题", dataIndex: "title", key: "title", ellipsis: true }, { title: "图空间", dataIndex: "graph_space_key", key: "graph_space_key", width: 150, render: (value: string | null) => value ?? "—" }, { title: "候选", dataIndex: "candidate_count", key: "candidate_count", width: 64 }, { title: "候选节点", key: "nodes", render: (_value, row: GraphProposal) => row.status === "draft" ? <span>{row.nodes.slice(0, 3).map((n) => `${n.node_type}:${n.label}`).join("、")}{row.candidate_count > 3 ? ` …` : ""}</span> : <span className="empty">{row.candidate_count || 0} 项</span>, ellipsis: true }, { title: "操作", key: "actions", width: 120, render: (_value, row: GraphProposal) => row.status === "draft" ? <Space><Button size="small" type="primary" loading={busy} disabled={!tenantId} onClick={() => void decide(row.id, "approve")}>放行</Button><Button size="small" danger loading={busy} disabled={!tenantId} onClick={() => void decide(row.id, "reject")}>驳回</Button></Space> : <Tag className={row.status === "applied" ? "ready-tag" : "risk-high"}>{row.status === "applied" ? "已发布" : "已撤销"}</Tag> }]} locale={{ emptyText: "暂无抽取提案；点击“从最近文档生成提案”把文本候选装入影子 ChangeSet，未经放行不写入活图。" }} />
+      <Card className="chart-card" title="抽取提案" extra={<Space><Tag className="gateway-tag">ChangeSet 治理</Tag><Button size="small" disabled={!tenantId || read.status === "loading"} onClick={() => { if (tenantId) void load(tenantId).catch(() => {}); }}>重新加载</Button><Button size="small" loading={busy} disabled={!tenantId} onClick={() => void generate()}>从最近文档生成提案</Button></Space>}>
+        {tenantId && read.tenant !== tenantId ? <Typography.Text type="secondary">正在加载抽取提案…</Typography.Text> : read.status === "error" ? <Typography.Text type="danger">抽取提案加载失败：{read.message}</Typography.Text> : read.status !== "ready" ? <Typography.Text type="secondary">{read.status === "loading" ? "正在加载抽取提案…" : "请先连接工作区。"}</Typography.Text> : <Table className="stock-table" size="small" rowKey="id" dataSource={read.proposals} pagination={{ pageSize: 5 }} columns={[{ title: "状态", dataIndex: "status", key: "status", width: 120, render: (value: string) => <Tag className={value === "applied" ? "ready-tag" : value === "rejected" ? "risk-high" : value === "draft" ? "pending-tag" : "gateway-tag"}>{value === "draft" ? "草稿(不含活图)" : value === "pending_review" ? "待审核" : value === "applied" ? "已放行" : value === "rejected" ? "已驳回" : value}</Tag> }, { title: "提案标题", dataIndex: "title", key: "title", ellipsis: true }, { title: "图空间", dataIndex: "graph_space_key", key: "graph_space_key", width: 150, render: (value: string | null) => value ?? "—" }, { title: "候选", dataIndex: "candidate_count", key: "candidate_count", width: 64 }, { title: "候选节点", key: "nodes", render: (_value, row: GraphProposal) => row.status === "draft" ? <span>{row.nodes.slice(0, 3).map((n) => `${n.node_type}:${n.label}`).join("、")}{row.candidate_count > 3 ? ` …` : ""}</span> : <span className="empty">{row.candidate_count || 0} 项</span>, ellipsis: true }, { title: "操作", key: "actions", width: 120, render: (_value, row: GraphProposal) => row.status === "draft" ? <Space><Button size="small" type="primary" loading={busy} disabled={!tenantId} onClick={() => void decide(row.id, "approve")}>放行</Button><Button size="small" danger loading={busy} disabled={!tenantId} onClick={() => void decide(row.id, "reject")}>驳回</Button></Space> : <Tag className={row.status === "applied" ? "ready-tag" : "risk-high"}>{row.status === "applied" ? "已发布" : "已撤销"}</Tag> }]} locale={{ emptyText: "暂无抽取提案；点击“从最近文档生成提案”把文本候选装入影子 ChangeSet，未经放行不写入活图。" }} />}
         <Typography.Paragraph type="secondary" className="extraction-note">抽取器为确定性规则，无 LLM。候选先进入影子 ChangeSet，经校验与人工放行（validate → approve → release → activate）后才出现在 graph.nodes，并始终写入节点版本快照；冲突与越界主张转入冲突收件箱。</Typography.Paragraph>
       </Card>
     </section>
