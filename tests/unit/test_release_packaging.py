@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import importlib.util
+import json
 import os
 import shutil
 import subprocess
@@ -66,3 +67,26 @@ def test_manifest_reads_a_real_chinese_git_subject_as_utf8(tmp_path, monkeypatch
                     "commit", "--allow-empty", "-m", subject], cwd=tmp_path, check=True, capture_output=True)
     monkeypatch.setattr(manifest, "PROJECT_ROOT", tmp_path)
     assert manifest.git("log", "-1", "--pretty=%s") == subject
+
+
+def test_release_app_cannot_inherit_stale_desktop_output(packaging, tmp_path):
+    desktop = tmp_path / "desktop"
+    desktop.mkdir()
+    (desktop / "out").mkdir()
+    (desktop / "out/old.js").write_text("stale developer build")
+    (desktop / "package.json").write_text(json.dumps({"name": "audit-test", "version": "0.1.0",
+        "main": "./out/main/index.js", "dependencies": {"react": "19"}, "devDependencies": {"electron": "44"}}))
+    output = tmp_path / "fresh"
+    for relative in ["main/index.js", "preload/index.js", "renderer/index.html"]:
+        path = output / relative
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.write_text("current compiled output")
+    target = tmp_path / "release-app"
+    packaging.prepare_desktop_app(desktop, output, target)
+    assert (target / "out/main/index.js").read_text() == "current compiled output"
+    assert not (target / "out/old.js").exists()
+    assert (desktop / "out/old.js").read_text() == "stale developer build"
+    metadata = json.loads((target / "package.json").read_text())
+    assert not metadata.get("dependencies") and not metadata.get("devDependencies")
+    with pytest.raises(FileExistsError):
+        packaging.prepare_desktop_app(desktop, output, target)

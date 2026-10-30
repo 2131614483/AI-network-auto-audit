@@ -887,6 +887,12 @@ function createWindow(initialZoom: number | null): void {
           .executeJavaScript("document.documentElement.dataset.connection ?? ''", true)
           .then((state) => {
             if (state === "online" || state === "error" || elapsed >= captureDeadlineMs) {
+              if (process.env.AUDIT_NETWORK_CAPTURE_REQUIRE_ONLINE === "1" && state !== "online") {
+                emitLog("main", "error", `desktop_capture_failed connection=${String(state)}`);
+                process.exitCode = 1;
+                if (process.env.AUDIT_NETWORK_CAPTURE_QUIT === "1") app.quit();
+                return;
+              }
               if (state !== "online" && state !== "error") {
                 console.warn("capture: connection not settled within deadline, state =", state);
               }
@@ -899,7 +905,15 @@ function createWindow(initialZoom: number | null): void {
                 ? Math.min(30_000, Math.max(0, Math.trunc(settleRaw)))
                 : 1_200;
               setTimeout(() => {
-                void window.webContents.capturePage().then((image) => writeFile(capturePath, image.toPNG()));
+                void window.webContents.capturePage().then((image) => writeFile(capturePath, image.toPNG()))
+                  .then(() => {
+                    emitLog("main", "info", `desktop_capture_complete connection=${String(state)}`);
+                    if (process.env.AUDIT_NETWORK_CAPTURE_QUIT === "1") app.quit();
+                  }).catch((error: unknown) => {
+                    emitLog("main", "error", `desktop_capture_failed ${String(error)}`);
+                    process.exitCode = 1;
+                    if (process.env.AUDIT_NETWORK_CAPTURE_QUIT === "1") app.quit();
+                  });
               }, settleMs);
               return;
             }

@@ -130,3 +130,4 @@ jobs:
           npm --prefix desktop run typecheck
           npm --prefix desktop run test
           node --test scripts/tests/browser-upload.test.cjs
+          node --test scripts/tests/packaged-desktop.test.cjs

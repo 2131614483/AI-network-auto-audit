@@ -168,6 +168,23 @@ def offline_node_options(guard: Path) -> str:
     return f'--require="{guard.resolve().as_posix()}"'
 
 
+def prepare_desktop_app(desktop: Path, output: Path, target: Path) -> None:
+    """Make one standalone application root; never collect developer out/ files."""
+    for entry in ("main/index.js", "preload/index.js", "renderer/index.html"):
+        if not (output / entry).is_file():
+            raise ValueError(f"missing compiled desktop entry: {entry}")
+    metadata = json.loads((desktop / "package.json").read_text(encoding="utf-8"))
+    if metadata.get("main") not in {"./out/main/index.js", "out/main/index.js"}:
+        raise ValueError("unexpected desktop main entry")
+    # Main/preload import only Electron and Node. Renderer dependencies are
+    # bundled by Vite. The ASAR gate rejects unbundled third-party requires.
+    for field in ("dependencies", "devDependencies", "scripts", "build"):
+        metadata.pop(field, None)
+    target.mkdir(parents=True, exist_ok=False)
+    shutil.copytree(output, target / "out")
+    (target / "package.json").write_text(json.dumps(metadata, ensure_ascii=False, indent=2), encoding="utf-8")
+
+
 def build_installer(stage: Path) -> int:
     """Use an explicit local toolchain; never let the builder fetch a runtime."""
     desktop = PROJECT_ROOT / "desktop"
@@ -193,18 +210,37 @@ def build_installer(stage: Path) -> int:
     output = stage.parent / "out"
     vite = desktop / "node_modules" / "electron-vite" / "bin" / "electron-vite.js"
     subprocess.run([node, str(vite), "build", "--outDir", str(output)], cwd=desktop, env=env, check=True)
-    config = {
-        "extends": str(desktop / "electron-builder.yml"),
-        "directories": {"output": str(stage.parent / "dist")},
-        "files": [{"from": str(output), "to": "out", "filter": ["**/*"]}, "package.json"],
+    app_directory = stage.parent / "electron-app"
+    prepare_desktop_app(desktop, output, app_directory)
+    app_version = json.loads((app_directory / "package.json").read_text(encoding="utf-8"))["version"]
+    import yaml
+
+    config = yaml.safe_load((desktop / "electron-builder.yml").read_text(encoding="utf-8"))
+    config.update({
+        "extends": None,
+        "directories": {"app": str(app_directory), "output": str(stage.parent / "dist"), "buildResources": str(desktop / "build")},
+        "files": ["out/**/*", "package.json"],
         "extraResources": [{"from": str(stage / "runtime"), "to": "runtime"}, {"from": str(stage / "app"), "to": "app"}],
         "electronDist": str(electron), "npmRebuild": False,
-        "win": {"signAndEditExecutable": False},
-    }
+        "electronVersion": json.loads((desktop / "node_modules/electron/package.json").read_text(encoding="utf-8"))["version"],
+        "win": {**config.get("win", {}), "signAndEditExecutable": False},
+    })
     configuration = stage.parent / "electron-builder.release.json"
     configuration.write_text(json.dumps(config, ensure_ascii=False, indent=2), encoding="utf-8")
     builder = desktop / "node_modules" / "electron-builder" / "out" / "cli" / "cli.js"
-    return subprocess.call([node, str(builder), "--config", str(configuration), "--win", "--x64"], cwd=desktop, env=env)
+    command = [node, str(builder), "--config", str(configuration), "--win", "--x64"]
+    subprocess.run([*command, "--dir"], cwd=desktop, env=env, check=True)
+    unpacked = stage.parent / "dist" / "win-unpacked"
+    subprocess.run([node, str(PROJECT_ROOT / "scripts/verify-packaged-desktop.cjs"), str(output),
+                    str(unpacked / "resources/app.asar"), app_version,
+                    str(stage.parent / "desktop-integrity.json")], cwd=desktop, env=env, check=True)
+    # The build guard denies all networking; the native smoke needs its own
+    # loopback API. Its runner owns a synthetic profile and blocks remote UI traffic.
+    smoke_env = {**env, "NO_PROXY": "localhost,127.0.0.1,::1"}
+    smoke_env.pop("NODE_OPTIONS", None)
+    subprocess.run([node, str(PROJECT_ROOT / "scripts/verify-windows-desktop.cjs"), str(unpacked),
+                    str(stage.parent / "native-verification")], cwd=desktop, env=smoke_env, check=True)
+    return subprocess.call([*command, "--prepackaged", str(unpacked)], cwd=desktop, env=env)
 
 
 def main() -> int:
